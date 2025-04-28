@@ -1,0 +1,188 @@
+{% extends "layout.html" %}
+
+{% block title %}Kullanıcı Detayı - MediTahlil Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-3"><i class="fas fa-user-circle me-2 text-primary"></i>Kullanıcı Detayı</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_users') }}">Kullanıcılar</a></li>
+                    <li class="breadcrumb-item active">{{ user.username }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- Kullanıcı Bilgileri -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Kullanıcı Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4>{{ user.username }}</h4>
+                        {% if user.role == 'admin' %}
+                        <span class="badge bg-danger">Admin</span>
+                        {% else %}
+                        <span class="badge bg-primary">Kullanıcı</span>
+                        {% endif %}
+                        
+                        {% if user.is_active %}
+                        <span class="badge bg-success">Aktif</span>
+                        {% else %}
+                        <span class="badge bg-danger">Pasif</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item bg-light">
+                            <div class="fw-bold text-muted small">Kullanıcı ID</div>
+                            <div>{{ user.id }}</div>
+                        </div>
+                        <div class="list-group-item bg-light">
+                            <div class="fw-bold text-muted small">E-posta Adresi</div>
+                            <div>{{ user.email }}</div>
+                        </div>
+                        <div class="list-group-item bg-light">
+                            <div class="fw-bold text-muted small">Kayıt Tarihi</div>
+                            <div>{{ user.created_at }}</div>
+                        </div>
+                        <div class="list-group-item bg-light">
+                            <div class="fw-bold text-muted small">Toplam Analiz</div>
+                            <div>{{ analyses|length }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Kullanıcı Listesine Dön
+                        </a>
+                        
+                        {% if user.id != 1 %}
+                        <a href="{{ url_for('admin_toggle_user', user_id=user.id) }}" class="btn btn-outline-warning">
+                            {% if user.is_active %}
+                            <i class="fas fa-lock me-2"></i>Kullanıcıyı Pasif Yap
+                            {% else %}
+                            <i class="fas fa-lock-open me-2"></i>Kullanıcıyı Aktif Yap
+                            {% endif %}
+                        </a>
+                        
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+                            <i class="fas fa-trash me-2"></i>Kullanıcıyı Sil
+                        </button>
+                        
+                        <!-- Silme Modal -->
+                        <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteUserModalLabel">Kullanıcıyı Sil</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>{{ user.username }}</strong> kullanıcısını ve tüm analizlerini silmek istediğinize emin misiniz?</p>
+                                        <p class="text-danger">Bu işlem geri alınamaz!</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                                        <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="post">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                            <button type="submit" class="btn btn-danger">Kullanıcıyı Sil</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kullanıcının Analizleri -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">{{ user.username }} Kullanıcısının Analizleri</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if analyses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Dosya Adı</th>
+                                    <th>Tarih</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for analysis in analyses %}
+                                <tr>
+                                    <td>{{ analysis.id }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin_analysis_detail', analysis_id=analysis.id) }}" class="text-decoration-none">
+                                            <i class="fas fa-file-pdf text-danger me-1"></i>{{ analysis.file_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ analysis.created_at }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('admin_analysis_detail', analysis_id=analysis.id) }}" class="btn btn-outline-primary" title="Görüntüle">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" title="Sil" data-bs-toggle="modal" data-bs-target="#deleteModal{{ analysis.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            
+                                            <!-- Silme Modal -->
+                                            <div class="modal fade" id="deleteModal{{ analysis.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ analysis.id }}" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="deleteModalLabel{{ analysis.id }}">Analizi Sil</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p><strong>{{ analysis.file_name }}</strong> analizini silmek istediğinize emin misiniz?</p>
+                                                            <p class="text-danger">Bu işlem geri alınamaz!</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                                                            <form action="{{ url_for('admin_delete_analysis', analysis_id=analysis.id) }}" method="post">
+                                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                                                <button type="submit" class="btn btn-danger">Analizi Sil</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-medical-alt text-muted mb-3" style="font-size: 3rem;"></i>
+                        <h5>Bu kullanıcının henüz analizi bulunmuyor.</h5>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

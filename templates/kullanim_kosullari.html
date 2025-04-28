@@ -1,0 +1,167 @@
+{% extends "layout.html" %}
+
+{% block title %}Kullanım Koşulları - MediTahlil{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h1 class="h3 mb-0"><i class="fas fa-file-contract me-2"></i>Kullanım Koşulları</h1>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <div class="mb-4">
+                        <p class="lead">
+                            Bu Kullanım Koşulları, MediTahlil Teknoloji A.Ş. ("MediTahlil") tarafından sağlanan web sitesi, mobil uygulama ve hizmetlerin kullanımını düzenleyen koşul ve şartları açıklamaktadır. Lütfen bu koşulları dikkatlice okuyunuz. MediTahlil hizmetlerini kullanarak, bu Kullanım Koşulları'nı kabul etmiş olursunuz.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">1. Hizmetlerin Tanımı</h2>
+                        <p>
+                            MediTahlil, kullanıcılarına yapay zeka destekli kan tahlil sonuçları yorumlama hizmetleri sunar. Bu hizmetler, kan tahlil sonuçlarının analizi, yorumlanması ve sonuçlara ilişkin bilgilendirme içerir. MediTahlil, kullanıcıların sunduğu kan tahlili sonuçlarını yapay zeka teknolojisi kullanarak işler ve kullanıcılara bu tahlil sonuçları hakkında bilgilendirme sağlar.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">2. Hesap Oluşturma ve Kullanımı</h2>
+                        <p>
+                            MediTahlil hizmetlerinden faydalanmak için bir hesap oluşturmanız gereklidir. Hesap oluştururken, doğru ve güncel bilgiler vermeniz gerekmektedir. Hesap bilgilerinizin gizliliğini korumakla ve hesabınız altında gerçekleşen tüm etkinliklerden sorumlusunuz.
+                        </p>
+                        <p class="mt-3">
+                            Hesabınızla ilgili herhangi bir güvenlik ihlali durumunda, bizi hemen bilgilendirmeniz gerekmektedir. MediTahlil, hesabınızın yetkisiz kullanımından kaynaklanabilecek zararlardan sorumlu değildir.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">3. Kullanım Koşulları</h2>
+                        <h3 class="h5 mt-3">a- Genel Kullanım</h3>
+                        <p>
+                            MediTahlil hizmetlerini kullanırken, şunları yapmamayı kabul edersiniz:
+                        </p>
+                        <ul>
+                            <li>Yasalara aykırı herhangi bir faaliyette bulunmak</li>
+                            <li>Hizmetlerimizi kötüye kullanmak veya platformumuza zarar vermek</li>
+                            <li>Diğer kullanıcıların hizmetlerimizi kullanma deneyimini engellemek veya bozmak</li>
+                            <li>Sistemlerimize veya ağlarımıza yetkisiz erişim sağlamak veya sağlamaya çalışmak</li>
+                            <li>İçeriklerimizi izinsiz olarak çoğaltmak, kopyalamak, satmak veya ticarileştirmek</li>
+                            <li>Virüs, kötü amaçlı yazılım veya diğer zararlı kodları yaymak</li>
+                        </ul>
+
+                        <h3 class="h5 mt-3">b- Sağlık Verileri</h3>
+                        <p>
+                            MediTahlil'e kan tahlil sonuçlarınızı yüklediğinizde:
+                        </p>
+                        <ul>
+                            <li>Bu verilerin doğru ve size ait olduğunu beyan edersiniz.</li>
+                            <li>Bu verilerin MediTahlil tarafından <a href="{{ url_for('kvkk') }}">KVKK Aydınlatma Metni</a> ve <a href="{{ url_for('gizlilik') }}">Gizlilik Politikası</a> çerçevesinde işlenmesine izin verirsiniz.</li>
+                            <li>Verilerinizin MediTahlil'in hizmetlerini geliştirmek için anonim ve toplu şekilde kullanılabileceğini kabul edersiniz.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">4. Tıbbi Sorumluluk Reddi</h2>
+                        <p>
+                            MediTahlil, tıbbi tanı koymak için tasarlanmamıştır ve bir tıp doktoru veya sağlık uzmanı tavsiyesi yerine geçmez. MediTahlil tarafından sağlanan bilgiler yalnızca bilgilendirme amaçlıdır ve bir sağlık profesyoneli ile görüşmenin yerini tutmaz.
+                        </p>
+                        <p class="mt-3">
+                            MediTahlil hizmetlerinin kullanımından kaynaklanan sağlık kararlarının sorumluluğu tamamen kullanıcıya aittir. Sağlık durumunuzla ilgili endişeleriniz varsa, her zaman bir sağlık uzmanına başvurmanızı öneririz.
+                        </p>
+                        <p class="mt-3">
+                            MediTahlil, yapay zeka teknolojisinin doğası gereği, yorumlamaların ve önerilerin %100 doğruluğunu garanti etmemektedir. MediTahlil, hizmetlerimizi kullanmanızdan kaynaklanan herhangi bir tıbbi sonuçtan sorumlu değildir.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">5. Fikri Mülkiyet</h2>
+                        <p>
+                            MediTahlil web sitesi, mobil uygulaması, hizmetleri, içerikleri, logoları, ticari markaları, yazılımları ve diğer tüm unsurları MediTahlil'in veya lisans verenlerin mülkiyetindedir ve telif hakkı, ticari marka, patent ve diğer fikri mülkiyet kanunları tarafından korunmaktadır.
+                        </p>
+                        <p class="mt-3">
+                            MediTahlil, size hizmetlerini kullanmanız için kişisel, münhasır olmayan, devredilemez bir lisans verir. Bu lisans, hizmetlerimizi Kullanım Koşulları'na uygun şekilde kullanmanız dışında hiçbir hak vermez.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">6. Abonelik ve Ödeme</h2>
+                        <p>
+                            MediTahlil, hem ücretsiz hem de ücretli abonelik planları sunabilir. Ücretli bir abonelik planı seçtiğinizde:
+                        </p>
+                        <ul>
+                            <li>Belirtilen ücretleri ödemeyi kabul edersiniz.</li>
+                            <li>Aboneliğiniz, iptal edilmediği sürece seçtiğiniz süre boyunca otomatik olarak yenilenecektir.</li>
+                            <li>Aboneliğinizi istediğiniz zaman iptal edebilirsiniz, ancak ücret iadesi yapılmayacaktır.</li>
+                        </ul>
+                        <p class="mt-3">
+                            Abonelik ücretleri ve özellikleri değişebilir. Herhangi bir değişiklik durumunda, önceden bilgilendirileceksiniz.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">7. Fesih</h2>
+                        <p>
+                            MediTahlil, kendi takdirine bağlı olarak, herhangi bir zamanda ve herhangi bir nedenle, önceden bildirmeksizin hesabınızı askıya alabilir veya sonlandırabilir. Bu durumlar şunları içerebilir:
+                        </p>
+                        <ul>
+                            <li>Bu Kullanım Koşulları'nı ihlal etmeniz</li>
+                            <li>Yasalara aykırı davranışlarda bulunmanız</li>
+                            <li>Hizmetlerimizi kötüye kullanmanız</li>
+                            <li>Uzun süre hizmetleri kullanmamanız</li>
+                            <li>MediTahlil'in hizmetlerini durdurma kararı alması</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">8. Sorumluluk Sınırlaması</h2>
+                        <p>
+                            MediTahlil, yasaların izin verdiği azami ölçüde, doğrudan, dolaylı, arızi, özel, sonuç niteliğindeki veya cezai zararlar dahil olmak üzere, hizmetlerimizin kullanımından kaynaklanan veya bunlarla ilgili herhangi bir zarardan sorumlu değildir.
+                        </p>
+                        <p class="mt-3">
+                            MediTahlil, hizmetlerinin kesintisiz veya hatasız olacağını garanti etmez. MediTahlil, hizmetlerindeki kesintiler veya teknik arızalar nedeniyle oluşabilecek veri kaybı veya diğer zararlardan sorumlu değildir.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">9. Üçüncü Taraf Bağlantıları</h2>
+                        <p>
+                            MediTahlil hizmetleri, üçüncü taraf web sitelerine veya hizmetlere bağlantılar içerebilir. Bu üçüncü taraf sitelerin veya hizmetlerin içeriğinden, gizlilik politikalarından veya uygulamalarından sorumlu değiliz. Bu siteleri veya hizmetleri kullanırken, onların kullanım koşullarına tabi olursunuz.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">10. Değişiklikler</h2>
+                        <p>
+                            MediTahlil, bu Kullanım Koşulları'nı herhangi bir zamanda değiştirme hakkını saklı tutar. Değişiklikler, web sitemizde veya uygulamamızda yayınlandığı anda yürürlüğe girecektir. Değişikliklerden sonra hizmetlerimizi kullanmaya devam etmeniz, güncellenmiş Kullanım Koşulları'nı kabul ettiğiniz anlamına gelir.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">11. Geçerli Hukuk</h2>
+                        <p>
+                            Bu Kullanım Koşulları, Türkiye Cumhuriyeti kanunlarına tabidir. Bu Kullanım Koşulları'ndan kaynaklanan veya bunlarla ilgili her türlü anlaşmazlık, Türkiye Cumhuriyeti mahkemeleri tarafından çözümlenecektir.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">12. Bize Ulaşın</h2>
+                        <p>
+                            Bu Kullanım Koşulları hakkında sorularınız veya endişeleriniz varsa, lütfen <strong>info@meditahlil.com</strong> adresine e-posta göndererek bizimle iletişime geçin.
+                        </p>
+                    </div>
+
+                    <div class="alert alert-info mb-4">
+                        <p class="mb-0">
+                            MediTahlil hizmetlerini kullanarak, bu Kullanım Koşulları'nı okuduğunuzu, anladığınızı ve kabul ettiğinizi beyan etmiş olursunuz. Eğer bu koşulları kabul etmiyorsanız, lütfen hizmetlerimizi kullanmayınız.
+                        </p>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <p class="small text-muted">Son güncelleme tarihi: 20 Mart 2025</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

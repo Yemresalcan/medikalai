@@ -1,0 +1,7 @@
+Flask
+requests
+PyPDF2
+openai
+bcrypt
+Flask-WTF
+flask-jwt-extended

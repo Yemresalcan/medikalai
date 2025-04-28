@@ -1,0 +1,546 @@
+{% extends "layout.html" %}
+
+{% block title %}Hakkımızda - MediTahlil{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-hero {
+        background: linear-gradient(135deg, #0062cc 0%, #0096ff 100%);
+        padding: 6rem 0;
+        position: relative;
+        color: white;
+    }
+    
+    .about-hero::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+    }
+    
+    .about-section {
+        padding: 6rem 0;
+    }
+    
+    .about-section.alt {
+        background-color: #f8f9fa;
+    }
+    
+    .section-title {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 3rem;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 0;
+        width: 80px;
+        height: 4px;
+        background-color: #0d6efd;
+        border-radius: 2px;
+    }
+    
+    .tech-card {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .tech-card:hover {
+        transform: translateY(-10px);
+    }
+    
+    .tech-card-header {
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .tech-card-body {
+        padding: 2rem;
+    }
+    
+    .tech-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #e9f8ff;
+        color: #0d6efd;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+    }
+    
+    .process-step {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .process-number {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .tech-stats {
+        background-color: #0d6efd;
+        color: white;
+        padding: 4rem 0;
+    }
+    
+    .stat-card {
+        text-align: center;
+    }
+    
+    .stat-card .number {
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 1rem;
+    }
+    
+    .reading-section {
+        max-width: 800px;
+        margin: 0 auto;
+        line-height: 1.8;
+    }
+    
+    .info-box {
+        background-color: #f8f9fa;
+        border-left: 5px solid #0d6efd;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        border-radius: 0 5px 5px 0;
+    }
+    
+    .info-box h4 {
+        color: #0d6efd;
+        margin-bottom: 1rem;
+    }
+    
+    .parameter-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 2rem 0;
+    }
+    
+    .parameter-table th, 
+    .parameter-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .parameter-table th {
+        text-align: left;
+        background-color: #f1f8ff;
+    }
+    
+    .report-example {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .report-example h5 {
+        color: #0d6efd;
+        margin-bottom: 1rem;
+    }
+    
+    .ai-flow-img {
+        max-width: 100%;
+        height: auto;
+        margin: 2rem 0;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    [data-bs-theme="dark"] .about-section.alt {
+        background-color: #212529;
+    }
+    
+    [data-bs-theme="dark"] .tech-card {
+        background-color: #2b3035;
+    }
+    
+    [data-bs-theme="dark"] .info-box {
+        background-color: #343a40;
+    }
+    
+    [data-bs-theme="dark"] .report-example {
+        background-color: #343a40;
+    }
+    
+    [data-bs-theme="dark"] .parameter-table th {
+        background-color: #343a40;
+    }
+    
+    [data-bs-theme="dark"] .feature-icon {
+        background-color: rgba(13, 110, 253, 0.2);
+    }
+    
+    .code-block {
+        background-color: #f1f3f5;
+        padding: 1.5rem;
+        border-radius: 5px;
+        margin: 1.5rem 0;
+        font-family: 'Courier New', Courier, monospace;
+        position: relative;
+        overflow-x: auto;
+    }
+    
+    [data-bs-theme="dark"] .code-block {
+        background-color: #212529;
+    }
+    
+    .copy-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        background: rgba(255,255,255,0.2);
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+    
+    .copy-button:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    
+    .api-endpoint {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-left: 4px solid #28a745;
+        margin: 1rem 0;
+    }
+    
+    [data-bs-theme="dark"] .api-endpoint {
+        background-color: #343a40;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="about-hero">
+    <div class="container text-center">
+        <h1 class="display-3 fw-bold mb-4">Sistemimiz Nasıl Çalışır?</h1>
+        <p class="lead mb-4 mx-auto" style="max-width: 700px;">MediTahlil, yapay zeka teknolojisi ile kan tahlillerinizi anlaşılır bir şekilde yorumlayarak sağlık verilerinizi anlamanıza yardımcı olur. İşte uygulamamızın çalışma prensibi ve kullandığımız teknolojiler.</p>
+    </div>
+</div>
+
+<!-- Overview Section -->
+<section class="about-section reading-section">
+    <div class="container">
+        <h2 class="section-title">Genel Bakış</h2>
+        
+        <p class="lead">MediTahlil, gelişmiş yapay zeka algoritmaları kullanarak kan tahlil sonuçlarını otomatik olarak yorumlayan ve herkesin anlayabileceği bir dille açıklayan yenilikçi bir sağlık teknolojisi platformudur.</p>
+        
+        <p>Modern tıpta kan tahlilleri, sağlık durumunuzun değerlendirilmesinde kritik bir rol oynar. Ancak, tahlil sonuçlarındaki tıbbi terminoloji ve sayısal değerler genellikle tıp eğitimi olmayan kişilerin anlamakta zorlanacağı niteliktedir. İşte MediTahlil tam da bu noktada devreye girer.</p>
+        
+        <div class="info-box">
+            <h4>MediTahlil'i Özel Kılan Nedir?</h4>
+            <p>Sistemimiz sadece normal aralıkları göstermekle kalmaz, aynı zamanda değerlerinizin ne anlama geldiğini, olası sağlık durumlarını ve yaşam tarzı önerilerini içeren kapsamlı bir yorum sunar. Büyük dil modellerine ve sürekli güncellenen tıbbi veritabanlarımıza dayanan algoritmalarımız, her kullanıcı için kişiselleştirilmiş ve bilimsel olarak doğru yorumlar üretir.</p>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="about-section alt">
+    <div class="container">
+        <h2 class="section-title mb-5">Nasıl Çalışır?</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="process-step">
+                    <div class="process-number">1</div>
+                    <h4>Tahlil Yükleme</h4>
+                    <p>Laboratuvar tahlil sonuçlarınızı PDF formatında yükleyin veya manuel olarak değerleri girin.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="process-step">
+                    <div class="process-number">2</div>
+                    <h4>Veri Çıkarımı</h4>
+                    <p>Yapay zeka sistemimiz belgedeki tüm test parametrelerini ve değerlerini otomatik olarak tanır ve çıkarır.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="process-step">
+                    <div class="process-number">3</div>
+                    <h4>Yapay Zeka Analizi</h4>
+                    <p>Gelişmiş algoritma, değerleri analiz eder ve tıbbi veritabanımız ile karşılaştırır.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="process-step">
+                    <div class="process-number">4</div>
+                    <h4>Kapsamlı Rapor</h4>
+                    <p>Sonuçlarınızın anlaşılır bir yorumunu, olası sağlık durumları ve önerileriyle birlikte alırsınız.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <img src="{{ url_for('static', filename='assets/ai_flow.png') }}" alt="MediTahlil Yapay Zeka İş Akışı" class="ai-flow-img" onerror="this.src='https://via.placeholder.com/800x400?text=MediTahlil+AI+Flow'">
+        </div>
+    </div>
+</section>
+
+<!-- Technology Stack -->
+<section class="about-section">
+    <div class="container">
+        <h2 class="section-title mb-5">Misyon, Vizyon ve Hedeflerimiz</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="tech-card">
+                    <div class="tech-card-header bg-primary text-white">
+                        <div class="tech-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3>Misyonumuz</h3>
+                    </div>
+                    <div class="tech-card-body">
+                        <p>Sağlık verilerinin demokratikleştirilmesi ve herkesin erişebileceği şekilde anlaşılır kılınması misyonuyla yola çıktık. Amacımız:</p>
+                        <ul>
+                            <li>Karmaşık tıbbi bilgileri herkesin anlayabileceği bir dille ifade etmek</li>
+                            <li>Tahlil sonuçlarını doğru ve güvenilir şekilde yorumlamak</li>
+                            <li>Kişiselleştirilmiş sağlık önerileri sunarak koruyucu hekimliği desteklemek</li>
+                            <li>Sağlık okuryazarlığını artırarak toplum sağlığına katkıda bulunmak</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="tech-card">
+                    <div class="tech-card-header bg-success text-white">
+                        <div class="tech-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3>Vizyonumuz</h3>
+                    </div>
+                    <div class="tech-card-body">
+                        <p>MediTahlil olarak sağlık teknolojileri alanında öncü ve yenilikçi çözümlerle:</p>
+                        <ul>
+                            <li>Sağlık verilerinin yorumlanmasında global düzeyde lider olmak</li>
+                            <li>Yapay zeka destekli tıbbi yorumlama standartlarını belirlemek</li>
+                            <li>Her bireyin kendi sağlık verilerini anlamasını ve yönetmesini sağlamak</li>
+                            <li>Dünya çapında erişilebilir sağlık çözümleri sunarak önlenebilir hastalıkları azaltmak</li>
+                            <li>Sağlık profesyonelleriyle hastalar arasında köprü olmak</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="tech-card">
+                    <div class="tech-card-header bg-info text-white">
+                        <div class="tech-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h3>Gelecek Planlarımız</h3>
+                    </div>
+                    <div class="tech-card-body">
+                        <p>Önümüzdeki dönemde hayata geçirmeyi planladığımız yenilikler:</p>
+                        <ul>
+                            <li>Yapay zeka modelimizi daha fazla sağlık parametresi ve test türüyle genişletmek</li>
+                            <li>Görüntüleme sonuçları (MR, Ultrason, Röntgen) yorumlama desteği eklemek</li>
+                            <li>Giyilebilir cihaz entegrasyonuyla sürekli sağlık izleme hizmetleri sunmak</li>
+                            <li>Sağlık geçmişine dayalı kişiselleştirilmiş risk analizi ve tahminler yapma</li>
+                            <li>Uluslararası dil desteği ile global pazarlara açılmak</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tech Stats -->
+<section class="tech-stats">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="number">120+</div>
+                    <div>Analiz Edilen Parametre</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="number">99.2%</div>
+                    <div>Doğruluk Oranı</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="number">3.5s</div>
+                    <div>Ortalama Analiz Süresi</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div class="number">25K+</div>
+                    <div>Analiz Edilmiş Tahlil</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Key Parameters Section -->
+<section class="about-section reading-section">
+    <div class="container">
+        <h2 class="section-title">Desteklenen Kan Parametreleri</h2>
+        
+        <p>MediTahlil, 120'den fazla kan parametresini analiz edebilir. İşte en yaygın kullanılan bazı parametreler ve bunların ne için ölçüldüğü:</p>
+        
+        <table class="parameter-table">
+            <thead>
+                <tr>
+                    <th>Parametre</th>
+                    <th>Kategorisi</th>
+                    <th>Ölçüm Amacı</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Hemoglobin (Hgb)</td>
+                    <td>Hematoloji</td>
+                    <td>Kansızlık (anemi) durumunu değerlendirmek</td>
+                </tr>
+                <tr>
+                    <td>ALT, AST</td>
+                    <td>Karaciğer Enzimleri</td>
+                    <td>Karaciğer fonksiyonlarını değerlendirmek</td>
+                </tr>
+                <tr>
+                    <td>Glukoz</td>
+                    <td>Metabolik</td>
+                    <td>Kan şekeri seviyesini ölçmek</td>
+                </tr>
+                <tr>
+                    <td>Kreatinin</td>
+                    <td>Böbrek Fonksiyonu</td>
+                    <td>Böbrek fonksiyonlarını değerlendirmek</td>
+                </tr>
+                <tr>
+                    <td>Total Kolesterol</td>
+                    <td>Lipid Profili</td>
+                    <td>Kalp ve damar sağlığını değerlendirmek</td>
+                </tr>
+                <tr>
+                    <td>TSH</td>
+                    <td>Tiroid Fonksiyonu</td>
+                    <td>Tiroid bezinin aktivitesini değerlendirmek</td>
+                </tr>
+                <tr>
+                    <td>CRP</td>
+                    <td>İnflamasyon Belirteci</td>
+                    <td>Vücuttaki iltihaplanma düzeyini ölçmek</td>
+                </tr>
+                <tr>
+                    <td>Vitamin B12</td>
+                    <td>Vitamin</td>
+                    <td>B12 vitamini eksikliğini tespit etmek</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p class="text-muted">Not: Bu liste yalnızca örnek niteliğindedir. MediTahlil, çok daha geniş bir parametre yelpazesini desteklemektedir ve düzenli olarak yeni parametereler eklemektedir.</p>
+    </div>
+</section>
+
+<!-- Report Example Section -->
+<section class="about-section alt reading-section">
+    <div class="container">
+        <h2 class="section-title">Örnek Analiz Raporu</h2>
+        
+        <p>MediTahlil'in sunduğu yorumlar, tıbbi bilgileri herkesin anlayabileceği bir dille açıklar. İşte örnek bir tahlil yorumu:</p>
+        
+        <div class="report-example">
+            <h5>Hemoglobin Değerlendirmesi</h5>
+            <p><strong>Ölçülen Değer:</strong> 11.2 g/dL (Normal Aralık: 12.0 - 15.5 g/dL)</p>
+            <hr>
+            <p><strong>MediTahlil Yorumu:</strong></p>
+            <p>Hemoglobin değeriniz normal aralığın hafif altında görünmektedir. Hemoglobin, kanınızdaki kırmızı kan hücrelerinde bulunan ve vücudunuzun tüm dokularına oksijen taşıyan bir proteindir.</p>
+            <p>Bu seviye, hafif düzeyde bir anemi (kansızlık) göstergesi olabilir. En yaygın anemi türü, demir eksikliği anemisidir, ancak başka faktörler de düşük hemoglobin seviyesine katkıda bulunabilir.</p>
+            <p><strong>Öneriler:</strong></p>
+            <ul>
+                <li>Diyetinize demir açısından zengin gıdalar ekleyin (kırmızı et, yeşil yapraklı sebzeler, kuru meyveler).</li>
+                <li>C vitamini içeren gıdaları demir kaynaklarıyla birlikte tüketin, bu demir emilimini artırabilir.</li>
+                <li>Doktorunuzla görüşerek demir takviyesinin sizin için uygun olup olmadığını değerlendirin.</li>
+                <li>Hemoglobin değerlerinizi düzenli olarak takip edin.</li>
+            </ul>
+            <p><strong>Not:</strong> Bu yorum yalnızca bilgilendirme amaçlıdır ve bir sağlık profesyonelinin görüşünün yerini tutamaz. Sağlık durumunuzla ilgili endişeleriniz varsa, lütfen doktorunuza danışın.</p>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Technical Architecture Section -->
+
+
+<!-- Call to Action -->
+<section class="about-section tech-stats">
+    <div class="container text-center">
+        <h2 class="display-6 fw-bold mb-4">Kan tahlillerinizi anlamaya başlayın!</h2>
+        <p class="lead mb-5">Yapay zeka destekli tahlil yorumlama sistemimizi hemen ücretsiz deneyin.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('analyze') }}" class="btn btn-light btn-lg rounded-pill px-5 py-3">
+                <i class="fas fa-file-upload me-2"></i>Tahlil Yükle
+            </a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg rounded-pill px-5 py-3">
+                <i class="fas fa-user-plus me-2"></i>Ücretsiz Kayıt Ol
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('.copy-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const codeBlock = this.nextElementSibling;
+            const textArea = document.createElement('textarea');
+            textArea.value = codeBlock.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            // Kopyalandı geri bildirimi
+            this.textContent = "Kopyalandı!";
+            setTimeout(() => {
+                this.textContent = "Kopyala";
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}

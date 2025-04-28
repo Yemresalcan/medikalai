@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block title %}Giriş Yap - MediTahlil{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-circle text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="mt-3">Giriş Yap</h2>
+                        <p class="text-muted">MediTahlil hesabınıza giriş yapın</p>
+                    </div>
+                    
+                    <!-- Validasyon Hata Mesajı -->
+                    <div id="login-error" class="alert alert-danger d-none mb-4" role="alert"></div>
+                    
+                    <form method="post" action="{{ url_for('login') }}" id="login-form">
+                        <!-- CSRF Token -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Kullanıcı Adı</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="invalid-feedback">Lütfen kullanıcı adınızı girin.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Şifre</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="invalid-feedback">Lütfen şifrenizi girin.</div>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember">
+                            <label class="form-check-label" for="remember">Beni hatırla</label>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary py-2">Giriş Yap</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-4">
+                        <p class="mb-0">Hesabınız yok mu? <a href="{{ url_for('register') }}" class="text-primary">Kayıt Olun</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

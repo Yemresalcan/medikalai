@@ -1,0 +1,498 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Admin Paneli{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4 text-primary"><i class="fas fa-tachometer-alt me-2"></i>Admin Kontrol Paneli</h2>
+    
+    <!-- Özet Kartlar -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3 shadow">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <h2 class="card-title display-4">{{ user_count }}</h2>
+                        <p class="card-text">Toplam Kullanıcı</p>
+                    </div>
+                    <i class="fas fa-users fa-3x opacity-50"></i>
+                </div>
+                <div class="card-footer bg-primary border-0 text-end">
+                    <a href="{{ url_for('admin_users') }}" class="text-white text-decoration-none">Detay <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3 shadow">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <h2 class="card-title display-4">{{ analysis_count }}</h2>
+                        <p class="card-text">Toplam Analiz</p>
+                    </div>
+                    <i class="fas fa-file-medical-alt fa-3x opacity-50"></i>
+                </div>
+                <div class="card-footer bg-success border-0 text-end">
+                    <a href="{{ url_for('admin_analyses') }}" class="text-white text-decoration-none">Detay <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3 shadow">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <h2 class="card-title display-4">{{ daily_stats[-1].count }}</h2>
+                        <p class="card-text">Bugünkü Analiz</p>
+                    </div>
+                    <i class="fas fa-calendar-day fa-3x opacity-50"></i>
+                </div>
+                <div class="card-footer bg-info border-0 text-end">
+                    <span class="text-white">{{ daily_stats[-1].date }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3 shadow">
+                <div class="card-body d-flex justify-content-between align-items-start">
+                    <div>
+                        <h2 class="card-title display-4">
+                            {% set total = 0 %}
+                            {% for stat in daily_stats %}
+                                {% set total = total + stat.count %}
+                            {% endfor %}
+                            {{ total }}
+                        </h2>
+                        <p class="card-text">Son 7 Gün Analizleri</p>
+                    </div>
+                    <i class="fas fa-calendar-week fa-3x opacity-50"></i>
+                </div>
+                <div class="card-footer bg-warning border-0 text-end">
+                    <span class="text-white">Haftalık Özet</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ana Grafikler Satırı -->
+    <div class="row mt-4">
+        <!-- Günlük Analiz İstatistikleri Grafiği -->
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Analiz İstatistikleri</h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-light active" id="showWeek">Haftalık</button>
+                        <button type="button" class="btn btn-light" id="showMonth">Aylık</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyStatsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Kullanıcı Dağılımı Pasta Grafiği -->
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Kullanıcı Aktivite Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userActivityChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- İkinci Grafik Satırı -->
+    <div class="row mt-4">
+        <!-- En Aktif Kullanıcılar -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>En Aktif Kullanıcılar</h5>
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-light">Tüm Kullanıcılar</a>
+                </div>
+                <div class="card-body">
+                    <canvas id="topUsersChart" height="250"></canvas>
+                </div>
+                <div class="card-footer">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Kullanıcı</th>
+                                    <th class="text-center">Analiz Sayısı</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in top_users %}
+                                <tr>
+                                    <td>{{ user.username }}</td>
+                                    <td class="text-center">{{ user.analysis_count }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin_user_detail', user_id=user.id) }}" class="btn btn-sm btn-info">Detay</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Son Analizler -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Son Analizler</h5>
+                    <a href="{{ url_for('admin_analyses') }}" class="btn btn-sm btn-light">Tüm Analizler</a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for analysis in recent_analyses %}
+                            <a href="{{ url_for('admin_analysis_detail', analysis_id=analysis.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ analysis.file_name or 'Analiz #' + analysis.id|string }}</h6>
+                                    <small>{{ analysis.created_at }}</small>
+                                </div>
+                                <p class="mb-1 text-truncate">Kullanıcı: <strong>{{ analysis.username }}</strong></p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">{{ analysis.analysis_text[:100] + '...' if analysis.analysis_text else 'İçerik yok' }}</small>
+                                    <span class="badge bg-success rounded-pill">Tamamlandı</span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Son Satır: Yeni Kullanıcılar ve Sistem Bilgisi -->
+    <div class="row mt-4">
+        <!-- Son Kullanıcılar -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Son Kaydolan Kullanıcılar</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Kullanıcı Adı</th>
+                                    <th>E-posta</th>
+                                    <th>Kayıt Tarihi</th>
+                                    <th>Durum</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                <tr>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.created_at }}</td>
+                                    <td>
+                                        {% if user.is_active %}
+                                        <span class="badge bg-success">Aktif</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Pasif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('admin_user_detail', user_id=user.id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-primary">Tüm Kullanıcılar</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sistem Özeti -->
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-server me-2"></i>Sistem Özeti</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted">Kullanıcı İstatistikleri</h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Toplam Kullanıcı
+                                        <span class="badge bg-primary rounded-pill">{{ user_count }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Admin Kullanıcılar
+                                        <span class="badge bg-warning rounded-pill">1</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Bugün Kaydolanlar
+                                        <span class="badge bg-info rounded-pill">
+                                            {% set count = 0 %}
+                                            {% for user in recent_users %}
+                                                {% if user.created_at.startswith(daily_stats[-1].date) %}
+                                                    {% set count = count + 1 %}
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ count }}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted">Analiz İstatistikleri</h6>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Toplam Analiz
+                                        <span class="badge bg-success rounded-pill">{{ analysis_count }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Haftalık Analiz
+                                        <span class="badge bg-warning rounded-pill">
+                                            {% set total = 0 %}
+                                            {% for stat in daily_stats %}
+                                                {% set total = total + stat.count %}
+                                            {% endfor %}
+                                            {{ total }}
+                                        </span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Ortalama Günlük
+                                        <span class="badge bg-info rounded-pill">
+                                            {% set total = 0 %}
+                                            {% for stat in daily_stats %}
+                                                {% set total = total + stat.count %}
+                                            {% endfor %}
+                                            {{ (total / 7) | round(1) }}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Renk paleti
+        const colors = [
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(255, 159, 64, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 205, 86, 0.7)',
+            'rgba(201, 203, 207, 0.7)',
+            'rgba(255, 99, 71, 0.7)'
+        ];
+        
+        // Haftalık Analiz Grafiği
+        const dailyLabels = [{% for stat in daily_stats %}'{{ stat.date }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+        const dailyData = [{% for stat in daily_stats %}{{ stat.count }}{% if not loop.last %}, {% endif %}{% endfor %}];
+        
+        const dailyStatsCtx = document.getElementById('dailyStatsChart').getContext('2d');
+        const dailyStatsChart = new Chart(dailyStatsCtx, {
+            type: 'bar',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Günlük Analiz Sayısı',
+                    data: dailyData,
+                    backgroundColor: colors[0],
+                    borderColor: colors[0].replace('0.7', '1'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Son 7 Gün Analiz İstatistikleri'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                }
+            }
+        });
+        
+        // Ay için test verileri (gerçek uygulamada backend'den gelecek)
+        const monthlyLabels = [];
+        const monthlyData = [];
+        
+        // Son 30 günün yapay verilerini oluştur
+        const today = new Date();
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(today.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            monthlyLabels.push(dateStr);
+            
+            // Rasgele değerler (0-9 arası)
+            monthlyData.push(Math.floor(Math.random() * 10));
+        }
+        
+        // Haftalık/Aylık geçiş butonları
+        document.getElementById('showWeek').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('showMonth').classList.remove('active');
+            
+            dailyStatsChart.data.labels = dailyLabels;
+            dailyStatsChart.data.datasets[0].data = dailyData;
+            dailyStatsChart.options.plugins.title.text = 'Son 7 Gün Analiz İstatistikleri';
+            dailyStatsChart.update();
+        });
+        
+        document.getElementById('showMonth').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('showWeek').classList.remove('active');
+            
+            dailyStatsChart.data.labels = monthlyLabels;
+            dailyStatsChart.data.datasets[0].data = monthlyData;
+            dailyStatsChart.options.plugins.title.text = 'Son 30 Gün Analiz İstatistikleri';
+            dailyStatsChart.update();
+        });
+        
+        // Kullanıcı Aktivite Dağılımı Pasta Grafiği
+        const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
+        const userActivityChart = new Chart(userActivityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Aktif Kullanıcılar', 'Analiz Yapan Kullanıcılar', 'Pasif Kullanıcılar'],
+                datasets: [{
+                    label: 'Kullanıcı Dağılımı',
+                    data: [
+                        {{ user_count }}, 
+                        {{ top_users|length if top_users }}, 
+                        {{ user_count - (top_users|length if top_users else 0) }}
+                    ],
+                    backgroundColor: [
+                        colors[2],
+                        colors[5],
+                        colors[1]
+                    ],
+                    borderColor: [
+                        colors[2].replace('0.7', '1'),
+                        colors[5].replace('0.7', '1'),
+                        colors[1].replace('0.7', '1')
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Kullanıcı Durumu'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.formattedValue;
+                                const dataset = context.dataset;
+                                const total = dataset.data.reduce((acc, data) => acc + data, 0);
+                                const percentage = Math.round((context.raw / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // En Aktif Kullanıcılar Grafiği
+        const topUsersCtx = document.getElementById('topUsersChart').getContext('2d');
+        const topUsersChart = new Chart(topUsersCtx, {
+            type: 'bar',
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'En Aktif 5 Kullanıcı'
+                    }
+                }
+            },
+            data: {
+                labels: [{% for user in top_users %}'{{ user.username }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Analiz Sayısı',
+                    data: [{% for user in top_users %}{{ user.analysis_count }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: [
+                        colors[0], colors[1], colors[2], colors[3], colors[4]
+                    ],
+                    borderColor: [
+                        colors[0].replace('0.7', '1'),
+                        colors[1].replace('0.7', '1'),
+                        colors[2].replace('0.7', '1'),
+                        colors[3].replace('0.7', '1'),
+                        colors[4].replace('0.7', '1')
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

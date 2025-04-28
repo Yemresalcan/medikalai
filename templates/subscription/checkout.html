@@ -1,0 +1,370 @@
+{% extends "layout.html" %}
+
+{% block title %}Ödeme - MediTahlil{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .plan-summary {
+        background-color: rgba(13, 110, 253, 0.05);
+        border-radius: 10px;
+        padding: 20px;
+    }
+    
+    [data-bs-theme="dark"] .plan-summary {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+    
+    .checkout-price {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    
+    [data-bs-theme="dark"] .checkout-price {
+        color: #90caf9;
+    }
+    
+    .checkout-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        position: relative;
+    }
+    
+    .checkout-step {
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .step-number {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-weight: bold;
+    }
+    
+    .checkout-step.active .step-number {
+        background-color: #0d6efd;
+        color: white;
+    }
+    
+    .checkout-step.completed .step-number {
+        background-color: #198754;
+        color: white;
+    }
+    
+    .step-label {
+        font-size: 0.9rem;
+    }
+    
+    .checkout-steps::before {
+        content: '';
+        position: absolute;
+        top: 17px;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background-color: #e9ecef;
+        z-index: 0;
+    }
+    
+    #payment-form {
+        margin-top: 30px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+    }
+    
+    #card-element {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 12px;
+        background-color: white;
+    }
+    
+    [data-bs-theme="dark"] #card-element {
+        background-color: #2b3035;
+        border-color: #495057;
+    }
+    
+    #card-error {
+        color: #dc3545;
+        font-size: 0.9rem;
+        margin-top: 8px;
+    }
+    
+    .checkout-btn {
+        padding: 12px 30px;
+        font-weight: 600;
+    }
+    
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .secure-badge i {
+        color: #198754;
+        margin-right: 8px;
+    }
+    
+    .payment-form-container {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .summary-feature {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    
+    .summary-feature i {
+        color: #198754;
+        margin-right: 8px;
+    }
+</style>
+
+<!-- Stripe JS -->
+<script src="https://js.stripe.com/v3/"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="checkout-container">
+        <!-- Ödeme Adımları -->
+        <div class="checkout-steps mb-5">
+            <div class="checkout-step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Plan Seçimi</div>
+            </div>
+            <div class="checkout-step active">
+                <div class="step-number">2</div>
+                <div class="step-label">Ödeme</div>
+            </div>
+            <div class="checkout-step">
+                <div class="step-number">3</div>
+                <div class="step-label">Onay</div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Plan Özeti -->
+            <div class="col-md-5 mb-4">
+                <div class="plan-summary">
+                    <h4 class="mb-4">Seçilen Plan: {{ plan.name }}</h4>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div>
+                            <span class="checkout-price">{{ "%.2f"|format(plan.price) }} ₺</span>
+                            <span class="text-muted">/aylık</span>
+                        </div>
+                    </div>
+                    
+                    <p class="mb-4">{{ plan.description }}</p>
+                    
+                    <h5 class="mb-3">Plan Özellikleri</h5>
+                    {% for feature in plan.features %}
+                    <div class="summary-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>{{ feature }}</span>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Aylık Abonelik:</span>
+                            <span>{{ "%.2f"|format(plan.price) }} ₺</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>KDV (%18):</span>
+                            <span>{{ "%.2f"|format(plan.price * 0.18) }} ₺</span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold mt-2 pt-2 border-top">
+                            <span>Toplam:</span>
+                            <span>{{ "%.2f"|format(plan.price * 1.18) }} ₺</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid mt-3">
+                    <a href="{{ url_for('subscription_plans') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Plan Seçimine Dön
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Ödeme Formu -->
+            <div class="col-md-7">
+                <h4 class="mb-4">Ödeme Bilgileri</h4>
+                
+                <div class="payment-form-container">
+                    <form id="payment-form">
+                        <div class="mb-3">
+                            <label for="card-name" class="form-label">Kart Üzerindeki İsim</label>
+                            <input type="text" id="card-name" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="card-element" class="form-label">Kredi/Banka Kartı</label>
+                            <div id="card-element"></div>
+                            <div id="card-error" role="alert"></div>
+                            <small class="text-muted mt-2 d-block">Test kredi kartı numarası: 4242 4242 4242 4242</small>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="agreement" required>
+                            <label class="form-check-label" for="agreement">
+                                <a href="#" class="text-decoration-none">Kullanım Şartları</a> ve 
+                                <a href="#" class="text-decoration-none">Gizlilik Politikasını</a> kabul ediyorum.
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary checkout-btn" id="submit-payment">
+                                <div class="spinner-border spinner-border-sm d-none" id="spinner" role="status">
+                                    <span class="visually-hidden">Yükleniyor...</span>
+                                </div>
+                                <span id="button-text">Ödemeyi Tamamla</span>
+                            </button>
+                        </div>
+                        
+                        <div class="secure-badge mt-3">
+                            <i class="fas fa-lock"></i>
+                            <span>Güvenli ödeme işlemi - Stripe tarafından korunmaktadır</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Stripe API'yi başlat
+        var stripe = Stripe('{{ stripe_public_key }}');
+        var elements = stripe.elements();
+        
+        // Kart elementi oluştur ve stilleri
+        var style = {
+            base: {
+                color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#e9ecef' : '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#adb5bd' : '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a'
+            }
+        };
+        
+        var card = elements.create('card', {style: style});
+        card.mount('#card-element');
+        
+        // Hata yönetimi
+        card.addEventListener('change', function(event) {
+            var displayError = document.getElementById('card-error');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+        
+        // Form gönderim işlemi
+        var form = document.getElementById('payment-form');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Ödeme düğmesini devre dışı bırak ve loading göster
+            document.getElementById('submit-payment').disabled = true;
+            document.getElementById('spinner').classList.remove('d-none');
+            document.getElementById('button-text').innerText = 'İşleniyor...';
+            
+            // Sunucu tarafını çağır ve ödeme niyeti oluştur
+            fetch('{{ url_for("create_payment_intent", plan_id=plan_id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ plan_id: '{{ plan_id }}' })
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                // Ödemeyi tamamla
+                stripe.confirmCardPayment(data.clientSecret, {
+                    payment_method: {
+                        card: card,
+                        billing_details: {
+                            name: document.getElementById('card-name').value
+                        }
+                    }
+                }).then(function(result) {
+                    if (result.error) {
+                        showError(result.error.message);
+                    } else {
+                        // Ödeme başarılı olduysa, onay sayfasına yönlendir
+                        window.location.href = '{{ url_for("subscription_success", plan_id=plan_id) }}';
+                    }
+                });
+            })
+            .catch(function(error) {
+                showError('Bir bağlantı hatası oluştu. Lütfen tekrar deneyin.');
+            });
+        });
+        
+        // Hata mesajını gösterme yardımcı fonksiyonu
+        function showError(errorMessage) {
+            var errorElement = document.getElementById('card-error');
+            errorElement.textContent = errorMessage;
+            document.getElementById('submit-payment').disabled = false;
+            document.getElementById('spinner').classList.add('d-none');
+            document.getElementById('button-text').innerText = 'Ödemeyi Tamamla';
+        }
+        
+        // Tema değiştirme olayını dinle (karanlık/açık mod)
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            setTimeout(function() {
+                // Kart elementini yeniden oluştur
+                card.update({style: {
+                    base: {
+                        color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#e9ecef' : '#32325d',
+                        '::placeholder': {
+                            color: document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#adb5bd' : '#aab7c4'
+                        }
+                    }
+                }});
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

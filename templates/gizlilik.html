@@ -1,0 +1,165 @@
+{% extends "layout.html" %}
+
+{% block title %}Gizlilik Politikası - MediTahlil{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h1 class="h3 mb-0"><i class="fas fa-user-secret me-2"></i>Gizlilik Politikası</h1>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <div class="mb-4">
+                        <p class="lead">
+                            MediTahlil olarak, kullanıcılarımızın gizliliği bizim için büyük önem taşımaktadır. Bu Gizlilik Politikası, hizmetlerimizi kullanırken hangi bilgileri topladığımızı, bu bilgileri nasıl kullandığımızı ve koruduğumuzu açıklamaktadır.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">1. Topladığımız Bilgiler</h2>
+                        <h3 class="h5 mt-3">a) Hesap Bilgileri</h3>
+                        <p>
+                            Kullanıcı hesabı oluşturduğunuzda, adınız, soyadınız, e-posta adresiniz, şifreniz ve isteğe bağlı olarak sağlayabileceğiniz diğer iletişim bilgileriniz gibi kişisel bilgilerinizi toplarız.
+                        </p>
+                        
+                        <h3 class="h5 mt-3">b) Sağlık Bilgileri</h3>
+                        <p>
+                            MediTahlil hizmetlerimizi kullanırken, kan tahlil sonuçlarınız gibi sağlık verilerinizi bizimle paylaşırsınız. Bu veriler, size hizmet sağlamamız ve tahlillerinizi yorumlamamız için kullanılır.
+                        </p>
+                        
+                        <h3 class="h5 mt-3">c) Kullanım Bilgileri</h3>
+                        <p>
+                            Platformumuzu nasıl kullandığınıza dair bilgileri otomatik olarak toplarız. Bu bilgiler arasında, hizmetlerimizi ne sıklıkla kullandığınız, hangi özellikleri kullandığınız, tarayıcı türünüz, IP adresiniz ve diğer tanımlayıcı bilgiler yer alabilir.
+                        </p>
+                        
+                        <h3 class="h5 mt-3">d) Çerezler</h3>
+                        <p>
+                            Platformumuzda gezinirken, geliştirilmiş bir kullanıcı deneyimi sağlamak için çerezler kullanırız. Çerezler hakkında daha fazla bilgi için <a href="{{ url_for('cerez_politikasi') }}">Çerez Politikamızı</a> inceleyebilirsiniz.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">2. Bilgilerinizi Nasıl Kullanıyoruz</h2>
+                        <p>
+                            Topladığımız bilgileri aşağıdaki amaçlarla kullanırız:
+                        </p>
+                        <ul>
+                            <li>Kan tahlil sonuçlarınızı yorumlama ve size sağlık bilgileri sunma</li>
+                            <li>Hesabınızı yönetme ve size hizmetlerimizle ilgili bildirimler gönderme</li>
+                            <li>Hizmetlerimizi geliştirme, özelleştirme ve iyileştirme</li>
+                            <li>Kullanıcı desteği sağlama ve sorularınızı yanıtlama</li>
+                            <li>Platformumuzun güvenliğini sağlama ve dolandırıcılık faaliyetlerini önleme</li>
+                            <li>Yasal yükümlülüklerimizi yerine getirme</li>
+                            <li>Hizmetlerimiz, özelliklerimiz ve güncellemelerimiz hakkında sizinle iletişim kurma</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">3. Bilgi Paylaşımı ve İfşası</h2>
+                        <p>
+                            MediTahlil, kullanıcıların kişisel bilgilerini aşağıdaki durumlar dışında üçüncü kişilerle paylaşmaz:
+                        </p>
+                        <ul>
+                            <li><strong>Hizmet Sağlayıcılar:</strong> Hizmetlerimizi sunmamıza yardımcı olan güvenilir üçüncü taraf hizmet sağlayıcılarla bilgi paylaşabiliriz (örneğin, sunucu barındırma, veri analizi, ödeme işleme).</li>
+                            <li><strong>Yasal Gereklilikler:</strong> Yasal bir yükümlülüğümüz olduğunda, bir mahkeme emri veya yasal sürece uymak veya haklarımızı korumak için bilgi paylaşabiliriz.</li>
+                            <li><strong>İzniniz ile:</strong> Önceden açık izninizi aldığımız diğer durumlarda bilgilerinizi paylaşabiliriz.</li>
+                            <li><strong>İş Transferleri:</strong> Şirket birleşmesi, satın alma veya varlık satışı durumunda, kişisel bilgileriniz aktarılan varlıklar arasında olabilir.</li>
+                        </ul>
+                        <p class="mt-3">
+                            Önemle belirtmek isteriz ki, sağlık verileriniz açık rızanız olmadan üçüncü taraflarla paylaşılmaz ve MediTahlil, kişisel verilerin paylaşımında en yüksek güvenlik standartlarını uygulamaktadır.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">4. Veri Güvenliği</h2>
+                        <p>
+                            MediTahlil, kişisel bilgilerinizin güvenliğini sağlamak için uygun teknik ve organizasyonel önlemleri uygulamaktadır. Bu önlemler arasında şunlar yer almaktadır:
+                        </p>
+                        <ul>
+                            <li>Verilerin şifrelenmesi</li>
+                            <li>Güvenli sunucu ve altyapı</li>
+                            <li>Düzenli güvenlik değerlendirmeleri ve testleri</li>
+                            <li>Çalışanlar için veri güvenliği eğitimi</li>
+                            <li>Verilere erişim kontrolleri</li>
+                        </ul>
+                        <p class="mt-3">
+                            Ancak, internet üzerinden iletilen hiçbir veri yönteminin %100 güvenli olmadığını unutmayın. Her ne kadar kişisel bilgilerinizi korumak için çalışsak da, bilgilerinizin mutlak güvenliğini garanti edemeyiz.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">5. Veri Saklama</h2>
+                        <p>
+                            Kişisel bilgilerinizi, hizmetlerimizi sunmak ve yasal yükümlülüklerimizi yerine getirmek için gerekli olduğu sürece saklarız. Hesabınızı silmek isterseniz, hesabınızı ve kişisel bilgilerinizi sistemlerimizden kaldırma talimatları için <strong>info@meditahlil.com</strong> adresine e-posta gönderebilirsiniz.
+                        </p>
+                        <p class="mt-3">
+                            Yasal gereklilikler nedeniyle, hesabınızı kapattıktan sonra bile bazı bilgilerinizi belirli bir süre saklamamız gerekebilir.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">6. Kullanıcı Hakları</h2>
+                        <p>
+                            Kişisel verilerinizle ilgili olarak aşağıdaki haklara sahipsiniz:
+                        </p>
+                        <ul>
+                            <li>Kişisel verilerinize erişim talep etme</li>
+                            <li>Kişisel verilerinizin düzeltilmesini isteme</li>
+                            <li>Kişisel verilerinizin silinmesini isteme</li>
+                            <li>Verilerinizin işlenmesini sınırlandırma</li>
+                            <li>Veri taşınabilirliği talep etme</li>
+                            <li>Verilerinizin işlenmesine itiraz etme</li>
+                        </ul>
+                        <p class="mt-3">
+                            Bu haklarınızı kullanmak için <strong>info@meditahlil.com</strong> adresine e-posta gönderebilirsiniz. Talebinizi aldıktan sonra en kısa sürede yanıt vereceğiz.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">7. Çocukların Gizliliği</h2>
+                        <p>
+                            Hizmetlerimiz 18 yaş ve üzeri kişilere yöneliktir. Bilerek 18 yaş altı çocuklardan kişisel bilgi toplamayız. Eğer bir ebeveyn veya vasi iseniz ve çocuğunuzun kişisel bilgilerini bizimle paylaştığını düşünüyorsanız, lütfen bizimle iletişime geçin ve bu bilgileri sistemlerimizden silmek için gerekli adımları atacağız.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">8. Üçüncü Taraf Bağlantılar</h2>
+                        <p>
+                            Platformumuz, üçüncü taraf web sitelerine veya hizmetlere bağlantılar içerebilir. Bu üçüncü taraf sitelerin veya hizmetlerin gizlilik uygulamalarından sorumlu değiliz. Bu siteleri ziyaret etmeden veya bu hizmetleri kullanmadan önce gizlilik politikalarını okumanızı öneririz.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">9. Gizlilik Politikası Değişiklikleri</h2>
+                        <p>
+                            MediTahlil, bu Gizlilik Politikasını herhangi bir zamanda güncelleme hakkını saklı tutar. Politikamızda önemli değişiklikler yaptığımızda, platformumuzda bir bildirim yayınlayacağız ve/veya kayıtlı e-posta adresinize bildirim göndereceğiz.
+                        </p>
+                        <p class="mt-3">
+                            Bu politikanın güncel versiyonunu düzenli olarak kontrol etmenizi öneririz. Politikanın güncellenmiş versiyonunu kullanmaya devam etmeniz, değişiklikleri kabul ettiğiniz anlamına gelir.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h4 border-bottom pb-2">10. Bize Ulaşın</h2>
+                        <p>
+                            Bu Gizlilik Politikası hakkında sorularınız, endişeleriniz veya geri bildirimleriniz varsa, lütfen <strong>info@meditahlil.com</strong> adresine e-posta göndererek bizimle iletişime geçin.
+                        </p>
+                    </div>
+
+                    <div class="alert alert-info mb-4">
+                        <p class="mb-0">
+                            MediTahlil'i kullanarak, bu Gizlilik Politikası'nda belirtilen uygulamaları kabul etmiş olursunuz. Eğer bu politikada belirtilen koşulları kabul etmiyorsanız, lütfen hizmetlerimizi kullanmayı bırakın.
+                        </p>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <p class="small text-muted">Son güncelleme tarihi: 20 Mart 2025</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

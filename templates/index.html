@@ -1,0 +1,625 @@
+{% extends "layout.html" %}
+
+{% block title %}Ana Sayfa - MediTahlil{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section Styles */
+    .hero-section {
+        background: linear-gradient(135deg, #0062cc 0%, #0096ff 100%);
+        padding: 3rem 0;
+        position: relative;
+    }
+    
+    .hero-image {
+        max-height: 500px;
+    }
+    
+    /* Tahlil Arama Formu Stilleri */
+    .tahlil-search-form {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-top: -50px;
+        position: relative;
+        z-index: 10;
+    }
+    
+    .tahlil-search-form .nav-link {
+        color: #495057;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin: 0 4px;
+        text-align: center;
+    }
+    
+    .tahlil-search-form .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .tahlil-search-form .nav-link i {
+        display: block;
+        font-size: 24px;
+        margin-bottom: 5px;
+    }
+    
+    /* Hizmet Kutucukları */
+    .service-card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        border: none;
+    }
+    
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    
+    .service-card .card-header {
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .service-card .card-header i {
+        font-size: 48px;
+    }
+    
+    .service-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    
+    /* Preparation Icons */
+    .prep-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #e9f8ff;
+        color: #0d6efd;
+        margin-right: 15px;
+    }
+    
+    .preparation-section {
+        background-color: #f8f9fa;
+        padding: 80px 0;
+    }
+    
+    /* App Download Section */
+    .app-download {
+        background-color: #f8f9fa;
+        padding: 80px 0;
+    }
+    
+    .app-mockup {
+        max-height: 500px;
+    }
+    
+    .app-badge img {
+        height: 40px;
+        margin-right: 10px;
+    }
+    
+    /* Testimonials */
+    .testimonial-card {
+        border-radius: 12px;
+        overflow: hidden;
+        border: none;
+        height: 100%;
+    }
+    
+    .testimonial-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        object-fit: cover;
+    }
+    
+    /* Stats Counter */
+    .stat-counter {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #0d6efd;
+        margin-bottom: 0;
+    }
+
+    /* Convenience Services */
+    .convenience-section {
+        padding: 80px 0;
+    }
+    
+    .service-location-card {
+        border-radius: 12px;
+        border: none;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .service-location-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .blue-box {
+        background-color: #0d6efd;
+        color: white;
+        border-radius: 12px;
+    }
+    
+    /* Trusted By Section */
+    .trusted-by {
+        padding: 40px 0;
+    }
+    
+    .trusted-logo {
+        height: 30px;
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+    }
+    
+    .trusted-logo:hover {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section text-white">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <h1 class="display-4 fw-bold mb-4">KAN TAHLİLLERİNİZİ ANINDA YORUMLAYIN</h1>
+                <p class="lead mb-4">Yapay zeka destekli sağlık asistanımız ile tahlil sonuçlarınızı anlaşılır bir dille yorumlayın, sağlık durumunuzu kontrol altında tutun.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    {% if session.user_id %}
+                    <a href="{{ url_for('analyze') }}" class="btn btn-light btn-lg rounded-pill px-4 fw-semibold">
+                        <i class="fas fa-file-upload me-2"></i>Tahlil Yükle
+                    </a>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                        <i class="fas fa-user me-2"></i>Panelime Git
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg rounded-pill px-4 fw-semibold">
+                        <i class="fas fa-user-plus me-2"></i>Ücretsiz Başla
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                        <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://aticeo.com/wp-content/uploads/2025/04/ChatGPT-Image-16-avr.-2025-17_37_44-768x512.png" alt="MediTahlil" class="img-fluid hero-image rounded-4 shadow" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tahlil Search Form -->
+<div class="container mb-5">
+    <div class="tahlil-search-form">
+        <ul class="nav nav-pills mb-4 justify-content-center" id="tahlilTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="kan-tab" data-bs-toggle="tab" data-bs-target="#kan-pane" type="button" role="tab">
+                    <i class="fas fa-vial"></i>
+                    Kan Tahlili
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="idrar-tab" data-bs-toggle="tab" data-bs-target="#idrar-pane" type="button" role="tab">
+                    <i class="fas fa-prescription-bottle"></i>
+                    İdrar Tahlili
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="check-tab" data-bs-toggle="tab" data-bs-target="#check-pane" type="button" role="tab">
+                    <i class="fas fa-notes-medical"></i>
+                    Check-up
+                </button>
+            </li>
+    
+        </ul>
+        <div class="tab-content" id="tahlilTabContent">
+            <div class="tab-pane fade show active" id="kan-pane" role="tabpanel" tabindex="0">
+                <div class="row align-items-end g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Ne tür tahlil?</label>
+                        <select class="form-select form-select-lg">
+                            <option selected>Hemogram</option>
+                            <option>Biyokimya</option>
+                            <option>Hormon</option>
+                            <option>Vitamin</option>
+                            <option>Tam Kan Sayımı</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Kimin için?</label>
+                        <select class="form-select form-select-lg">
+                            <option selected>Kendim için</option>
+                            <option>Eşim</option>
+                            <option>Çocuğum</option>
+                            <option>Ebeveyn</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{{ url_for('analyze') if session.user_id else url_for('login') }}" class="btn btn-primary btn-lg w-100 rounded-pill">Tahlil Yükle</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="idrar-pane" role="tabpanel" tabindex="0">
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i> İdrar tahlili yorumlama desteği çok yakında hizmetinizde olacak!
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="check-pane" role="tabpanel" tabindex="0">
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i> Check-up yorumlama desteği yakında hizmetinizde olacak!
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="covid-pane" role="tabpanel" tabindex="0">
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i> COVID-19 test sonuçları yorumlama yakında aktif olacak!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Services Section -->
+<div class="container text-center mb-5 mt-5 pt-4">
+    <h2 class="display-6 fw-bold mb-3">SİZE NASIL YARDIMCI OLABİLİRİZ?</h2>
+    <p class="lead text-muted mb-5">MediTahlil ile kan tahlilleriniz artık çok daha anlaşılır.</p>
+    
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-microscope"></i>
+                </div>
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">Kan Tahlili Analizi</h4>
+                    <p class="card-text text-muted mb-3">Kan tahlillerinizi yapay zeka ile analiz eder, sağlık durumunuz hakkında anlaşılır yorumlar sunarız.</p>
+                    <a href="#" class="text-decoration-none d-block stretched-link">Daha fazla bilgi <i class="fas fa-chevron-right small ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-pills"></i>
+                </div>
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">İlaç Etkileşimleri</h4>
+                    <p class="card-text text-muted mb-3">Kullandığınız ilaçların tahlil sonuçlarına nasıl etki ettiğini açıklarız.</p>
+                    <a href="#" class="text-decoration-none d-block stretched-link">Daha fazla bilgi <i class="fas fa-chevron-right small ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">Trend Analizi</h4>
+                    <p class="card-text text-muted mb-3">Geçmiş tahlillerinizle karşılaştırma yaparak değişimleri takip edin.</p>
+                    <a href="#" class="text-decoration-none d-block stretched-link">Daha fazla bilgi <i class="fas fa-chevron-right small ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="service-card card shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <i class="fas fa-laptop-medical"></i>
+                </div>
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">Sağlık Önerileri</h4>
+                    <p class="card-text text-muted mb-3">Tahlil sonuçlarınıza göre kişiselleştirilmiş sağlık tavsiyeleri alın.</p>
+                    <a href="#" class="text-decoration-none d-block stretched-link">Daha fazla bilgi <i class="fas fa-chevron-right small ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preparation Section -->
+<section class="preparation-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <h2 class="display-6 fw-bold mb-4">TAHLİLLER İÇİN HAZIRLANIN</h2>
+                <p class="lead text-muted mb-5">Doğru tahlil sonuçları için uymanız gereken basit adımlar</p>
+                
+                <div class="d-flex mb-4">
+                    <div class="prep-icon">
+                        <i class="fas fa-wine-glass-alt"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">Alkollü İçeceklerden Kaçının</h5>
+                        <p class="text-muted mb-0">Tahlilden 24 saat önce alkol tüketmeyin. Bu sonuçları önemli ölçüde etkiler.</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex mb-4">
+                    <div class="prep-icon">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">Düzenli Egzersiz Yapın</h5>
+                        <p class="text-muted mb-0">Haftalık egzersiz rutininiz genel sağlık göstergelerinizi iyileştirir.</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex mb-4">
+                    <div class="prep-icon">
+                        <i class="fas fa-lungs"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">Sigara İçmeyin</h5>
+                        <p class="text-muted mb-0">Tahlilden 12 saat önce sigara içmekten kaçının.</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex">
+                    <div class="prep-icon">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-2">Yeterince Uyuyun</h5>
+                        <p class="text-muted mb-0">Tahlil öncesi gece en az 7-8 saat uyumaya çalışın.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://vinbrain.net/public/uploads/1blog/ai-cho-cham-soc-suc-khoe/ai-in-healthcare-everything-you-need-to-know-1024x638.png" class="img-fluid rounded-4 shadow" alt="Tahliller İçin Hazırlık" style="max-height: 500px;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Convenience Services Section -->
+<section class="convenience-section">
+    <div class="container">
+        <h2 class="display-6 fw-bold text-center mb-3">KOLAYLAŞTIRILMIŞ HİZMETLER</h2>
+        <p class="lead text-muted text-center mb-5">Size en yakın hizmetleri ve özelleştirilmiş bilgileri sunuyoruz</p>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="service-location-card card blue-box shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="card-title mb-4">Hızlı ve Kolay</h4>
+                        <p class="mb-3">Kan tahlilinizi yükleyin ve 10 saniye içinde sonuçları alın. Hızlı, kolay ve güvenilir.</p>
+                        <a href="{{ url_for('analyze') if session.user_id else url_for('login') }}" class="btn btn-light">Tahlil Yükle</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="service-location-card card shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <h4 class="card-title mb-3 text-primary">Laboratuvar Ortaklıklarımız</h4>
+                        <p class="text-muted mb-3">Anlaşmalı laboratuvarlarımızdan indirimli hizmet alın ve sonuçları otomatik alın.</p>
+                        <a href="#" class="btn btn-outline-primary">Laboratuvarları Gör</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="service-location-card card shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <h4 class="card-title mb-3 text-primary">Uzman Görüşü</h4>
+                        <p class="text-muted mb-3">Tahlil sonuçlarınızı uzman doktorlarımızla paylaşın ve detaylı bilgi alın.</p>
+                        <a href="#" class="btn btn-outline-primary">Uzman Bul</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- App Download Section -->
+<section class="app-download bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <h2 class="display-6 fw-bold mb-4">MOBİL UYGULAMIMIZI İNDİRİN</h2>
+                <p class="lead mb-4">Tahlil sonuçlarınıza her an, her yerden erişim sağlayın. Mobil uygulamamız ile:</p>
+                
+                <ul class="list-unstyled mb-5">
+                    <li class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-primary me-3"></i>
+                        <span>Tahlil sonuçlarınızı fotoğrafını çekerek anında yorumlayın</span>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-primary me-3"></i>
+                        <span>Sağlık geçmişinizi ve tahlil trendlerinizi kolayca takip edin</span>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-primary me-3"></i>
+                        <span>Doktorunuzla tahlil sonuçlarınızı güvenli bir şekilde paylaşın</span>
+                    </li>
+                    <li class="d-flex align-items-center mb-3">
+                        <i class="fas fa-check-circle text-primary me-3"></i>
+                        <span>Kişiselleştirilmiş sağlık önerileri alın</span>
+                    </li>
+                </ul>
+                
+                <div class="d-flex app-badge">
+                    <a href="#" class="me-3">
+                        <img alt="App Store'dan İndir" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg">
+                    </a>
+                    <a href="#">
+                        <img alt="Google Play'den İndir" src="https://play.google.com/intl/en_us/badges/static/images/badges/tr_badge_web_generic.png" height="40">
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://appmaster.io/api/_files/5PHM4K5qfPqPqG7hJchfvn/download/" class="img-fluid app-mockup" alt="MediTahlil Mobil Uygulama">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="container py-5">
+    <h2 class="display-6 fw-bold text-center mb-3">KULLANICILARIMIZIN YORUMLARI</h2>
+    <p class="lead text-muted text-center mb-5">MediTahlil'i kullanan binlerce memnun kullanıcıdan bazıları</p>
+    
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="testimonial-card card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex mb-4">
+                        <div class="me-3">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" class="testimonial-avatar" alt="Laura Smith">
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Leyla Demir</h5>
+                            <div class="text-warning mb-1">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="text-muted small mb-0">İstanbul, Diyetisyen</p>
+                        </div>
+                    </div>
+                    <p class="mb-0">"Hem kendi tahlillerim hem de danışanlarımın tahlilleri için MediTahlil'i kullanıyorum. AI tabanlı yorumlar ve beslenme önerileri işimi çok kolaylaştırıyor. Artık tahlil sonuçlarını manuel yorumlamak için saatler harcamıyorum."</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="testimonial-card card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex mb-4">
+                        <div class="me-3">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" class="testimonial-avatar" alt="John Smith">
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Berat  Yeşbek </h5>
+                            <div class="text-warning mb-1">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <p class="text-muted small mb-0">Ankara, Yazılım Geliştirici</p>
+                        </div>
+                    </div>
+                    <p class="mb-0">"Her üç ayda bir sağlık kontrolü için kan tahlili yaptırıyorum ve sonuçları anlamak için her zaman doktora gitmem gerekiyordu. MediTahlil sayesinde artık sonuçlarımı anlamak için doktor randevusu beklememe gerek kalmadı."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<!-- <section class="bg-primary text-white py-5">
+    <div class="container text-center">
+        <div class="row g-4">
+            <div class="col-6 col-md-3">
+                <p class="stat-counter">25K+</p>
+                <p class="mb-0">Kullanıcı</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="stat-counter">95%</p>
+                <p class="mb-0">Memnuniyet</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="stat-counter">120+</p>
+                <p class="mb-0">Parametre</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="stat-counter">45+</p>
+                <p class="mb-0">Uzman Doktor</p>
+            </div>
+        </div>
+    </div>
+</section> -->
+
+<!-- Trusted By Section -->
+<!-- <section class="trusted-by">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-12 text-center mb-4">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BrandFinance_Turkey_100-logo.svg/320px-BrandFinance_Turkey_100-logo.svg.png" alt="Forbes" class="trusted-logo mx-4 my-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Sabanci_Universitesi_logo.svg/320px-Sabanci_Universitesi_logo.svg.png" alt="Inc" class="trusted-logo mx-4 my-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Logo_of_CNBC.svg/320px-Logo_of_CNBC.svg.png" alt="CNBC" class="trusted-logo mx-4 my-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/TOBB_ETU_Logo.svg/320px-TOBB_ETU_Logo.svg.png" alt="TOBB" class="trusted-logo mx-4 my-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Forbes_logo.svg/320px-Forbes_logo.svg.png" alt="Business Insider" class="trusted-logo mx-4 my-3">
+            </div>
+        </div>
+    </div>
+</section> -->
+
+<!-- Final CTA Section -->
+<div class="hero-section py-5">
+    <div class="container text-center py-4">
+        <h2 class="display-5 fw-bold mb-3">SAĞLIĞINIZI DAHA İYİ ANLAYIN</h2>
+        <p class="lead mb-4">MediTahlil ile kan tahlillerinizi anlamak artık çok kolay. Hemen başlayın!</p>
+        <a href="{{ url_for('register') if not session.user_id else url_for('analyze') }}" class="btn btn-light btn-lg rounded-pill px-5 py-3">
+            <i class="fas fa-{% if session.user_id %}file-upload{% else %}user-plus{% endif %} me-2"></i>
+            {% if session.user_id %}Tahlil Yükle{% else %}Ücretsiz Kayıt Ol{% endif %}
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Tahlil sekmesi seçildiğinde
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sayaç animasyonu
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-counter');
+            const speed = 200;
+            
+            counters.forEach(counter => {
+                const target = parseInt(counter.innerText);
+                const text = counter.innerText;
+                const suffix = text.replace(/[0-9]/g, '');
+                const count = 0;
+                const inc = target / speed;
+                
+                const updateCount = () => {
+                    const c = Math.ceil(count + inc);
+                    if(c < target) {
+                        counter.innerText = c + suffix;
+                        setTimeout(updateCount, 20);
+                    } else {
+                        counter.innerText = text;
+                    }
+                }
+                
+                updateCount();
+            });
+        }
+        
+        // Sayaç animasyonunu başlat
+        animateCounters();
+    });
+</script>
+{% endblock %}

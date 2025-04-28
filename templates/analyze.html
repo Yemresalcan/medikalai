@@ -1,0 +1,226 @@
+{% extends "layout.html" %}
+
+{% block title %}Tahlil Analizi - MediTahlil{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- İpucu kartı -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <i class="fas fa-lightbulb text-warning fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">İpucu</h5>
+                            <p class="mb-0 text-muted">PDF formatındaki kan tahlili sonuçlarınızı yükleyin. Yapay zeka, değerleri analiz ederek yorumlayacak ve önerilerde bulunacaktır.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Üyelik Durumu ve Kalan Hak Bilgisi -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            {% if remaining_analyses > 0 or current_plan == 'premium' or current_plan == 'family' %}
+                            <i class="fas fa-check-circle text-success fa-2x"></i>
+                            {% else %}
+                            <i class="fas fa-exclamation-circle text-danger fa-2x"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Üyelik Durumunuz: <span class="fw-bold">{{ plan_name }}</span></h5>
+                            {% if current_plan == 'premium' or current_plan == 'family' %}
+                                <p class="mb-0">Sınırsız tahlil hakkınız bulunmaktadır.</p>
+                            {% else %}
+                                <p class="mb-0">
+                                    Bu ay kalan tahlil hakkınız: 
+                                    <span class="fw-bold {% if remaining_analyses > 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ remaining_analyses }} / {{ analysis_limit }}
+                                    </span>
+                                </p>
+                                {% if remaining_analyses <= 0 %}
+                                <div class="mt-2">
+                                    <a href="{{ url_for('subscription_plans') }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-arrow-up me-1"></i>Üyeliğimi Yükselt
+                                    </a>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-file-upload me-2"></i>Kan Tahlili Yükle</h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">Laboratuvardan aldığınız kan tahlili sonuç PDF dosyasını yükleyin. Sistemimiz yapay zeka kullanarak sonuçlarınızı anında yorumlayacaktır.</p>
+                    
+                    <!-- Hata Mesajı Alanı -->
+                    <div id="error-container" class="alert alert-danger d-none mb-4" role="alert">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-exclamation-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Hata</h5>
+                                <p class="mb-0 alert-text">Form gönderilirken bir hata oluştu.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data" action="{{ url_for('analyze') }}" id="tahlil-upload-form" class="needs-validation">
+                        <!-- CSRF Token -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        
+                        <div class="mb-4">
+                            <label for="pdf_file" class="form-label">PDF Dosyası</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf" required {% if remaining_analyses <= 0 and current_plan != 'premium' and current_plan != 'family' %}disabled{% endif %}>
+                                <label class="input-group-text" for="pdf_file"><i class="fas fa-file-pdf"></i></label>
+                            </div>
+                            <div class="form-text">Sadece PDF formatında dosyalar kabul edilmektedir. Maksimum dosya boyutu 10MB.</div>
+                            <div class="invalid-feedback">Lütfen bir PDF dosyası seçin.</div>
+                        </div>
+                        
+                        <!-- İlerleme Çubuğu -->
+                        <div id="progress-container" class="mb-4 d-none">
+                            <label class="form-label d-flex justify-content-between">
+                                <span>Yükleniyor...</span>
+                                <span id="progress-text">0%</span>
+                            </label>
+                            <div class="progress">
+                                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                                     role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Analiz Mesajı - Daha detaylı hale getiriyoruz -->
+                        <div id="analyzing-message" class="alert alert-primary d-none mb-4" role="alert">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Yükleniyor...</span>
+                                    </div>
+                                </div>
+                                <div id="analyzing-message-text">
+                                    Tahlil analiz ediliyor, lütfen bekleyin...
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info d-flex" role="alert">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Bilgilendirme</h5>
+                                <p class="mb-0">Yapay zeka analizi, profesyonel tıbbi tavsiye yerine geçmez. Sonuçlarınızı daima sağlık uzmanınızla değerlendirin.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary py-2" id="submit-button" {% if remaining_analyses <= 0 and current_plan != 'premium' and current_plan != 'family' %}disabled{% endif %}>
+                                <i class="fas fa-robot me-2"></i>Analiz Et
+                            </button>
+                            {% if remaining_analyses <= 0 and current_plan != 'premium' and current_plan != 'family' %}
+                            <div class="alert alert-warning mt-2" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Tahlil hakkınız kalmadı. Daha fazla analiz yapabilmek için lütfen üyeliğinizi yükseltin.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Yükleme İpuçları -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Tahlil Yükleme İpuçları</h5>
+                </div>
+                <div class="card-body p-4">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item border-0 ps-0">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="badge bg-primary rounded-circle p-2">1</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Tahlil Sonuçlarınızın PDF Formatında Olduğundan Emin Olun</h6>
+                                    <p class="text-muted mb-0 small">Sistem şu anda sadece PDF formatındaki tahlil sonuçlarını analiz edebilmektedir.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item border-0 ps-0">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="badge bg-primary rounded-circle p-2">2</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Sonuçların Okunaklı Olmasına Dikkat Edin</h6>
+                                    <p class="text-muted mb-0 small">Yüksek kaliteli ve net taranmış PDF'ler, daha doğru analizler sağlar.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item border-0 ps-0">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="badge bg-primary rounded-circle p-2">3</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Gizliliğinize Önem Veriyoruz</h6>
+                                    <p class="text-muted mb-0 small">Tahlil sonuçlarınız güvenli şekilde işlenir ve korunur.</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{{ url_for('dashboard') }}" class="text-decoration-none">
+                    <i class="fas fa-arrow-left me-1"></i>Kullanıcı Paneline Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+    // Dosya türü değişikliğini anlık izleme
+    document.getElementById('pdf_file').addEventListener('change', function() {
+        const fileInput = this;
+        if (fileInput.files && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            
+            // Dosya türü kontrolü
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                fileInput.value = ''; // Seçimi temizle
+                fileInput.classList.add('is-invalid');
+                return;
+            }
+            
+            // Dosya boyutu kontrolü (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                fileInput.value = ''; // Seçimi temizle
+                fileInput.classList.add('is-invalid');
+                document.querySelector('.invalid-feedback').textContent = 'Dosya boyutu 10MB\'dan büyük olamaz.';
+                return;
+            }
+            
+            fileInput.classList.remove('is-invalid');
+            fileInput.classList.add('is-valid');
+        }
+    });
+</script>
+{% endblock %}
