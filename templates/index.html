@@ -391,7 +391,7 @@
                 </div>
             </div>
             <div class="col-lg-6 text-center">
-                <img src="https://vinbrain.net/public/uploads/1blog/ai-cho-cham-soc-suc-khoe/ai-in-healthcare-everything-you-need-to-know-1024x638.png" class="img-fluid rounded-4 shadow" alt="Tahliller İçin Hazırlık" style="max-height: 500px;">
+                <img src="{{ url_for('static', filename='assets/medicalai.webp') }}" class="img-fluid rounded-4 shadow" alt="Tahliller İçin Hazırlık" style="max-height: 500px;">
             </div>
         </div>
     </div>
@@ -402,6 +402,26 @@
     <div class="container">
         <h2 class="display-6 fw-bold text-center mb-3">KOLAYLAŞTIRILMIŞ HİZMETLER</h2>
         <p class="lead text-muted text-center mb-5">Size en yakın hizmetleri ve özelleştirilmiş bilgileri sunuyoruz</p>
+        
+        <!-- Tahlil Yükleme İpuçları Bölümü -->
+        <div class="row align-items-center mb-5 py-4 bg-light rounded-4">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h3 class="fw-bold mb-3 text-primary">Tahlil Yükleme İpuçları</h3>
+                <p class="mb-4">E-Nabız sisteminizden kolayca tahlillerinizi yükleyebilirsiniz:</p>
+                <ol class="mb-4">
+                    <li class="mb-2">E-Nabız hesabınıza giriş yapın</li>
+                    <li class="mb-2"><strong>"Tahlillerim"</strong> bölümüne gidin</li>
+                    <li class="mb-2">İlgili tahlil raporunun yanındaki <strong>"PDF Türkçe"</strong> butonuna tıklayın</li>
+                    <li class="mb-2">İndirdiğiniz tahlil raporunu MediTahlil'e yükleyin</li>
+                </ol>
+                <a href="{{ url_for('analyze') if session.user_id else url_for('login') }}" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-upload me-2"></i>Tahlil Yükle
+                </a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="{{ url_for('static', filename='assets/e-nabiz.png') }}" class="img-fluid rounded-4 shadow" alt="E-nabız Tahlil Yükleme" style="max-height: 350px;">
+            </div>
+        </div>
         
         <div class="row g-4">
             <div class="col-md-4">
@@ -442,35 +462,33 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6 mb-5 mb-lg-0">
-                <h2 class="display-6 fw-bold mb-4">MOBİL UYGULAMIMIZI İNDİRİN</h2>
-                <p class="lead mb-4">Tahlil sonuçlarınıza her an, her yerden erişim sağlayın. Mobil uygulamamız ile:</p>
+                <h2 class="display-6 fw-bold mb-4">MOBİL UYGULAMIMIZ YAKINDA YAYINDA!</h2>
+                <p class="lead mb-4">Tahlil sonuçlarınıza her an, her yerden erişim sağlayacak mobil uygulamamız çok yakında sizlerle. Mobil uygulamamız ile:</p>
                 
                 <ul class="list-unstyled mb-5">
                     <li class="d-flex align-items-center mb-3">
                         <i class="fas fa-check-circle text-primary me-3"></i>
-                        <span>Tahlil sonuçlarınızı fotoğrafını çekerek anında yorumlayın</span>
+                        <span>Tahlil sonuçlarınızı fotoğrafını çekerek anında yorumlayabileceksiniz</span>
                     </li>
                     <li class="d-flex align-items-center mb-3">
                         <i class="fas fa-check-circle text-primary me-3"></i>
-                        <span>Sağlık geçmişinizi ve tahlil trendlerinizi kolayca takip edin</span>
+                        <span>Sağlık geçmişinizi ve tahlil trendlerinizi kolayca takip edebileceksiniz</span>
                     </li>
                     <li class="d-flex align-items-center mb-3">
                         <i class="fas fa-check-circle text-primary me-3"></i>
-                        <span>Doktorunuzla tahlil sonuçlarınızı güvenli bir şekilde paylaşın</span>
+                        <span>Doktorunuzla tahlil sonuçlarınızı güvenli bir şekilde paylaşabileceksiniz</span>
                     </li>
                     <li class="d-flex align-items-center mb-3">
                         <i class="fas fa-check-circle text-primary me-3"></i>
-                        <span>Kişiselleştirilmiş sağlık önerileri alın</span>
+                        <span>Kişiselleştirilmiş sağlık önerileri alabileceksiniz</span>
                     </li>
                 </ul>
                 
-                <div class="d-flex app-badge">
-                    <a href="#" class="me-3">
-                        <img alt="App Store'dan İndir" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg">
-                    </a>
-                    <a href="#">
-                        <img alt="Google Play'den İndir" src="https://play.google.com/intl/en_us/badges/static/images/badges/tr_badge_web_generic.png" height="40">
-                    </a>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-primary btn-lg rounded-pill px-4 me-3">
+                        <i class="fas fa-bell me-2"></i>Çıkınca Haber Ver
+                    </button>
+                    <span class="text-muted">Çok yakında iOS ve Android'de</span>
                 </div>
             </div>
             <div class="col-lg-6 text-center">

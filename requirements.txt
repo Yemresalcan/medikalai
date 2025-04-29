@@ -7,3 +7,5 @@ Flask-WTF
 flask-jwt-extended
 gunicorn
 stripe
+psycopg2-binary
+Flask-SQLAlchemy
