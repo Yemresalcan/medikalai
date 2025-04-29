@@ -27,6 +27,13 @@ app.config['STRIPE_PUBLIC_KEY'] = STRIPE_PUBLIC_KEY
 # CSRF koruması
 csrf = CSRFProtect(app)
 
+# Vercel ortamında CSRF korumasını yapılandır
+if os.environ.get('VERCEL_ENV'):
+    app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # CSRF doğrulamasını geçici olarak devre dışı bırak
+    # veya
+    app.config['WTF_CSRF_TIME_LIMIT'] = None  # CSRF token süre sınırlamasını kaldır
+    app.config['WTF_CSRF_SSL_STRICT'] = False  # SSL gerektirme
+
 # JWT konfigurasyonu
 app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)  # JWT için farklı bir güvenli anahtar
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # Token geçerlilik süresi
@@ -38,6 +45,14 @@ GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemin
 
 # Veritabanı ayarları
 DB_PATH = 'kan_tahlil_app.db'
+
+# Vercel ortamında PostgreSQL bağlantısı için
+if os.environ.get('VERCEL_ENV') or os.environ.get('DATABASE_URL'):
+    # PostgreSQL bağlantısı
+    DB_URL = os.environ.get('DATABASE_URL', '')
+    if DB_URL.startswith("postgres://"):
+        DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
+    DB_PATH = DB_URL
 
 # Abonelik planları
 SUBSCRIPTION_PLANS = {
