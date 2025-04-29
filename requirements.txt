@@ -5,3 +5,5 @@ openai
 bcrypt
 Flask-WTF
 flask-jwt-extended
+gunicorn
+stripe

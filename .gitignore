@@ -25,10 +25,11 @@ instance/
 .webassets-cache
 
 # Veritabanları
-*.db
-*.db-journal
-*.sqlite
-*.sqlite3
+# SQLite dosyalarını çıkardık böylece Git'e dahil edilecekler
+# *.db
+# *.db-journal
+# *.sqlite
+# *.sqlite3
 
 # Virtualenv
 venv/
