@@ -49,7 +49,7 @@ DB_PATH = 'kan_tahlil_app.db'
 # Vercel ortamında PostgreSQL bağlantısı için
 if os.environ.get('VERCEL_ENV') or os.environ.get('DATABASE_URL'):
     # PostgreSQL bağlantısı
-    DB_URL = os.environ.get('DATABASE_URL', '')
+    DB_URL = os.environ.get('DATABASE_URL', 'postgresql://postgres.vadawhtloelyiiibhtsh:tJWr61Nx0StOnbHs@aws-0-eu-central-1.pooler.supabase.com:6543/postgres')
     if DB_URL.startswith("postgres://"):
         DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
     DB_PATH = DB_URL
@@ -90,201 +90,22 @@ SUBSCRIPTION_PLANS = {
     }
 }
 
-def init_db():
-    """Veritabanını ve tabloları oluşturur"""
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    
-    # Veritabanının mevcut olup olmadığını kontrol et
-    c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
-    table_exists = c.fetchone()
-    
-    if not table_exists:
-        # Kullanıcılar tablosu - şifre kolonu için daha fazla alan
-        c.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            is_active BOOLEAN DEFAULT 1,
-            role TEXT DEFAULT 'user',
-            login_count INTEGER DEFAULT 0,
-            subscription_plan TEXT DEFAULT 'free',
-            stripe_customer_id TEXT,
-            subscription_status TEXT DEFAULT 'active',
-            subscription_end_date TIMESTAMP
-        )
-        ''')
-        
-        # Tahlil kayıtları tablosu
-        c.execute('''
-        CREATE TABLE IF NOT EXISTS analyses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            file_name TEXT,
-            analysis_text TEXT,
-            analysis_result TEXT,
-            analysis_json TEXT,
-            analysis_type TEXT DEFAULT 'kan',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-        ''')
-        
-        # Tahlil değerleri tablosu (yeni)
-        c.execute('''
-        CREATE TABLE IF NOT EXISTS test_values (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            analysis_id INTEGER,
-            parameter_name TEXT,
-            value REAL,
-            unit TEXT,
-            ref_min REAL,
-            ref_max REAL,
-            is_normal BOOLEAN,
-            category TEXT,
-            description TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (analysis_id) REFERENCES analyses (id) ON DELETE CASCADE
-        )
-        ''')
-        
-        # Abonelikler tablosu
-        c.execute('''
-        CREATE TABLE IF NOT EXISTS subscriptions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            plan_type TEXT NOT NULL,
-            stripe_subscription_id TEXT,
-            stripe_customer_id TEXT,
-            status TEXT NOT NULL,
-            current_period_start TIMESTAMP,
-            current_period_end TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-        ''')
-        
-        # Faturalar tablosu
-        c.execute('''
-        CREATE TABLE IF NOT EXISTS invoices (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            subscription_id INTEGER,
-            stripe_invoice_id TEXT,
-            amount REAL,
-            currency TEXT DEFAULT 'TRY',
-            status TEXT,
-            invoice_date TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id),
-            FOREIGN KEY (subscription_id) REFERENCES subscriptions (id)
-        )
-        ''')
-        
-        # Kullanım istatistikleri tablosu
-        c.execute('''
-        CREATE TABLE IF NOT EXISTS usage_stats (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            analysis_count INTEGER DEFAULT 0,
-            month INTEGER,
-            year INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-        ''')
+# Veritabanı yardımcı fonksiyonu
+def db_connect():
+    """PostgreSQL veya SQLite veritabanı bağlantısı oluşturur"""
+    if DB_PATH.startswith('postgresql://'):
+        # PostgreSQL bağlantısı
+        import psycopg2
+        import psycopg2.extras
+        conn = psycopg2.connect(DB_PATH)
+        conn.cursor_factory = psycopg2.extras.DictCursor  # dict benzeri sonuçlar döndürmesi için
+        return conn
     else:
-        # Kullanıcı tablosunu güncelle (abonelik alanları ekle)
-        c.execute("PRAGMA table_info(users)")
-        columns = [column[1] for column in c.fetchall()]
-        
-        # Yeni sütunları kontrol et ve ekle
-        if 'subscription_plan' not in columns:
-            c.execute("ALTER TABLE users ADD COLUMN subscription_plan TEXT DEFAULT 'free'")
-        
-        if 'stripe_customer_id' not in columns:
-            c.execute("ALTER TABLE users ADD COLUMN stripe_customer_id TEXT")
-        
-        if 'subscription_status' not in columns:
-            c.execute("ALTER TABLE users ADD COLUMN subscription_status TEXT DEFAULT 'active'")
-        
-        if 'subscription_end_date' not in columns:
-            c.execute("ALTER TABLE users ADD COLUMN subscription_end_date TIMESTAMP")
-        
-        # Abonelikler tablosunu kontrol et ve oluştur
-        c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='subscriptions'")
-        if not c.fetchone():
-            c.execute('''
-            CREATE TABLE subscriptions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                plan_type TEXT NOT NULL,
-                stripe_subscription_id TEXT,
-                stripe_customer_id TEXT,
-                status TEXT NOT NULL,
-                current_period_start TIMESTAMP,
-                current_period_end TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            )
-            ''')
-        
-        # Faturalar tablosunu kontrol et ve oluştur
-        c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='invoices'")
-        if not c.fetchone():
-            c.execute('''
-            CREATE TABLE invoices (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                subscription_id INTEGER,
-                stripe_invoice_id TEXT,
-                amount REAL,
-                currency TEXT DEFAULT 'TRY',
-                status TEXT,
-                invoice_date TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id),
-                FOREIGN KEY (subscription_id) REFERENCES subscriptions (id)
-            )
-            ''')
-        
-        # Kullanım istatistikleri tablosunu kontrol et ve oluştur
-        c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='usage_stats'")
-        if not c.fetchone():
-            c.execute('''
-            CREATE TABLE usage_stats (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                analysis_count INTEGER DEFAULT 0,
-                month INTEGER,
-                year INTEGER,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id)
-            )
-            ''')
+        # SQLite bağlantısı
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        return conn
 
-    # Admin kullanıcısını kontrol et ve ekle
-    c.execute("SELECT * FROM users WHERE username = 'admin'")
-    admin = c.fetchone()
-    
-    if not admin:
-        # Admin kullanıcısını oluştur
-        admin_password = hash_password("admin123")
-        c.execute("INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)", 
-                 ("admin", admin_password, "admin@meditahlil.com", "admin"))
-        print("Admin kullanıcısı oluşturuldu. Kullanıcı adı: admin, Şifre: admin123")
-    
-    conn.commit()
-    conn.close()
-
-# Şifre işlemleri için yardımcı fonksiyonlar
 def hash_password(password):
     """Şifreyi güvenli bir şekilde hash'ler"""
     # Şifreyi önce encode edip byte dizisine dönüştürüyoruz, sonra hash'leyip string olarak saklıyoruz
@@ -304,6 +125,248 @@ def check_password(hashed_password, user_password):
         # Salt hatası durumunda False döndür - güvenlik için
         return False
 
+def init_db():
+    """Veritabanını ve tabloları oluşturur"""
+    if DB_PATH.startswith('postgresql://'):
+        # PostgreSQL bağlantısı kullan
+        try:
+            conn = db_connect()
+            c = conn.cursor()
+            
+            # Kullanıcılar tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(100) UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_active BOOLEAN DEFAULT TRUE,
+                role VARCHAR(20) DEFAULT 'user',
+                login_count INTEGER DEFAULT 0,
+                subscription_plan VARCHAR(50) DEFAULT 'free',
+                stripe_customer_id TEXT,
+                subscription_status VARCHAR(50) DEFAULT 'active',
+                subscription_end_date TIMESTAMP
+            )
+            ''')
+            
+            # Tahlil kayıtları tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS analyses (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                file_name TEXT,
+                analysis_text TEXT,
+                analysis_result TEXT,
+                analysis_json TEXT,
+                analysis_type VARCHAR(50) DEFAULT 'kan',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            
+            # Tahlil değerleri tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS test_values (
+                id SERIAL PRIMARY KEY,
+                analysis_id INTEGER REFERENCES analyses(id) ON DELETE CASCADE,
+                parameter_name TEXT,
+                value REAL,
+                unit TEXT,
+                ref_min REAL,
+                ref_max REAL,
+                is_normal BOOLEAN,
+                category TEXT,
+                description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            
+            # Abonelikler tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                plan_type TEXT NOT NULL,
+                stripe_subscription_id TEXT,
+                stripe_customer_id TEXT,
+                status TEXT NOT NULL,
+                current_period_start TIMESTAMP,
+                current_period_end TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            
+            # Faturalar tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS invoices (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                subscription_id INTEGER REFERENCES subscriptions(id),
+                stripe_invoice_id TEXT,
+                amount REAL,
+                currency TEXT DEFAULT 'TRY',
+                status TEXT,
+                invoice_date TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            
+            # Kullanım istatistikleri tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS usage_stats (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id),
+                analysis_count INTEGER DEFAULT 0,
+                month INTEGER,
+                year INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+            
+            # Admin kullanıcısını kontrol et ve ekle
+            c.execute("SELECT COUNT(*) FROM users WHERE username = 'admin'")
+            admin_count = c.fetchone()[0]
+            
+            if admin_count == 0:
+                # Admin kullanıcısını oluştur
+                admin_password = hash_password("admin123")
+                c.execute("INSERT INTO users (username, password, email, role) VALUES (%s, %s, %s, %s)", 
+                        ("admin", admin_password, "admin@meditahlil.com", "admin"))
+                print("Admin kullanıcısı oluşturuldu. Kullanıcı adı: admin, Şifre: admin123")
+            
+            conn.commit()
+            conn.close()
+            print("PostgreSQL veritabanı başarıyla oluşturuldu.")
+            
+        except Exception as e:
+            print(f"PostgreSQL veritabanı oluşturma hatası: {e}")
+            raise
+    else:
+        # SQLite bağlantısı
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        
+        # Veritabanının mevcut olup olmadığını kontrol et
+        c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+        table_exists = c.fetchone()
+        
+        if not table_exists:
+            # Kullanıcılar tablosu - şifre kolonu için daha fazla alan
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_active BOOLEAN DEFAULT 1,
+                role TEXT DEFAULT 'user',
+                login_count INTEGER DEFAULT 0,
+                subscription_plan TEXT DEFAULT 'free',
+                stripe_customer_id TEXT,
+                subscription_status TEXT DEFAULT 'active',
+                subscription_end_date TIMESTAMP
+            )
+            ''')
+            
+            # Tahlil kayıtları tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS analyses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                file_name TEXT,
+                analysis_text TEXT,
+                analysis_result TEXT,
+                analysis_json TEXT,
+                analysis_type TEXT DEFAULT 'kan',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+            ''')
+            
+            # Tahlil değerleri tablosu (yeni)
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS test_values (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                analysis_id INTEGER,
+                parameter_name TEXT,
+                value REAL,
+                unit TEXT,
+                ref_min REAL,
+                ref_max REAL,
+                is_normal BOOLEAN,
+                category TEXT,
+                description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (analysis_id) REFERENCES analyses (id) ON DELETE CASCADE
+            )
+            ''')
+            
+            # Abonelikler tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                plan_type TEXT NOT NULL,
+                stripe_subscription_id TEXT,
+                stripe_customer_id TEXT,
+                status TEXT NOT NULL,
+                current_period_start TIMESTAMP,
+                current_period_end TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+            ''')
+            
+            # Faturalar tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS invoices (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                subscription_id INTEGER,
+                stripe_invoice_id TEXT,
+                amount REAL,
+                currency TEXT DEFAULT 'TRY',
+                status TEXT,
+                invoice_date TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                FOREIGN KEY (subscription_id) REFERENCES subscriptions (id)
+            )
+            ''')
+            
+            # Kullanım istatistikleri tablosu
+            c.execute('''
+            CREATE TABLE IF NOT EXISTS usage_stats (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                analysis_count INTEGER DEFAULT 0,
+                month INTEGER,
+                year INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+            ''')
+        
+        # Admin kullanıcısını kontrol et ve ekle
+        c.execute("SELECT * FROM users WHERE username = 'admin'")
+        admin = c.fetchone()
+        
+        if not admin:
+            # Admin kullanıcısını oluştur
+            admin_password = hash_password("admin123")
+            c.execute("INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)", 
+                     ("admin", admin_password, "admin@meditahlil.com", "admin"))
+            print("Admin kullanıcısı oluşturuldu. Kullanıcı adı: admin, Şifre: admin123")
+        
+        conn.commit()
+        conn.close()
+
 # Admin gerekli dekoratör
 def admin_required(f):
     @wraps(f)
@@ -313,10 +376,14 @@ def admin_required(f):
             return redirect(url_for('login'))
         
         try:
-            conn = sqlite3.connect(DB_PATH)
-            conn.row_factory = sqlite3.Row
+            conn = db_connect()
             c = conn.cursor()
-            c.execute("SELECT role FROM users WHERE id = ?", (session['user_id'],))
+            
+            if DB_PATH.startswith('postgresql://'):
+                c.execute("SELECT role FROM users WHERE id = %s", (session['user_id'],))
+            else:
+                c.execute("SELECT role FROM users WHERE id = ?", (session['user_id'],))
+                
             user = c.fetchone()
             conn.close()
             
@@ -334,11 +401,16 @@ def admin_required(f):
 
 # Yeni kullanıcı kontrolü
 def is_new_user(user_id):
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = db_connect()
     c = conn.cursor()
-    analysis_count = c.execute('SELECT COUNT(*) FROM analyses WHERE user_id = ?', (user_id,)).fetchone()[0]
-    login_count = c.execute('SELECT login_count FROM users WHERE id = ?', (user_id,)).fetchone()[0]
+    
+    if DB_PATH.startswith('postgresql://'):
+        analysis_count = c.execute('SELECT COUNT(*) FROM analyses WHERE user_id = %s', (user_id,)).fetchone()[0]
+        login_count = c.execute('SELECT login_count FROM users WHERE id = %s', (user_id,)).fetchone()['login_count']
+    else:
+        analysis_count = c.execute('SELECT COUNT(*) FROM analyses WHERE user_id = ?', (user_id,)).fetchone()[0]
+        login_count = c.execute('SELECT login_count FROM users WHERE id = ?', (user_id,)).fetchone()['login_count']
+    
     conn.close()
     
     # Eğer kullanıcı ilk kez giriş yaptıysa veya hiç analizi yoksa yeni kullanıcı olarak kabul et
@@ -346,9 +418,14 @@ def is_new_user(user_id):
 
 # Kullanıcının giriş sayısını arttır
 def increment_login_count(user_id):
-    conn = sqlite3.connect(DB_PATH)
+    conn = db_connect()
     c = conn.cursor()
-    c.execute('UPDATE users SET login_count = login_count + 1 WHERE id = ?', (user_id,))
+    
+    if DB_PATH.startswith('postgresql://'):
+        c.execute('UPDATE users SET login_count = login_count + 1 WHERE id = %s', (user_id,))
+    else:
+        c.execute('UPDATE users SET login_count = login_count + 1 WHERE id = ?', (user_id,))
+    
     conn.commit()
     conn.close()
 
@@ -364,10 +441,14 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
+        conn = db_connect()
         c = conn.cursor()
-        c.execute("SELECT id, username, password, role FROM users WHERE username = ?", (username,))
+        
+        if DB_PATH.startswith('postgresql://'):
+            c.execute("SELECT id, username, password, role FROM users WHERE username = %s", (username,))
+        else:
+            c.execute("SELECT id, username, password, role FROM users WHERE username = ?", (username,))
+            
         user = c.fetchone()
         conn.close()
         
@@ -416,17 +497,34 @@ def register():
         # Şifreyi hashle
         hashed_password = hash_password(password)
         
-        conn = sqlite3.connect(DB_PATH)
+        conn = db_connect()
         c = conn.cursor()
         
         try:
-            c.execute("INSERT INTO users (username, password, email) VALUES (?, ?, ?)", 
-                     (username, hashed_password, email))
+            if DB_PATH.startswith('postgresql://'):
+                c.execute("INSERT INTO users (username, password, email) VALUES (%s, %s, %s)", 
+                        (username, hashed_password, email))
+            else:
+                c.execute("INSERT INTO users (username, password, email) VALUES (?, ?, ?)", 
+                        (username, hashed_password, email))
+            
             conn.commit()
             flash('Kaydınız başarıyla oluşturuldu! Şimdi giriş yapabilirsiniz.', 'success')
             return redirect(url_for('login'))
-        except sqlite3.IntegrityError:
-            flash('Bu kullanıcı adı veya e-posta zaten kullanılıyor!', 'danger')
+        except Exception as e:
+            # PostgreSQL ve SQLite için farklı hata kodları
+            if DB_PATH.startswith('postgresql://'):
+                if 'duplicate key' in str(e).lower():
+                    flash('Bu kullanıcı adı veya e-posta zaten kullanılıyor!', 'danger')
+                else:
+                    flash('Kayıt sırasında bir hata oluştu!', 'danger')
+                    print(f"Kayıt hatası: {e}")
+            else:
+                if isinstance(e, sqlite3.IntegrityError):
+                    flash('Bu kullanıcı adı veya e-posta zaten kullanılıyor!', 'danger')
+                else:
+                    flash('Kayıt sırasında bir hata oluştu!', 'danger')
+                    print(f"Kayıt hatası: {e}")
         finally:
             conn.close()
     
@@ -447,10 +545,14 @@ def dashboard():
         return redirect(url_for('login'))
     
     # Kullanıcının geçmiş analizlerini getir
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = db_connect()
     c = conn.cursor()
-    c.execute("SELECT * FROM analyses WHERE user_id = ? ORDER BY created_at DESC", (session['user_id'],))
+    
+    if DB_PATH.startswith('postgresql://'):
+        c.execute("SELECT * FROM analyses WHERE user_id = %s ORDER BY created_at DESC", (session['user_id'],))
+    else:
+        c.execute("SELECT * FROM analyses WHERE user_id = ? ORDER BY created_at DESC", (session['user_id'],))
+        
     analyses = c.fetchall()
     conn.close()
     
@@ -464,12 +566,15 @@ def analyze():
         return redirect(url_for('login'))
     
     # Kullanıcının üyelik bilgilerini ve bu aydaki analiz sayısını al
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = db_connect()
     c = conn.cursor()
     
     # Kullanıcı bilgilerini al
-    c.execute("SELECT subscription_plan FROM users WHERE id = ?", (session['user_id'],))
+    if DB_PATH.startswith('postgresql://'):
+        c.execute("SELECT subscription_plan FROM users WHERE id = %s", (session['user_id'],))
+    else:
+        c.execute("SELECT subscription_plan FROM users WHERE id = ?", (session['user_id'],))
+        
     user = c.fetchone()
     current_plan = user['subscription_plan'] if user else 'free'
     
@@ -484,13 +589,24 @@ def analyze():
         # Bu aydaki analiz sayısını hesapla
         current_month = datetime.now().month
         current_year = datetime.now().year
-        c.execute("""
-            SELECT COUNT(*) as count FROM analyses 
-            WHERE user_id = ? 
-            AND strftime('%m', created_at) = ? 
-            AND strftime('%Y', created_at) = ?
-        """, (session['user_id'], f"{current_month:02d}", str(current_year)))
-        monthly_count = c.fetchone()['count']
+        
+        if DB_PATH.startswith('postgresql://'):
+            c.execute("""
+                SELECT COUNT(*) as count FROM analyses 
+                WHERE user_id = %s 
+                AND EXTRACT(MONTH FROM created_at) = %s 
+                AND EXTRACT(YEAR FROM created_at) = %s
+            """, (session['user_id'], current_month, current_year))
+            monthly_count = c.fetchone()[0]
+        else:
+            c.execute("""
+                SELECT COUNT(*) as count FROM analyses 
+                WHERE user_id = ? 
+                AND strftime('%m', created_at) = ? 
+                AND strftime('%Y', created_at) = ?
+            """, (session['user_id'], f"{current_month:02d}", str(current_year)))
+            monthly_count = c.fetchone()['count']
+            
         remaining_analyses = max(0, analysis_limit - monthly_count)
     
     conn.close()
@@ -668,18 +784,26 @@ KAN TAHLİLİ RAPORU:
                     print(f"Grup sayısı: {len(analysis_json.get('test_groups', []))}")
                     
                     # Veritabanına kaydet
-                    conn = sqlite3.connect(DB_PATH)
+                    conn = db_connect()
                     c = conn.cursor()
                     
                     # Ana analizi kaydet
-                    c.execute(
-                        """INSERT INTO analyses 
-                           (user_id, file_name, analysis_text, analysis_result, analysis_json, analysis_type) 
-                           VALUES (?, ?, ?, ?, ?, ?)""",
-                        (session['user_id'], file.filename, text[:1000], result_text, json.dumps(analysis_json), 'kan')
-                    )
-                    conn.commit()
-                    analysis_id = c.lastrowid
+                    if DB_PATH.startswith('postgresql://'):
+                        c.execute(
+                            """INSERT INTO analyses 
+                               (user_id, file_name, analysis_text, analysis_result, analysis_json, analysis_type) 
+                               VALUES (%s, %s, %s, %s, %s, %s) RETURNING id""",
+                            (session['user_id'], file.filename, text[:1000], result_text, json.dumps(analysis_json), 'kan')
+                        )
+                        analysis_id = c.fetchone()[0]
+                    else:
+                        c.execute(
+                            """INSERT INTO analyses 
+                               (user_id, file_name, analysis_text, analysis_result, analysis_json, analysis_type) 
+                               VALUES (?, ?, ?, ?, ?, ?)""",
+                            (session['user_id'], file.filename, text[:1000], result_text, json.dumps(analysis_json), 'kan')
+                        )
+                        analysis_id = c.lastrowid
                     
                     # Test değerlerini kaydet
                     for group in analysis_json.get('test_groups', []):
@@ -691,22 +815,40 @@ KAN TAHLİLİ RAPORU:
                                 ref_max = float(param.get('ref_max', 0)) if param.get('ref_max') is not None else None
                                 
                                 # Veritabanına kaydet
-                                c.execute(
-                                    """INSERT INTO test_values 
-                                       (analysis_id, parameter_name, value, unit, ref_min, ref_max, is_normal, category, description) 
-                                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                    (
-                                        analysis_id,
-                                        param.get('name', ''),
-                                        value,
-                                        param.get('unit', ''),
-                                        ref_min,
-                                        ref_max,
-                                        1 if param.get('is_normal', True) else 0,
-                                        group.get('group_name', 'Genel'),
-                                        param.get('comment', '')
+                                if DB_PATH.startswith('postgresql://'):
+                                    c.execute(
+                                        """INSERT INTO test_values 
+                                           (analysis_id, parameter_name, value, unit, ref_min, ref_max, is_normal, category, description) 
+                                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                                        (
+                                            analysis_id,
+                                            param.get('name', ''),
+                                            value,
+                                            param.get('unit', ''),
+                                            ref_min,
+                                            ref_max,
+                                            True if param.get('is_normal', True) else False,
+                                            group.get('group_name', 'Genel'),
+                                            param.get('comment', '')
+                                        )
                                     )
-                                )
+                                else:
+                                    c.execute(
+                                        """INSERT INTO test_values 
+                                           (analysis_id, parameter_name, value, unit, ref_min, ref_max, is_normal, category, description) 
+                                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                                        (
+                                            analysis_id,
+                                            param.get('name', ''),
+                                            value,
+                                            param.get('unit', ''),
+                                            ref_min,
+                                            ref_max,
+                                            1 if param.get('is_normal', True) else 0,
+                                            group.get('group_name', 'Genel'),
+                                            param.get('comment', '')
+                                        )
+                                    )
                             except (ValueError, TypeError) as e:
                                 print(f"Değer dönüştürme hatası: {e} - Parametre: {param.get('name', 'Bilinmeyen')}")
                                 # Hataya rağmen diğer değerleri kaydetmeye devam et
@@ -718,14 +860,23 @@ KAN TAHLİLİ RAPORU:
                     print(f"JSON parse hatası: {e}")
                     print(f"Alınan JSON: {result_clean[:500]}...")
                     # Parse edilemiyorsa, ham metni kaydet
-                    conn = sqlite3.connect(DB_PATH)
+                    conn = db_connect()
                     c = conn.cursor()
-                    c.execute(
-                        "INSERT INTO analyses (user_id, file_name, analysis_text, analysis_result) VALUES (?, ?, ?, ?)",
-                        (session['user_id'], file.filename, text[:1000], result_raw)
-                    )
+                    
+                    if DB_PATH.startswith('postgresql://'):
+                        c.execute(
+                            "INSERT INTO analyses (user_id, file_name, analysis_text, analysis_result) VALUES (%s, %s, %s, %s) RETURNING id",
+                            (session['user_id'], file.filename, text[:1000], result_raw)
+                        )
+                        analysis_id = c.fetchone()[0]
+                    else:
+                        c.execute(
+                            "INSERT INTO analyses (user_id, file_name, analysis_text, analysis_result) VALUES (?, ?, ?, ?)",
+                            (session['user_id'], file.filename, text[:1000], result_raw)
+                        )
+                        analysis_id = c.lastrowid
+                        
                     conn.commit()
-                    analysis_id = c.lastrowid
                     conn.close()
                 
                 # Ajax isteği ise JSON yanıt döndür
@@ -1388,5 +1539,16 @@ def server_error(e):
     return render_template('error.html', error_code=500, error_message="Sunucu hatası"), 500
 
 if __name__ == '__main__':
-    init_db()  # Uygulama başlatıldığında veritabanını oluştur
-    app.run(debug=True)
+    try:
+        # Veritabanı bilgilerini yazdır
+        if DB_PATH.startswith('postgresql://'):
+            print(f"PostgreSQL veritabanı kullanılıyor: {DB_PATH}")
+        else:
+            print(f"SQLite veritabanı kullanılıyor: {DB_PATH}")
+            
+        # Veritabanını başlat
+        init_db()
+        # Uygulamayı çalıştır
+        app.run(debug=True)
+    except Exception as e:
+        print(f"Uygulama başlatma hatası: {e}")
