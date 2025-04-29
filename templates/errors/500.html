@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Sunucu Hatası - 500{% endblock %}
+
+{% block content %}
+<div class="container pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-template">
+                <h1>Ups!</h1>
+                <h2>500 - Sunucu Hatası</h2>
+                <div class="error-details mb-4">
+                    Üzgünüz, sunucuda bir hata oluştu!
+                </div>
+                <div class="error-actions">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home me-2"></i> Ana Sayfa
+                    </a>
+                    <a href="{{ url_for('contact') }}" class="btn btn-outline-secondary btn-lg ms-2">
+                        <i class="fas fa-envelope me-2"></i> İletişim
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

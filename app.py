@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, make_response
 import requests
 import json
 import os
@@ -52,6 +52,16 @@ if os.environ.get('VERCEL_ENV'):
 app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)  # JWT için farklı bir güvenli anahtar
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # Token geçerlilik süresi
 jwt = JWTManager(app)
+
+# Her cevaptan sonra çalışacak fonksiyon
+@app.after_request
+def after_request(response):
+    # Vercel ortamında oturum sorunlarını çözmek için
+    if 'user_id' in session:
+        # Session'ı aktif tut
+        expires = datetime.now() + timedelta(days=7)
+        response.set_cookie('session_active', '1', expires=expires, httponly=True, secure=True, samesite='Lax')
+    return response
 
 # Gemini API anahtarı ve endpoint
 GEMINI_API_KEY = "AIzaSyCE8YbG-RnskAL51MmzAKthVme7l-ZEaRs"  # Gerçek API anahtarınızla değiştirin
@@ -480,22 +490,26 @@ def login():
             # JWT token oluştur
             access_token = create_access_token(identity=user['id'])
             
+            # Session'ı kalıcı yap
+            session.permanent = True
+            
             # Session'a kullanıcı bilgilerini kaydet
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['role'] = user['role']
             session['jwt_token'] = access_token
+            session['login_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             # Kullanıcının giriş sayısını artır
             increment_login_count(user['id'])
             
-            flash('Başarıyla giriş yaptınız!', 'success')
+            # Tarayıcıda session'ı zorla kaydet
+            response = make_response(redirect(url_for('dashboard' if user['role'] != 'admin' else 'admin_dashboard')))
+            expires = datetime.now() + timedelta(days=7)
+            response.set_cookie('session_active', '1', expires=expires, httponly=True, secure=True)
             
-            # Admin kullanıcısı ise admin paneline yönlendir
-            if user['role'] == 'admin':
-                return redirect(url_for('admin_dashboard'))
-            else:
-                return redirect(url_for('dashboard'))
+            flash('Başarıyla giriş yaptınız!', 'success')
+            return response
         else:
             flash('Kullanıcı adı veya şifre hatalı!', 'danger')
     
@@ -557,9 +571,15 @@ def register():
 @app.route('/logout')
 def logout():
     """Kullanıcı çıkışı"""
+    # Session'ı temizle
     session.clear()
+    
+    # Cookie'yi sil
+    response = make_response(redirect(url_for('index')))
+    response.set_cookie('session_active', '', expires=0)
+    
     flash('Çıkış yaptınız!', 'info')
-    return redirect(url_for('index'))
+    return response
 
 @app.route('/dashboard')
 def dashboard():
@@ -568,19 +588,41 @@ def dashboard():
         flash('Bu sayfayı görüntülemek için giriş yapmalısınız!', 'warning')
         return redirect(url_for('login'))
     
-    # Kullanıcının geçmiş analizlerini getir
-    conn = db_connect()
-    c = conn.cursor()
-    
-    if DB_PATH.startswith('postgresql://'):
-        c.execute("SELECT * FROM analyses WHERE user_id = %s ORDER BY created_at DESC", (session['user_id'],))
-    else:
-        c.execute("SELECT * FROM analyses WHERE user_id = ? ORDER BY created_at DESC", (session['user_id'],))
+    # Session doğrulaması
+    try:
+        user_id = session.get('user_id')
         
-    analyses = c.fetchall()
-    conn.close()
+        # Kullanıcıyı kontrol et
+        conn = db_connect()
+        c = conn.cursor()
+        
+        if DB_PATH.startswith('postgresql://'):
+            c.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+        else:
+            c.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+            
+        user = c.fetchone()
+        
+        if not user:
+            session.clear()
+            flash('Oturumunuz geçersiz görünüyor. Lütfen tekrar giriş yapın.', 'warning')
+            return redirect(url_for('login'))
     
-    return render_template('dashboard.html', analyses=analyses)
+        # Kullanıcının geçmiş analizlerini getir
+        if DB_PATH.startswith('postgresql://'):
+            c.execute("SELECT * FROM analyses WHERE user_id = %s ORDER BY created_at DESC", (session['user_id'],))
+        else:
+            c.execute("SELECT * FROM analyses WHERE user_id = ? ORDER BY created_at DESC", (session['user_id'],))
+            
+        analyses = c.fetchall()
+        conn.close()
+        
+        return render_template('dashboard.html', analyses=analyses, user=user)
+    except Exception as e:
+        print(f"Dashboard hatası: {str(e)}")
+        flash('Bir hata oluştu. Lütfen tekrar giriş yapın.', 'danger')
+        session.clear()
+        return redirect(url_for('login'))
 
 @app.route('/analyze', methods=['GET', 'POST'])
 def analyze():
@@ -1573,6 +1615,23 @@ def page_not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     return render_template('error.html', error_code=500, error_message="Sunucu hatası"), 500
+
+@app.errorhandler(403)
+def forbidden_error(e):
+    return render_template('error.html', error_code=403, error_message="Erişim reddedildi"), 403
+
+@app.errorhandler(401)
+def unauthorized_error(e):
+    flash('Bu sayfayı görüntülemek için giriş yapmalısınız!', 'warning')
+    return redirect(url_for('login')), 401
+
+@app.errorhandler(400)
+def bad_request_error(e):
+    return render_template('error.html', error_code=400, error_message="Hatalı istek"), 400
+
+@app.errorhandler(413)
+def payload_too_large(e):
+    return render_template('error.html', error_code=413, error_message="Dosya boyutu çok büyük. Maksimum 10MB izin verilmektedir."), 413
 
 # Vercel environment için veritabanını oluştur
 if os.environ.get('VERCEL_ENV'):
