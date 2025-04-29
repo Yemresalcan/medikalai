@@ -18,6 +18,20 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB limit
 app.secret_key = secrets.token_hex(16)  # Güvenli rastgele anahtar
 
+# Session ayarlarını düzenle
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+app.config['SESSION_TYPE'] = 'filesystem'
+
+# Vercel için session yapılandırması
+if os.environ.get('VERCEL_ENV'):
+    # Vercel'de session cookie ayarları
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_PATH'] = '/'
+    app.config['SESSION_COOKIE_DOMAIN'] = None
+
 # Stripe yapılandırması
 STRIPE_API_KEY = "sk_test_51XXXXXXXXXXXXXXXXXXXXXX"  # Test API anahtarı - gerçek anahtarla değiştirin
 STRIPE_PUBLIC_KEY = "pk_test_51XXXXXXXXXXXXXXXXXXXXXX"  # Test Public API anahtarı
