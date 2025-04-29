@@ -133,116 +133,126 @@ def init_db():
             conn = db_connect()
             c = conn.cursor()
             
-            # Kullanıcılar tablosu
-            c.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(100) UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                email VARCHAR(255) UNIQUE NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                is_active BOOLEAN DEFAULT TRUE,
-                role VARCHAR(20) DEFAULT 'user',
-                login_count INTEGER DEFAULT 0,
-                subscription_plan VARCHAR(50) DEFAULT 'free',
-                stripe_customer_id TEXT,
-                subscription_status VARCHAR(50) DEFAULT 'active',
-                subscription_end_date TIMESTAMP
-            )
-            ''')
+            # Önce kullanıcılar tablosunu kontrol et
+            c.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'public' AND table_name = 'users'
+            );
+            """)
+            table_exists = c.fetchone()[0]
             
-            # Tahlil kayıtları tablosu
-            c.execute('''
-            CREATE TABLE IF NOT EXISTS analyses (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES users(id),
-                file_name TEXT,
-                analysis_text TEXT,
-                analysis_result TEXT,
-                analysis_json TEXT,
-                analysis_type VARCHAR(50) DEFAULT 'kan',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            ''')
-            
-            # Tahlil değerleri tablosu
-            c.execute('''
-            CREATE TABLE IF NOT EXISTS test_values (
-                id SERIAL PRIMARY KEY,
-                analysis_id INTEGER REFERENCES analyses(id) ON DELETE CASCADE,
-                parameter_name TEXT,
-                value REAL,
-                unit TEXT,
-                ref_min REAL,
-                ref_max REAL,
-                is_normal BOOLEAN,
-                category TEXT,
-                description TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            ''')
-            
-            # Abonelikler tablosu
-            c.execute('''
-            CREATE TABLE IF NOT EXISTS subscriptions (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES users(id),
-                plan_type TEXT NOT NULL,
-                stripe_subscription_id TEXT,
-                stripe_customer_id TEXT,
-                status TEXT NOT NULL,
-                current_period_start TIMESTAMP,
-                current_period_end TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            ''')
-            
-            # Faturalar tablosu
-            c.execute('''
-            CREATE TABLE IF NOT EXISTS invoices (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES users(id),
-                subscription_id INTEGER REFERENCES subscriptions(id),
-                stripe_invoice_id TEXT,
-                amount REAL,
-                currency TEXT DEFAULT 'TRY',
-                status TEXT,
-                invoice_date TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            ''')
-            
-            # Kullanım istatistikleri tablosu
-            c.execute('''
-            CREATE TABLE IF NOT EXISTS usage_stats (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES users(id),
-                analysis_count INTEGER DEFAULT 0,
-                month INTEGER,
-                year INTEGER,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            ''')
-            
-            # Admin kullanıcısını kontrol et ve ekle
-            c.execute("SELECT COUNT(*) FROM users WHERE username = 'admin'")
-            admin_count = c.fetchone()[0]
-            
-            if admin_count == 0:
+            if not table_exists:
+                print("PostgreSQL veritabanında tablolar oluşturuluyor...")
+                
+                # Kullanıcılar tablosu
+                c.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    username VARCHAR(100) UNIQUE NOT NULL,
+                    password TEXT NOT NULL,
+                    email VARCHAR(255) UNIQUE NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    is_active BOOLEAN DEFAULT TRUE,
+                    role VARCHAR(20) DEFAULT 'user',
+                    login_count INTEGER DEFAULT 0,
+                    subscription_plan VARCHAR(50) DEFAULT 'free',
+                    stripe_customer_id TEXT,
+                    subscription_status VARCHAR(50) DEFAULT 'active',
+                    subscription_end_date TIMESTAMP
+                )
+                ''')
+                
+                # Tahlil kayıtları tablosu
+                c.execute('''
+                CREATE TABLE IF NOT EXISTS analyses (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id),
+                    file_name TEXT,
+                    analysis_text TEXT,
+                    analysis_result TEXT,
+                    analysis_json TEXT,
+                    analysis_type VARCHAR(50) DEFAULT 'kan',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                ''')
+                
+                # Tahlil değerleri tablosu
+                c.execute('''
+                CREATE TABLE IF NOT EXISTS test_values (
+                    id SERIAL PRIMARY KEY,
+                    analysis_id INTEGER REFERENCES analyses(id) ON DELETE CASCADE,
+                    parameter_name TEXT,
+                    value REAL,
+                    unit TEXT,
+                    ref_min REAL,
+                    ref_max REAL,
+                    is_normal BOOLEAN,
+                    category TEXT,
+                    description TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                ''')
+                
+                # Abonelikler tablosu
+                c.execute('''
+                CREATE TABLE IF NOT EXISTS subscriptions (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id),
+                    plan_type TEXT NOT NULL,
+                    stripe_subscription_id TEXT,
+                    stripe_customer_id TEXT,
+                    status TEXT NOT NULL,
+                    current_period_start TIMESTAMP,
+                    current_period_end TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                ''')
+                
+                # Faturalar tablosu
+                c.execute('''
+                CREATE TABLE IF NOT EXISTS invoices (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id),
+                    subscription_id INTEGER REFERENCES subscriptions(id),
+                    stripe_invoice_id TEXT,
+                    amount REAL,
+                    currency TEXT DEFAULT 'TRY',
+                    status TEXT,
+                    invoice_date TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                ''')
+                
+                # Kullanım istatistikleri tablosu
+                c.execute('''
+                CREATE TABLE IF NOT EXISTS usage_stats (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id),
+                    analysis_count INTEGER DEFAULT 0,
+                    month INTEGER,
+                    year INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                ''')
+                
+                conn.commit()
+                
                 # Admin kullanıcısını oluştur
                 admin_password = hash_password("admin123")
                 c.execute("INSERT INTO users (username, password, email, role) VALUES (%s, %s, %s, %s)", 
                         ("admin", admin_password, "admin@meditahlil.com", "admin"))
-                print("Admin kullanıcısı oluşturuldu. Kullanıcı adı: admin, Şifre: admin123")
+                conn.commit()
+                print("PostgreSQL tabloları ve admin kullanıcısı oluşturuldu.")
+            else:
+                print("PostgreSQL tabloları zaten mevcut.")
             
-            conn.commit()
             conn.close()
-            print("PostgreSQL veritabanı başarıyla oluşturuldu.")
             
         except Exception as e:
-            print(f"PostgreSQL veritabanı oluşturma hatası: {e}")
+            print(f"PostgreSQL veritabanı oluşturma hatası: {str(e)}")
             raise
     else:
         # SQLite bağlantısı
@@ -1524,6 +1534,18 @@ def cerez_politikasi():
     """Çerez Politikası sayfasını görüntüle"""
     return render_template('cerez_politikasi.html')
 
+@app.route('/init-db')
+def initialize_database():
+    """Veritabanını başlat (geliştirme için)"""
+    if os.environ.get('VERCEL_ENV') or request.headers.get('X-Vercel-Deployment-Url'):
+        try:
+            init_db()
+            return jsonify({"success": True, "message": "Veritabanı tabloları başarıyla oluşturuldu."})
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+    else:
+        return jsonify({"success": False, "message": "Bu route sadece Vercel ortamında kullanılabilir."}), 403
+
 # CSRF hata yönetimi
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
@@ -1537,6 +1559,15 @@ def page_not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     return render_template('error.html', error_code=500, error_message="Sunucu hatası"), 500
+
+# Vercel environment için veritabanını oluştur
+if os.environ.get('VERCEL_ENV'):
+    try:
+        print("Vercel ortamında çalışıyor, veritabanı tabloları oluşturuluyor...")
+        init_db()
+        print("Veritabanı tabloları başarıyla oluşturuldu.")
+    except Exception as e:
+        print(f"Vercel veritabanı başlatma hatası: {str(e)}")
 
 if __name__ == '__main__':
     try:
