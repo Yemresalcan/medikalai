@@ -1,0 +1,21 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Volume dizini
+RUN mkdir -p /data
+ENV DB_PATH=/data/kan_tahlil_app.db
+
+# Port ve host
+ENV PORT=8080
+ENV HOST=0.0.0.0
+
+EXPOSE 8080
+
+# Uygulama başlat
+CMD python -c 'from app import init_db; init_db()' && gunicorn app:app --bind 0.0.0.0:8080 
