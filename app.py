@@ -37,7 +37,7 @@ GEMINI_API_KEY = "AIzaSyCE8YbG-RnskAL51MmzAKthVme7l-ZEaRs"  # Gerçek API anahta
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
 # Veritabanı ayarları
-DB_PATH = 'kan_tahlil_app.db'
+DB_PATH = os.environ.get('DB_PATH', 'kan_tahlil_app.db')
 
 # Abonelik planları
 SUBSCRIPTION_PLANS = {
@@ -1373,5 +1373,5 @@ def server_error(e):
     return render_template('error.html', error_code=500, error_message="Sunucu hatası"), 500
 
 if __name__ == '__main__':
-    init_db()  # Uygulama başlatıldığında veritabanını oluştur
-    app.run(debug=True)
+    init_db()
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=False)

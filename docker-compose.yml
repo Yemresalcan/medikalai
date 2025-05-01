@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  medikalai:
+    build: .
+    container_name: medikalai
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - medikalai_data:/data
+    environment:
+      - PORT=8080
+      - HOST=0.0.0.0
+      # Stripe ve Gemini API anahtarlarınızı buraya ekleyin
+      - STRIPE_API_KEY=${STRIPE_API_KEY:-sk_test_51XXXXXXXXXXXXXXXXXXXXXX}
+      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY:-pk_test_51XXXXXXXXXXXXXXXXXXXXXX}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-AIzaSyCE8YbG-RnskAL51MmzAKthVme7l-ZEaRs}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  medikalai_data:
+    name: medikalai_data 
