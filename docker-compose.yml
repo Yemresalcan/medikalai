@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   medikalai:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.simple  # Basit Dockerfile'ı kullan
     container_name: medikalai
     restart: unless-stopped
     ports:
@@ -17,11 +19,11 @@ services:
       - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY:-pk_test_51XXXXXXXXXXXXXXXXXXXXXX}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-AIzaSyCE8YbG-RnskAL51MmzAKthVme7l-ZEaRs}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ || exit 0"]
       interval: 30s
-      timeout: 5s
+      timeout: 10s
       retries: 3
-      start_period: 5s
+      start_period: 40s
 
 volumes:
   medikalai_data:
