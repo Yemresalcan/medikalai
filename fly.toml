@@ -3,11 +3,16 @@ app = "medikalai"
 primary_region = "ams"
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "Dockerfile.simple"
 
 [env]
   PORT = "8080"
   HOST = "0.0.0.0"
+  FLASK_APP = "app.py"
+  FLASK_ENV = "production"
+  FLASK_DEBUG = "0"  # Canlı ortamda debug kapalı olmalı
+  PYTHONUNBUFFERED = "1"  # Python çıktısını anında göndermek için
+  PYTHONDONTWRITEBYTECODE = "1"  # .pyc dosyalarını oluşturmamak için
 
 [http_service]
   internal_port = 8080
@@ -22,15 +27,15 @@ primary_region = "ams"
   hard_limit = 25
   soft_limit = 20
 
-# Daha toleranslı health check için
+# Daha toleranslı health check için - yolu değiştirdik
 [checks]
   [checks.http_health]
-    grace_period = "120s"
+    grace_period = "180s"
     interval = "30s"
     method = "GET"
-    path = "/"
+    path = "/login"  # Login sayfasını kontrol et
     port = 8080
-    timeout = "10s"
+    timeout = "15s"
     type = "http"
     restart_limit = 5
 

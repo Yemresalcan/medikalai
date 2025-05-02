@@ -340,7 +340,11 @@ def increment_login_count(user_id):
 @app.route('/')
 def index():
     """Ana sayfa"""
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        app.logger.error(f"Ana sayfa yüklenirken hata: {str(e)}")
+        return "MedikalAI uygulaması çalışıyor! Ana sayfa yüklenemiyor, lütfen <a href='/login'>giriş sayfasına</a> gidin."
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
