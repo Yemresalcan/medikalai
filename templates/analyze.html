@@ -2,6 +2,41 @@
 
 {% block title %}Tahlil Analizi - MediTahlil{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Karanlık tema için özel stillendirmeler */
+    [data-bs-theme="dark"] .card-body h5,
+    [data-bs-theme="dark"] .card-body h6,
+    [data-bs-theme="dark"] .card-body p,
+    [data-bs-theme="dark"] .card-header h4,
+    [data-bs-theme="dark"] .card-header h5 {
+        color: #ffffff;
+    }
+    
+    [data-bs-theme="dark"] .text-muted {
+        color: #e0e0e0 !important;
+    }
+    
+    [data-bs-theme="dark"] .form-text {
+        color: #cccccc;
+    }
+    
+    [data-bs-theme="dark"] .list-group-item {
+        background-color: #2b3035;
+        color: #ffffff;
+        border-color: #495057;
+    }
+    
+    [data-bs-theme="dark"] a {
+        color: #90caf9;
+    }
+    
+    [data-bs-theme="dark"] a:hover {
+        color: #bbdefb;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">

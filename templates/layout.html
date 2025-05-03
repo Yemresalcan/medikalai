@@ -101,7 +101,7 @@
             justify-content: center;
             box-shadow: 0 3px 6px rgba(0,0,0,0.1);
             margin-right: 8px;
-            color: #0d6efd;
+            color:rgb(253, 13, 65);
             font-size: 16px;
         }
         
@@ -175,33 +175,58 @@
         /* Koyu tema için özelleştirmeler */
         [data-bs-theme="dark"] {
             --bs-body-bg: #121212;
-            --bs-body-color: #e9ecef;
+            --bs-body-color: #ffffff;
         }
         
         [data-bs-theme="dark"] .card {
             background-color: #2b3035;
             border-color: #495057;
+            color: #ffffff;
         }
         
         [data-bs-theme="dark"] .card-header {
             background-color: rgba(0, 0, 0, 0.15) !important;
             border-color: #495057;
+            color: #ffffff;
         }
         
         [data-bs-theme="dark"] .bg-white {
             background-color: #2b3035 !important;
+            color: #ffffff !important;
         }
         
         [data-bs-theme="dark"] .text-muted {
-            color: #adb5bd !important;
+            color: #e0e0e0 !important;
         }
         
         [data-bs-theme="dark"] .bg-light {
             background-color: #343a40 !important;
+            color: #ffffff;
+        }
+        
+        [data-bs-theme="dark"] .footer.bg-light {
+            background-color: #343a40 !important;
+            color: #ffffff;
+        }
+        
+        [data-bs-theme="dark"] .footer.bg-light h5,
+        [data-bs-theme="dark"] .footer.bg-light p,
+        [data-bs-theme="dark"] .footer.bg-light li,
+        [data-bs-theme="dark"] .footer.bg-light a:not(.btn),
+        [data-bs-theme="dark"] .footer.bg-light span {
+            color: #ffffff;
+        }
+        
+        [data-bs-theme="dark"] .footer.bg-light a.text-decoration-none {
+            color: #90caf9;
+        }
+        
+        [data-bs-theme="dark"] .footer.bg-light a.text-decoration-none:hover {
+            color: #bbdefb;
         }
         
         [data-bs-theme="dark"] .table {
-            color: #e9ecef;
+            color: #ffffff;
         }
         
         [data-bs-theme="dark"] .border {
@@ -210,17 +235,18 @@
         
         [data-bs-theme="dark"] .navbar-light {
             background-color: #343a40 !important;
+            color: #ffffff;
         }
         
         [data-bs-theme="dark"] .form-control {
             background-color: #2b3035;
             border-color: #495057;
-            color: #e9ecef;
+            color: #ffffff;
         }
         
         [data-bs-theme="dark"] .form-control:focus {
             background-color: #2b3035;
-            color: #e9ecef;
+            color: #ffffff;
         }
         
         [data-bs-theme="dark"] a:not(.btn) {
@@ -233,11 +259,61 @@
         }
         
         [data-bs-theme="dark"] .dropdown-item {
-            color: #e9ecef;
+            color: #ffffff;
         }
         
         [data-bs-theme="dark"] .dropdown-item:hover {
             background-color: #495057;
+            color: #ffffff;
+        }
+        
+        [data-bs-theme="dark"] p,
+        [data-bs-theme="dark"] h1,
+        [data-bs-theme="dark"] h2,
+        [data-bs-theme="dark"] h3,
+        [data-bs-theme="dark"] h4,
+        [data-bs-theme="dark"] h5,
+        [data-bs-theme="dark"] h6,
+        [data-bs-theme="dark"] span,
+        [data-bs-theme="dark"] label,
+        [data-bs-theme="dark"] small,
+        [data-bs-theme="dark"] strong,
+        [data-bs-theme="dark"] div {
+            color: #ffffff;
+        }
+        
+        [data-bs-theme="dark"] .modal-content {
+            background-color: #2b3035;
+            color: #ffffff;
+        }
+        
+        [data-bs-theme="dark"] .modal-header,
+        [data-bs-theme="dark"] .modal-footer {
+            border-color: #495057;
+        }
+        
+        [data-bs-theme="dark"] .list-group-item {
+            background-color: #2b3035;
+            color: #ffffff;
+            border-color: #495057;
+        }
+        
+        [data-bs-theme="dark"] .text-dark {
+            color: #ffffff !important;
+        }
+        
+        [data-bs-theme="dark"] .text-body {
+            color: #ffffff !important;
+        }
+        
+        /* Koyu temada footer yasal uyarı bölümü */
+        [data-bs-theme="dark"] .bg-light.rounded-3 {
+            background-color: #2b3035 !important;
+            color: #ffffff !important;
+        }
+        
+        [data-bs-theme="dark"] .bg-light.rounded-3 .text-muted {
+            color: #e0e0e0 !important;
         }
         
         /* Toast container */
@@ -246,19 +322,6 @@
             bottom: 20px;
             right: 20px;
             z-index: 1050;
-        }
-        
-        /* İpuçları stilleri */
-        .contextual-tip {
-            margin-bottom: 1rem;
-            border-left: 4px solid #0d6efd;
-            padding: 0.75rem 1rem;
-            background-color: rgba(13, 110, 253, 0.1);
-            border-radius: 0 4px 4px 0;
-        }
-        
-        [data-bs-theme="dark"] .contextual-tip {
-            background-color: rgba(13, 110, 253, 0.2);
         }
         
         /* İlerleme çubuğu stil iyileştirmeleri */
@@ -650,7 +713,11 @@
                         <li class="mb-2"><i class="fas fa-envelope me-2"></i>info@meditahlil.com</li>
                         <li class="mb-2"><i class="fas fa-phone me-2"></i>+90 539 394 90 35</li>
                         <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>Kepez, Antalya</li>
-                        <li class="mb-2"><i class="fas fa-building me-2"></i>Sundev Teknoloji A.Ş.</li>
+                        <li class="mb-2">
+                            <a href="https://www.linkedin.com/in/yunusemresalcan/" class="text-decoration-none" tabindex="0" aria-label="Yunus Emre Salcan ile iletişime geç">
+                                <i class="fas fa-user me-2"></i>Yunus Emre Salcan
+                            </a>
+                        </li>
                     </ul>
                     <a href="{{ url_for('index') }}#iletisim" class="btn btn-outline-primary btn-sm mt-2">
                         <i class="fas fa-paper-plane me-1"></i>Bize Ulaşın

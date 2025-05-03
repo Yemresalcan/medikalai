@@ -512,48 +512,83 @@ def analyze():
             return redirect(url_for('analyze'))
         
         # Prompt'u yapılandırılmış veri alacak şekilde iyileştiriyoruz
-        prompt = f"""Bir doktor gibi aşağıdaki kan tahlili raporunu Türkçe olarak yorumla ve JSON formatında yapılandırılmış bir çıktı oluştur.
+        prompt = f"""Bir doktor gibi aşağıdaki kan tahlili raporunu hastanın anlaması için sade bir Türkçe dille tıbbi terimleri açıklayarak yorumla ve JSON formatında yapılandırılmış bir çıktı oluştur.
         
 Lütfen şunları yap:
 
 1. Tüm önemli değerleri ve referans aralıklarını analiz et
-2. Normal dışı değerleri belirle ve yorumla
-3. Değerlerle ilgili kısa, anlaşılır yorumlar yap
-4. Bulgulara dayalı öneriler sun
+2. Normal dışı değerleri belirle ve hastanın anlayacağı tıbbi terimlerin açıklamaları ile yorumla
+3. Değerlere bakarak muhtemel sağlık durumları veya olası hastalık belirtilerinden bahset
+4. Bulgulara dayalı öneriler sun ve hangi branştan doktora danışılması gerektiğini belirt
 5. Değerleri gruplandır (örn: hematoloji, biyokimya, vb.)
-6. Yanıt aşağıdaki JSON formatında olmalı:
+6. Yaşam tarzı, beslenme önerileri ve ek tetkik önerileri ekle
+7. Yanıt aşağıdaki JSON formatında olmalı:
 
 ```json
-{{
-  "summary": "Genel değerlendirme metni",
+{{{{
+  "summary": "Genel değerlendirme metni - hastanın anlayacağı dille yazılmış olmalı",
   "abnormal_count": 3, // Normal dışı değer sayısı
   "test_groups": [
-    {{
+    {{{{
       "group_name": "Hematoloji",
+      "group_description": "Kan hücrelerinin sayısı ve yapısını ölçen testler",
       "parameters": [
-        {{
+        {{{{
           "name": "Hemoglobin",
           "value": 14.2,
           "unit": "g/dL",
           "ref_min": 13.5,
           "ref_max": 17.5,
           "is_normal": true,
-          "comment": "Normal sınırlar içinde"
-        }},
+          "comment": "Normal sınırlar içinde",
+          "explanation": "Hemoglobin, kanın oksijen taşıma kapasitesini gösterir"
+        }}}},
         // Diğer parametreler...
       ]
-    }},
+    }}}},
     // Diğer gruplar...
   ],
+  "possible_conditions": [
+    {{{{
+      "condition": "Anemi",
+      "likelihood": "düşük",
+      "explanation": "Hemoglobin ve diğer ilgili değerler normal sınırlarda olduğundan anemi olasılığı düşüktür",
+      "related_parameters": ["Hemoglobin", "Hematokrit", "MCV"]
+    }}}},
+    // Diğer olası durumlar...
+  ],
   "recommendations": [
-    "Öneriler liste halinde",
+    "Öneriler liste halinde - hastanın anlayacağı dilde",
     "Başka bir öneri"
   ],
-  "general_analysis": "Tahlil sonuçlarının özet yorumu"
-}}
+  "lifestyle_advice": [
+    "Beslenme önerileri",
+    "Egzersiz önerileri"
+  ],
+  "doctor_consultation": {{{{
+    "recommended": true,
+    "specialties": ["İç Hastalıkları"],
+    "urgency": "rutin"
+  }}}},
+  "additional_tests": [
+    "Vitamin D ölçümü",
+    "Hormon profili"
+  ],
+  "general_analysis": "Tahlil sonuçlarının özet yorumu - hastanın anlayacağı bir dilde ve tıbbi terimlerin açıklamaları ile"
+}}}}
 ```
 
 JSON dışında ek metin veya açıklama ekleme, yalnızca JSON formatında yanıt ver.
+
+Değerlendirmenin şu içerikleri sağlamasına dikkat et:
+1. Bir tıp doktoru gibi analiz et ama anlatımını sade ve hasta dostu bir dille yap
+2. Tıbbi terimleri kullandığında parantez içinde basit açıklamalarını ekle
+3. Değerlerin insan vücudundaki işlevlerini basit ve kısa bir şekilde anlat
+4. Anormal değerlere özel vurgu yap ve bunların ne anlama gelebileceğini detaylıca açıkla
+5. Olası hastalıklar veya durumları olasılık derecesiyle birlikte açıkla
+6. Değerlere göre kişiselleştirilmiş yaşam tarzı önerileri ver
+7. Ne zaman ve hangi uzmana başvurulması gerektiğini belirt
+8. Ek tetkik önerilerini gerekçeleriyle açıkla
 
 KAN TAHLİLİ RAPORU:
 {text[:4000]}"""

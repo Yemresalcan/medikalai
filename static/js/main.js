@@ -34,7 +34,60 @@ document.addEventListener('DOMContentLoaded', function() {
             startProductTour();
         });
     }
+    
+    // Tema değişikliği dinleme
+    document.addEventListener('themeChanged', function(e) {
+        updateElementsForTheme(e.detail.theme);
+    });
 });
+
+// Tema değişikliğinde element stillerini güncelle
+function updateElementsForTheme(theme) {
+    // Koyu tema için tüm metin renklerini kontrol et ve ayarla
+    if (theme === 'dark') {
+        // Özel olarak hedeflenmesi gereken elementleri seç
+        const textElements = document.querySelectorAll('.text-dark, .text-body, table tbody tr td, .card-text, .card-title');
+        textElements.forEach(el => {
+            if (!el.classList.contains('text-primary') && 
+                !el.classList.contains('text-success') && 
+                !el.classList.contains('text-danger') && 
+                !el.classList.contains('text-warning') && 
+                !el.classList.contains('text-info')) {
+                el.style.color = '#ffffff';
+            }
+        });
+        
+        // Tablo metinlerini güncelle
+        const tableTexts = document.querySelectorAll('table th, table td');
+        tableTexts.forEach(el => {
+            el.style.color = '#ffffff';
+        });
+        
+        // Form etiketlerini güncelle
+        const formLabels = document.querySelectorAll('label, .form-label');
+        formLabels.forEach(el => {
+            el.style.color = '#ffffff';
+        });
+    } else {
+        // Açık temaya geçişte özel renklendirmeleri kaldır
+        const textElements = document.querySelectorAll('.text-dark, .text-body, table tbody tr td, .card-text, .card-title');
+        textElements.forEach(el => {
+            el.style.color = '';
+        });
+        
+        // Tablo metinlerini sıfırla
+        const tableTexts = document.querySelectorAll('table th, table td');
+        tableTexts.forEach(el => {
+            el.style.color = '';
+        });
+        
+        // Form etiketlerini sıfırla
+        const formLabels = document.querySelectorAll('label, .form-label');
+        formLabels.forEach(el => {
+            el.style.color = '';
+        });
+    }
+}
 
 // Tema sistemi kurulumu 
 function setupTheme() {
@@ -45,13 +98,8 @@ function setupTheme() {
         
         // Tema değiştirme düğmesinin ikonunu güncelle
         updateThemeIcon(savedTheme);
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        // Sistem temasını kontrol et
-        document.documentElement.setAttribute('data-bs-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-        updateThemeIcon('dark');
     } else {
-        // Varsayılan tema: light
+        // Varsayılan tema: light - Sistem temasını kontrol etme
         localStorage.setItem('theme', 'light');
         document.documentElement.setAttribute('data-bs-theme', 'light');
         updateThemeIcon('light');
@@ -85,6 +133,9 @@ function toggleTheme() {
     
     // İkonu güncelle
     updateThemeIcon(newTheme);
+    
+    // Stil güncellemesi için tüm sayfaya değişiklik bildir
+    document.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
     
     // Tema değişimini bildirme
     const toastMessage = newTheme === 'dark' ? 'Koyu tema aktifleştirildi' : 'Açık tema aktifleştirildi';

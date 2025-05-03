@@ -11,6 +11,10 @@
         color: #333;
     }
     
+    [data-bs-theme="dark"] .analysis-result {
+        color: #ffffff;
+    }
+    
     .analysis-result strong {
         color: #0d6efd;
         font-weight: 600;
@@ -30,6 +34,10 @@
         margin: 8px 0;
     }
     
+    [data-bs-theme="dark"] .value-bar {
+        background-color: #343a40;
+    }
+    
     .ref-range {
         position: absolute;
         height: 100%;
@@ -43,6 +51,10 @@
         height: 25px;
         background-color: #212529;
         z-index: 2;
+    }
+    
+    [data-bs-theme="dark"] .value-marker {
+        background-color: #ffffff;
     }
     
     .value-marker.normal {
@@ -68,6 +80,10 @@
         background-color: rgba(13, 110, 253, 0.05);
     }
     
+    [data-bs-theme="dark"] .table-hover tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.15);
+    }
+    
     /* Kategori sekmesi stilleri */
     .nav-pills .nav-link.active {
         background-color: #0d6efd;
@@ -75,6 +91,40 @@
     
     .tab-content {
         padding-top: 1rem;
+    }
+    
+    /* Karanlık mod için tablo renkleri */
+    [data-bs-theme="dark"] table {
+        color: #ffffff;
+    }
+    
+    [data-bs-theme="dark"] table thead th {
+        color: #ffffff;
+    }
+    
+    [data-bs-theme="dark"] table tbody td {
+        color: #ffffff;
+    }
+    
+    [data-bs-theme="dark"] .card-title,
+    [data-bs-theme="dark"] .card-text,
+    [data-bs-theme="dark"] .card-header h4,
+    [data-bs-theme="dark"] .card-body h5,
+    [data-bs-theme="dark"] .card-body h6,
+    [data-bs-theme="dark"] .card-body p {
+        color: #ffffff;
+    }
+    
+    [data-bs-theme="dark"] .bg-light {
+        background-color: #343a40 !important;
+    }
+    
+    [data-bs-theme="dark"] .text-muted {
+        color: #e0e0e0 !important;
+    }
+    
+    [data-bs-theme="dark"] .bg-white {
+        background-color: #2b3035 !important;
     }
     
     @media print {
@@ -217,13 +267,16 @@
                                             {% for group in analysis_json.test_groups %}
                                             <div class="mb-3">
                                                 <h6 class="fw-bold">{{ group.group_name }}</h6>
+                                                {% if group.group_description %}
+                                                <p class="small text-muted mb-2">{{ group.group_description }}</p>
+                                                {% endif %}
                                                 <ul class="list-unstyled">
                                                     {% for param in group.parameters %}
                                                     <li class="mb-2">
                                                         <div class="d-flex align-items-center">
                                                             <span class="me-2 {% if not param.is_normal %}text-danger fw-bold{% endif %}">
                                                                 {{ param.name }}: {{ param.value }} {{ param.unit }}
-                                                                ({{ param.ref_min }} - {{ param.ref_max }} {{ param.unit }})
+                                                                (Referans: {{ param.ref_min }} - {{ param.ref_max }} {{ param.unit }})
                                                             </span>
                                                             {% if param.is_normal %}
                                                             <span class="badge bg-success ms-1">Normal</span>
@@ -232,7 +285,10 @@
                                                             {% endif %}
                                                         </div>
                                                         {% if param.comment %}
-                                                        <small class="text-muted">{{ param.comment }}</small>
+                                                        <small class="d-block mb-1">{{ param.comment }}</small>
+                                                        {% endif %}
+                                                        {% if param.explanation %}
+                                                        <small class="text-muted d-block">{{ param.explanation }}</small>
                                                         {% endif %}
                                                     </li>
                                                     {% endfor %}
@@ -242,10 +298,117 @@
                                         </div>
                                         {% endif %}
                                         
+                                        {% if analysis_json.possible_conditions %}
+                                        <div class="mt-4">
+                                            <h6 class="fw-bold text-primary mb-3">Olası Sağlık Durumları</h6>
+                                            <div class="row">
+                                                {% for condition in analysis_json.possible_conditions %}
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card border-0 {% if condition.likelihood == 'yüksek' %}border-start border-4 border-danger{% elif condition.likelihood == 'orta' %}border-start border-4 border-warning{% else %}border-start border-4 border-info{% endif %} shadow-sm">
+                                                        <div class="card-body py-3">
+                                                            <h6 class="card-title d-flex justify-content-between mb-2">
+                                                                {{ condition.condition }}
+                                                                <span class="badge {% if condition.likelihood == 'yüksek' %}bg-danger{% elif condition.likelihood == 'orta' %}bg-warning{% else %}bg-info{% endif %}">{{ condition.likelihood }} olasılık</span>
+                                                            </h6>
+                                                            <p class="card-text small mb-2">{{ condition.explanation }}</p>
+                                                            {% if condition.related_parameters %}
+                                                            <p class="card-text small text-muted">
+                                                                İlgili parametreler: {{ condition.related_parameters|join(', ') }}
+                                                            </p>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="alert alert-info mt-2 small">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                Bu değerlendirmeler yalnızca tahlil sonuçlarına dayanmaktadır ve kesin tanı yerine geçmez. Kesin tanı için mutlaka doktorunuza danışın.
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
                                         {% if analysis_json.general_analysis %}
                                         <div class="mt-4">
                                             <h6 class="fw-bold text-primary mb-2">Detaylı Yorum</h6>
                                             <p>{{ analysis_json.general_analysis }}</p>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if analysis_json.doctor_consultation %}
+                                        <div class="mt-4">
+                                            <h6 class="fw-bold text-primary mb-2">Doktor Danışma Önerisi</h6>
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body">
+                                                    <div class="d-flex">
+                                                        <div class="me-3 text-{% if analysis_json.doctor_consultation.urgency == 'acil' %}danger{% elif analysis_json.doctor_consultation.urgency == 'öncelikli' %}warning{% else %}primary{% endif %}">
+                                                            <i class="fas fa-user-md fa-2x"></i>
+                                                        </div>
+                                                        <div>
+                                                            {% if analysis_json.doctor_consultation.recommended %}
+                                                            <p class="mb-2">Bu tahlil sonuçlarına göre bir doktor görüşü almanız önerilmektedir.</p>
+                                                            {% if analysis_json.doctor_consultation.specialties %}
+                                                            <p class="mb-2">Önerilen branşlar: <strong>{{ analysis_json.doctor_consultation.specialties|join(', ') }}</strong></p>
+                                                            {% endif %}
+                                                            <p class="mb-0 small">
+                                                                <span class="badge bg-{% if analysis_json.doctor_consultation.urgency == 'acil' %}danger{% elif analysis_json.doctor_consultation.urgency == 'öncelikli' %}warning{% else %}primary{% endif %}">
+                                                                    {{ analysis_json.doctor_consultation.urgency|capitalize }} seviye
+                                                                </span>
+                                                            </p>
+                                                            {% else %}
+                                                            <p class="mb-0">Bu tahlil sonuçlarına göre acil bir doktor görüşü gerekmemektedir. Ancak rutin sağlık kontrollerinizi sürdürmeniz önerilir.</p>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if analysis_json.lifestyle_advice %}
+                                        <div class="mt-4">
+                                            <h6 class="fw-bold text-primary mb-3">Yaşam Tarzı Önerileri</h6>
+                                            <div class="row">
+                                                {% for advice in analysis_json.lifestyle_advice %}
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="card border-0 shadow-sm h-100">
+                                                        <div class="card-body">
+                                                            <div class="d-flex">
+                                                                <div class="me-3 text-success">
+                                                                    <i class="fas fa-leaf fa-2x"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <p class="mb-0">{{ advice }}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if analysis_json.additional_tests %}
+                                        <div class="mt-4">
+                                            <h6 class="fw-bold text-primary mb-3">Önerilen Ek Tetkikler</h6>
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body">
+                                                    <div class="d-flex">
+                                                        <div class="me-3 text-info">
+                                                            <i class="fas fa-flask fa-2x"></i>
+                                                        </div>
+                                                        <div>
+                                                            <p class="mb-2">Bu tahlil sonuçlarına göre aşağıdaki ek tetkiklerin yapılması faydalı olabilir:</p>
+                                                            <ul class="mb-0">
+                                                                {% for test in analysis_json.additional_tests %}
+                                                                <li>{{ test }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         {% endif %}
                                     {% elif analysis.analysis_result %}
@@ -534,83 +697,76 @@
                             <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
                                 <i class="fas fa-lightbulb"></i>
                             </div>
-                            <h5 class="mb-0">Öneriler</h5>
+                            <h5 class="mb-0">Sağlık Önerileri</h5>
                         </div>
                         
-                        <div class="row">
-                            {% if analysis_json and analysis_json.recommendations %}
-                                {% for recommendation in analysis_json.recommendations %}
-                                <div class="col-md-6 mb-3">
-                                    <div class="card border-0 shadow-sm h-100 recommendation-card">
-                                        <div class="card-body">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                {% if analysis_json and analysis_json.recommendations %}
+                                <div class="mb-3">
+                                    <div class="row">
+                                        {% for recommendation in analysis_json.recommendations %}
+                                        <div class="col-md-6 mb-3">
                                             <div class="d-flex">
-                                                <div class="me-3 text-primary">
-                                                    <i class="fas fa-check-circle fs-4"></i>
+                                                <div class="flex-shrink-0 me-3 text-warning">
+                                                    <i class="fas fa-check-circle fa-lg"></i>
                                                 </div>
                                                 <div>
                                                     <p class="mb-0">{{ recommendation }}</p>
                                                 </div>
                                             </div>
                                         </div>
+                                        {% endfor %}
                                     </div>
                                 </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="col-md-6 mb-3">
-                                    <div class="card border-0 shadow-sm h-100 recommendation-card">
-                                        <div class="card-body">
-                                            <div class="d-flex">
-                                                <div class="me-3 text-primary">
-                                                    <i class="fas fa-check-circle fs-4"></i>
-                                                </div>
-                                                <div>
-                                                    <p class="mb-0">Bu sonuçları bir sağlık uzmanı ile değerlendirin.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <div class="card border-0 shadow-sm h-100 recommendation-card">
-                                        <div class="card-body">
-                                            <div class="d-flex">
-                                                <div class="me-3 text-primary">
-                                                    <i class="fas fa-check-circle fs-4"></i>
-                                                </div>
-                                                <div>
-                                                    <p class="mb-0">Düzenli kontrol ve takip için randevu planlayın.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endif %}
-                            <div class="col-md-6 mb-3">
-                                <div class="card border-0 shadow-sm h-100 recommendation-card">
-                                    <div class="card-body">
+                                {% else %}
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item border-0 ps-0">
                                         <div class="d-flex">
                                             <div class="me-3 text-primary">
-                                                <i class="fas fa-check-circle fs-4"></i>
+                                                <i class="fas fa-heartbeat fa-lg"></i>
                                             </div>
                                             <div>
-                                                <p class="mb-0">Geçmiş tahlil sonuçlarınızla karşılaştırma yapın.</p>
+                                                <p class="mb-0">Düzenli sağlık kontrollerinizi sürdürün ve tahlil sonuçlarınızı doktorunuzla değerlendirin.</p>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="card border-0 shadow-sm h-100 recommendation-card">
-                                    <div class="card-body">
+                                    </li>
+                                    <li class="list-group-item border-0 ps-0">
                                         <div class="d-flex">
-                                            <div class="me-3 text-primary">
-                                                <i class="fas fa-check-circle fs-4"></i>
+                                            <div class="me-3 text-success">
+                                                <i class="fas fa-apple-alt fa-lg"></i> 
                                             </div>
                                             <div>
-                                                <p class="mb-0">Bu analiz sadece bilgilendirme amaçlıdır ve profesyonel tıbbi tavsiye yerine geçmez.</p>
+                                                <p class="mb-0">Dengeli ve sağlıklı beslenmeye özen gösterin. Sebze, meyve ve tam tahılları diyetinize dahil edin.</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    </li>
+                                    <li class="list-group-item border-0 ps-0">
+                                        <div class="d-flex">
+                                            <div class="me-3 text-danger">
+                                                <i class="fas fa-walking fa-lg"></i>
+                                            </div>
+                                            <div>
+                                                <p class="mb-0">Düzenli egzersiz yapın. Haftada en az 150 dakika orta yoğunlukta fiziksel aktivite önerilmektedir.</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item border-0 ps-0">
+                                        <div class="d-flex">
+                                            <div class="me-3 text-info">
+                                                <i class="fas fa-glass-water fa-lg"></i>
+                                            </div>
+                                            <div>
+                                                <p class="mb-0">Günlük su tüketiminize dikkat edin. Yetişkinler için günde ortalama 2-2.5 litre su içilmesi önerilir.</p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                                {% endif %}
+                                
+                                <div class="alert alert-warning mt-3 mb-0 d-flex align-items-center small">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <div>Bu öneriler, tahlil sonuçlarınızın yapay zeka analizine dayanmaktadır. Sağlık durumunuz hakkında kesin bilgi için mutlaka bir sağlık uzmanına danışmalısınız.</div>
                                 </div>
                             </div>
                         </div>
