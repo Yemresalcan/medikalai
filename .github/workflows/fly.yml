@@ -13,4 +13,4 @@ jobs:
       - name: Deploy to fly.io
         run: flyctl deploy --remote-only --dockerfile Dockerfile.simple
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }} 
+          FLY_API_TOKEN: FlyV1 fm2_lJPECAAAAAAACLIhxBD33Ci0MNOPQes7QPd8EVs6wrVodHRwczovL2FwaS5mbHkuaW8vdjGWAJLOABBRUx8Lk7lodHRwczovL2FwaS5mbHkuaW8vYWFhL3YxxDxrNi6dWDXyjEclmwrPqELHoe0xCBvfa2JfMDxoarE8kN7nMlzuJPgMrbuPgkqpsZ28LD7c5U2jaFB0ru7ETi8ViOxKA2UT1xsNBJfmpZ5TRHrC4y4wI+LyUpdardturreWJ71+QqZToF1QQKUgJJFk85Ek92ktHkuKitIpG9n0bv5+cFG1kPXXmUd7/A2SlAORgc4AczqZHwWRgqdidWlsZGVyH6J3Zx8BxCB29XUuKvQlQylIiF8WsoUgfc5AXpUUISqXg2w5sM/5kw==,fm2_lJPETi8ViOxKA2UT1xsNBJfmpZ5TRHrC4y4wI+LyUpdardturreWJ71+QqZToF1QQKUgJJFk85Ek92ktHkuKitIpG9n0bv5+cFG1kPXXmUd7/MQQrSLT1fTfvohsywDwF9G/ocO5aHR0cHM6Ly9hcGkuZmx5LmlvL2FhYS92MZgEks5oGJKJzwAAAAEkELCnF84AD6/3CpHOAA+v9wzEEBv+ManTnhfGfSYh9mRtmQPEIB9fbOmjdMNVMogzOpirIltg/CuQumJzBgsf8xKJ1MoD

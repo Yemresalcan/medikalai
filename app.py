@@ -452,135 +452,100 @@ def analyze():
         flash('Tahlil yüklemek için giriş yapmalısınız!', 'warning')
         return redirect(url_for('login'))
     
-    # Kullanıcının üyelik bilgilerini ve bu aydaki analiz sayısını al
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
     
-    # Kullanıcı bilgilerini al
-    c.execute("SELECT subscription_plan FROM users WHERE id = ?", (session['user_id'],))
-    user = c.fetchone()
-    current_plan = user['subscription_plan'] if user else 'free'
-    
-    # Plan bilgilerini al
-    plan_name = SUBSCRIPTION_PLANS[current_plan]['name']
-    analysis_limit = SUBSCRIPTION_PLANS[current_plan]['analysis_limit']
-    
-    # Sonsuz limit ise, kalan hakkı 999 olarak göster (infinity işareti kullanmak yerine)
-    if analysis_limit == float('inf'):
-        remaining_analyses = 999
-    else:
-        # Bu aydaki analiz sayısını hesapla
-        current_month = datetime.now().month
-        current_year = datetime.now().year
-        c.execute("""
-            SELECT COUNT(*) as count FROM analyses 
-            WHERE user_id = ? 
-            AND strftime('%m', created_at) = ? 
-            AND strftime('%Y', created_at) = ?
-        """, (session['user_id'], f"{current_month:02d}", str(current_year)))
-        monthly_count = c.fetchone()['count']
-        remaining_analyses = max(0, analysis_limit - monthly_count)
-    
-    conn.close()
-    
-    if request.method == 'POST':
-        # Eğer kalan hak yoksa ve sınırsız plan değilse işlemi engelle
-        if remaining_analyses <= 0 and current_plan not in ['premium', 'family']:
-            flash('Bu ay için tahlil hakkınız dolmuştur. Daha fazla analiz yapmak için lütfen üyeliğinizi yükseltin.', 'warning')
-            return redirect(url_for('subscription_plans'))
-            
-        file = request.files.get('pdf_file')
-        if not file or not file.filename.lower().endswith('.pdf'):
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({"error": "Lütfen bir PDF dosyası yükleyin."}), 400
-            flash('Lütfen bir PDF dosyası yükleyin.', 'danger')
-            return redirect(url_for('analyze'))
+    try:
+        # Kullanıcı bilgilerini al
+        c.execute("SELECT subscription_plan FROM users WHERE id = ?", (session['user_id'],))
+        user = c.fetchone()
+        current_plan = user['subscription_plan'] if user else 'free'
         
-        try:
-            pdf_reader = PyPDF2.PdfReader(BytesIO(file.read()))
-            text = "\n".join(page.extract_text() or '' for page in pdf_reader.pages)
-            if not text.strip():
+        # Plan bilgilerini al
+        plan_name = SUBSCRIPTION_PLANS[current_plan]['name']
+        analysis_limit = SUBSCRIPTION_PLANS[current_plan]['analysis_limit']
+        
+        if analysis_limit == float('inf'):
+            remaining_analyses = 999
+        else:
+            current_month = datetime.now().month
+            current_year = datetime.now().year
+            c.execute("""
+                SELECT COUNT(*) as count FROM analyses 
+                WHERE user_id = ? 
+                AND strftime('%m', created_at) = ? 
+                AND strftime('%Y', created_at) = ?
+            """, (session['user_id'], f"{current_month:02d}", str(current_year)))
+            monthly_count = c.fetchone()['count']
+            remaining_analyses = max(0, analysis_limit - monthly_count)
+        
+        if request.method == 'POST':
+            if remaining_analyses <= 0 and current_plan not in ['premium', 'family']:
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return jsonify({"error": "PDF'den metin okunamadı."}), 400
-                flash('PDF\'den metin okunamadı.', 'danger')
+                    return jsonify({"error": "Bu ay için tahlil hakkınız dolmuştur."}), 400
+                flash('Bu ay için tahlil hakkınız dolmuştur.', 'warning')
+                return redirect(url_for('subscription_plans'))
+            
+            file = request.files.get('pdf_file')
+            if not file or not file.filename.lower().endswith('.pdf'):
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({"error": "Lütfen bir PDF dosyası yükleyin."}), 400
+                flash('Lütfen bir PDF dosyası yükleyin.', 'danger')
                 return redirect(url_for('analyze'))
-        except Exception as e:
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({"error": f"PDF okunamadı: {e}"}), 400
-            flash(f'PDF okunamadı: {e}', 'danger')
-            return redirect(url_for('analyze'))
-        
-        # Prompt'u yapılandırılmış veri alacak şekilde iyileştiriyoruz
-        prompt = f"""Bir doktor gibi aşağıdaki kan tahlili raporunu hastanın anlaması için sade bir Türkçe dille tıbbi terimleri açıklayarak yorumla ve JSON formatında yapılandırılmış bir çıktı oluştur.
-        
-Lütfen şunları yap:
 
+            # Son 30 saniye içinde aynı dosya adıyla yükleme yapılmış mı kontrol et
+            c.execute("""
+                SELECT id FROM analyses 
+                WHERE user_id = ? 
+                AND file_name = ? 
+                AND created_at >= datetime('now', '-30 seconds')
+            """, (session['user_id'], file.filename))
+            
+            recent_upload = c.fetchone()
+            if recent_upload:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({"error": "Aynı dosya kısa süre önce yüklendi. Lütfen biraz bekleyin."}), 400
+                flash('Aynı dosya kısa süre önce yüklendi. Lütfen biraz bekleyin.', 'warning')
+                return redirect(url_for('analyze'))
+
+            # Dosya boyutu kontrolü (10MB)
+            if len(file.read()) > 10 * 1024 * 1024:  # 10MB
+                file.seek(0)  # Dosya işaretçisini başa al
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({"error": "Dosya boyutu 10MB'dan büyük olamaz."}), 400
+                flash('Dosya boyutu 10MB\'dan büyük olamaz.', 'danger')
+                return redirect(url_for('analyze'))
+            
+            file.seek(0)  # Dosya işaretçisini tekrar başa al
+
+            try:
+                pdf_reader = PyPDF2.PdfReader(BytesIO(file.read()))
+                text = "\n".join(page.extract_text() or '' for page in pdf_reader.pages)
+                if not text.strip():
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify({"error": "PDF'den metin okunamadı."}), 400
+                    flash('PDF\'den metin okunamadı.', 'danger')
+                    return redirect(url_for('analyze'))
+            except Exception as e:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({"error": f"PDF okunamadı: {e}"}), 400
+                flash(f'PDF okunamadı: {e}', 'danger')
+                return redirect(url_for('analyze'))
+            
+            # Prompt'u yapılandırılmış veri alacak şekilde iyileştiriyoruz
+            prompt = f"""Bir doktor gibi aşağıdaki kan tahlili raporunu hastanın anlaması için sade bir Türkçe dille tıbbi terimleri açıklayarak yorumla.
+            
+Lütfen şunları yap:
 1. Tüm önemli değerleri ve referans aralıklarını analiz et
-2. Normal dışı değerleri belirle ve hastanın anlayacağı tıbbi terimlerin açıklamaları ile yorumla
+2. Normal dışı değerleri belirle ve hastanın anlayacağı tıbbi terimleri açıkla
 3. Değerlere bakarak muhtemel sağlık durumları veya olası hastalık belirtilerinden bahset
 4. Bulgulara dayalı öneriler sun ve hangi branştan doktora danışılması gerektiğini belirt
-5. Değerleri gruplandır (örn: hematoloji, biyokimya, vb.)
-6. Yaşam tarzı, beslenme önerileri ve ek tetkik önerileri ekle
-7. Yanıt aşağıdaki JSON formatında olmalı:
+5. Değerleri anlamlı gruplara ayır (örn: hematoloji, biyokimya, vb.)
+6. Yaşam tarzı ve beslenme önerileri ekle
+7. Gerekirse ek tetkik önerilerini gerekçeleriyle açıkla
 
-```json
-{{{{
-  "summary": "Genel değerlendirme metni - hastanın anlayacağı dille yazılmış olmalı",
-  "abnormal_count": 3, // Normal dışı değer sayısı
-  "test_groups": [
-    {{{{
-      "group_name": "Hematoloji",
-      "group_description": "Kan hücrelerinin sayısı ve yapısını ölçen testler",
-      "parameters": [
-        {{{{
-          "name": "Hemoglobin",
-          "value": 14.2,
-          "unit": "g/dL",
-          "ref_min": 13.5,
-          "ref_max": 17.5,
-          "is_normal": true,
-          "comment": "Normal sınırlar içinde",
-          "explanation": "Hemoglobin, kanın oksijen taşıma kapasitesini gösterir"
-        }}}},
-        // Diğer parametreler...
-      ]
-    }}}},
-    // Diğer gruplar...
-  ],
-  "possible_conditions": [
-    {{{{
-      "condition": "Anemi",
-      "likelihood": "düşük",
-      "explanation": "Hemoglobin ve diğer ilgili değerler normal sınırlarda olduğundan anemi olasılığı düşüktür",
-      "related_parameters": ["Hemoglobin", "Hematokrit", "MCV"]
-    }}}},
-    // Diğer olası durumlar...
-  ],
-  "recommendations": [
-    "Öneriler liste halinde - hastanın anlayacağı dilde",
-    "Başka bir öneri"
-  ],
-  "lifestyle_advice": [
-    "Beslenme önerileri",
-    "Egzersiz önerileri"
-  ],
-  "doctor_consultation": {{{{
-    "recommended": true,
-    "specialties": ["İç Hastalıkları"],
-    "urgency": "rutin"
-  }}}},
-  "additional_tests": [
-    "Vitamin D ölçümü",
-    "Hormon profili"
-  ],
-  "general_analysis": "Tahlil sonuçlarının özet yorumu - hastanın anlayacağı bir dilde ve tıbbi terimlerin açıklamaları ile"
-}}}}
-```
-
-JSON dışında ek metin veya açıklama ekleme, yalnızca JSON formatında yanıt ver.
-
-Değerlendirmenin şu içerikleri sağlamasına dikkat et:
+Değerlendirmede şunlara dikkat et:
 1. Bir tıp doktoru gibi analiz et ama anlatımını sade ve hasta dostu bir dille yap
 2. Tıbbi terimleri kullandığında parantez içinde basit açıklamalarını ekle
 3. Değerlerin insan vücudundaki işlevlerini basit ve kısa bir şekilde anlat
@@ -588,208 +553,260 @@ Değerlendirmenin şu içerikleri sağlamasına dikkat et:
 5. Olası hastalıklar veya durumları olasılık derecesiyle birlikte açıkla
 6. Değerlere göre kişiselleştirilmiş yaşam tarzı önerileri ver
 7. Ne zaman ve hangi uzmana başvurulması gerektiğini belirt
-8. Ek tetkik önerilerini gerekçeleriyle açıkla
+
+Cevabının şu bölümleri içermesini istiyorum:
+- GENEL DEĞERLENDİRME: Tahlil sonuçlarının genel bir özeti
+- NORMAL DIŞI DEĞERLER: Normal olmayan değerleri ve anlamlarını açıkla
+- OLASI SAĞLIK DURUMLARI: Olası sağlık durumları ve açıklamaları
+- ÖNERİLER: Tahlil sonuçlarına göre öneriler
+- YAŞAM TARZI ÖNERİLERİ: Beslenme, aktivite vs ile ilgili öneriler
 
 KAN TAHLİLİ RAPORU:
 {text[:4000]}"""
-        
-        # Gemini API isteği için veri yapısı
-        data = {
-            "contents": [
-                {
-                    "parts": [
-                        {
-                            "text": prompt
-                        }
-                    ]
+            
+            # Gemini API isteği için veri yapısı
+            data = {
+                "contents": [
+                    {
+                        "parts": [
+                            {
+                                "text": prompt
+                            }
+                        ]
+                    }
+                ],
+                "generationConfig": {
+                    "temperature": 0.8,
+                    "maxOutputTokens": 8000,
+                    "topP": 0.95,
+                    "topK": 40
                 }
-            ],
-            "generationConfig": {
-                "temperature": 0.1,  # Yapılandırılmış veri için daha düşük sıcaklık
-                "maxOutputTokens": 4000,  # Daha uzun yanıtlar için token sayısını artırıyoruz
-                "topP": 0.95,
-                "topK": 40
-            }
-        }
-        
-        try:
-            # Gemini API isteği
-            headers = {
-                "Content-Type": "application/json",
-                "X-Requested-With": "XMLHttpRequest"  # API'ye AJAX isteği olduğunu bildir
             }
             
-            # API isteği gönderiliyor
-            print(f"Gemini API'ye istek gönderiliyor: {GEMINI_API_URL}")
-            response = requests.post(
-                GEMINI_API_URL,
-                headers=headers,
-                json=data,
-                timeout=30  # Zaman aşımını 30 saniyeye ayarlıyoruz
-            )
-            
-            # HTTP hatası kontrol et
-            if response.status_code != 200:
-                print(f"API Hata Kodu: {response.status_code}")
-                print(f"API Yanıtı: {response.text[:500]}")
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return jsonify({"error": f"API hatası: HTTP {response.status_code}"}), 500
-                flash(f'API hatası: HTTP {response.status_code}', 'danger')
-                return redirect(url_for('analyze'))
-            
-            # Yanıtı işle
-            response_data = response.json()
-            
-            if "candidates" in response_data and response_data["candidates"]:
-                result_raw = response_data["candidates"][0]["content"]["parts"][0]["text"]
+            try:
+                # Gemini API isteği
+                headers = {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"  # API'ye AJAX isteği olduğunu bildir
+                }
                 
-                # Yanıt boş mu kontrol et
-                if not result_raw or not result_raw.strip():
-                    print("API yanıtı boş")
+                # API isteği gönderiliyor
+                response = requests.post(
+                    GEMINI_API_URL,
+                    headers=headers,
+                    json=data,
+                    timeout=30  # Zaman aşımını 30 saniyeye ayarlıyoruz
+                )
+                
+                # HTTP hatası kontrol et
+                if response.status_code != 200:
+                    print(f"API Hata Kodu: {response.status_code}")
+                    print(f"API Yanıtı: {response.text[:500]}")
                     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                        return jsonify({"error": "API yanıtı boş. Lütfen tekrar deneyin."}), 500
-                    flash('API yanıtı boş. Lütfen tekrar deneyin.', 'danger')
+                        return jsonify({"error": f"API hatası: HTTP {response.status_code}"}), 500
+                    flash(f'API hatası: HTTP {response.status_code}', 'danger')
                     return redirect(url_for('analyze'))
                 
-                # JSON formatını temizleyelim (```json ve ``` ifadelerini kaldırma)
-                result_clean = result_raw.replace("```json", "").replace("```", "").strip()
+                # Yanıtı işle
+                response_data = response.json()
                 
-                try:
-                    # JSON formatını parse et
-                    analysis_json = json.loads(result_clean)
+                if "candidates" in response_data and response_data["candidates"]:
+                    result_text = response_data["candidates"][0]["content"]["parts"][0]["text"]
                     
-                    # JSON'ın doğru formatta olup olmadığını kontrol et
-                    if not isinstance(analysis_json, dict):
-                        raise ValueError("API yanıtı geçerli bir JSON nesnesi döndürmedi")
+                    # Yanıt boş mu kontrol et
+                    if not result_text or not result_text.strip():
+                        print("API yanıtı boş")
+                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                            return jsonify({"error": "API yanıtı boş. Lütfen tekrar deneyin."}), 500
+                        flash('API yanıtı boş. Lütfen tekrar deneyin.', 'danger')
+                        return redirect(url_for('analyze'))
+                    
+                    # Metni paragraf ve bölümlere ayır
+                    # Başlıklar ve alt başlıkları bulmak için
+                    sections = {}
+                    current_section = "Genel Değerlendirme"
+                    section_text = []
+                    
+                    for line in result_text.split('\n'):
+                        stripped_line = line.strip()
+                        if stripped_line and (stripped_line.isupper() or stripped_line.startswith('#') or stripped_line.endswith(':')):
+                            # Yeni bir bölüm başlangıcı
+                            if section_text:
+                                sections[current_section] = '\n'.join(section_text)
+                                section_text = []
+                            
+                            # Başlık formatını temizle
+                            current_section = stripped_line.replace('#', '').strip(':').strip()
+                        elif stripped_line:
+                            section_text.append(stripped_line)
+                    
+                    # Son bölümü ekle
+                    if section_text:
+                        sections[current_section] = '\n'.join(section_text)
+                    
+                    # Normal ve anormal değerleri belirlemek için metin analizi
+                    abnormal_values = []
+                    normal_values = []
+                    
+                    if "ANORMAL DEĞERLERİ" in sections or "NORMAL DIŞI DEĞERLER" in sections:
+                        abnormal_section = sections.get("ANORMAL DEĞERLERİ", sections.get("NORMAL DIŞI DEĞERLER", ""))
+                        for line in abnormal_section.split('\n'):
+                            if ":" in line:
+                                param_name = line.split(":")[0].strip()
+                                abnormal_values.append({"parameter_name": param_name, "description": line})
+                    
+                    try:
+                        # Veritabanına kaydet
+                        conn = sqlite3.connect(DB_PATH)
+                        c = conn.cursor()
                         
-                    # Okunabilir insan formatında metni oluştur
-                    result_text = f"""### GENEL DEĞERLENDİRME
-{analysis_json.get('summary', 'Değerlendirme yapılamadı.')}
-
-### DETAYLI ANALİZ
-"""
-                    # Test gruplarını ekle
-                    for group in analysis_json.get('test_groups', []):
-                        result_text += f"\n## {group.get('group_name', 'Genel')}\n"
-                        for param in group.get('parameters', []):
-                            status = "NORMAL" if param.get('is_normal', True) else "DİKKAT - NORMAL DIŞI"
-                            result_text += f"* {param.get('name', '')}: {param.get('value', '')} {param.get('unit', '')} " \
-                                          f"(Referans: {param.get('ref_min', '')} - {param.get('ref_max', '')} {param.get('unit', '')}) " \
-                                          f"[{status}]\n  {param.get('comment', '')}\n"
-                    
-                    # Önerileri ekle 
-                    result_text += "\n### ÖNERİLER\n"
-                    for rec in analysis_json.get('recommendations', []):
-                        result_text += f"* {rec}\n"
-                    
-                    # Genel analizi ekle
-                    if 'general_analysis' in analysis_json:
-                        result_text += f"\n### SONUÇ\n{analysis_json.get('general_analysis', '')}"
-                    
-                    # Debug için bir kısmını yazdır
-                    print(f"JSON yanıt işlendi.")
-                    print(f"Anormal değer sayısı: {analysis_json.get('abnormal_count', 0)}")
-                    print(f"Grup sayısı: {len(analysis_json.get('test_groups', []))}")
-                    
-                    # Veritabanına kaydet
-                    conn = sqlite3.connect(DB_PATH)
-                    c = conn.cursor()
-                    
-                    # Ana analizi kaydet
-                    c.execute(
-                        """INSERT INTO analyses 
-                           (user_id, file_name, analysis_text, analysis_result, analysis_json, analysis_type) 
-                           VALUES (?, ?, ?, ?, ?, ?)""",
-                        (session['user_id'], file.filename, text[:1000], result_text, json.dumps(analysis_json), 'kan')
-                    )
-                    conn.commit()
-                    analysis_id = c.lastrowid
-                    
-                    # Test değerlerini kaydet
-                    for group in analysis_json.get('test_groups', []):
-                        for param in group.get('parameters', []):
-                            try:
-                                # Değerleri sayısal formata çevir (gerekirse)
-                                value = float(param.get('value', 0)) if param.get('value') is not None else None
-                                ref_min = float(param.get('ref_min', 0)) if param.get('ref_min') is not None else None
-                                ref_max = float(param.get('ref_max', 0)) if param.get('ref_max') is not None else None
+                        # Ana analizi kaydet
+                        c.execute(
+                            """INSERT INTO analyses 
+                            (user_id, file_name, analysis_text, analysis_result, analysis_type) 
+                            VALUES (?, ?, ?, ?, ?)""",
+                            (session['user_id'], file.filename, text[:1000], result_text, 'kan')
+                        )
+                        conn.commit()
+                        analysis_id = c.lastrowid
+                        
+                        # Bölümleri JSON olarak kaydet (şablon uyumluluğu için)
+                        analysis_json = {
+                            "summary": sections.get("Genel Değerlendirme", ""),
+                            "abnormal_count": len(abnormal_values),
+                            "test_groups": [],
+                            "recommendations": sections.get("ÖNERİLER", "").split('\n') if "ÖNERİLER" in sections else [],
+                            "lifestyle_advice": sections.get("YAŞAM TARZI ÖNERİLERİ", "").split('\n') if "YAŞAM TARZI ÖNERİLERİ" in sections else [],
+                            "health_conditions": [],
+                            "general_analysis": result_text
+                        }
+                        
+                        # Olası sağlık durumlarını metinden çıkarmaya çalış
+                        health_conditions_section = sections.get("OLASI SAĞLIK DURUMLARI", "")
+                        if health_conditions_section:
+                            # Bölümü satırlara ayır
+                            lines = health_conditions_section.split('\n')
+                            current_condition = None
+                            
+                            for line in lines:
+                                line = line.strip()
+                                if not line:
+                                    continue
+                                    
+                                # Yeni bir sağlık durumu başlığı
+                                if line.endswith(':') or (len(line.split()) <= 5 and not line.startswith('-')):
+                                    # Önceki durumu kaydet
+                                    if current_condition:
+                                        analysis_json["health_conditions"].append(current_condition)
+                                    
+                                    # Yeni durum oluştur
+                                    name = line.rstrip(':')
+                                    
+                                    # Durumun ciddiyetini belirle - artık hepsi "Öneri" olarak işaretlenecek
+                                    severity = "Öneri"
+                                    
+                                    current_condition = {
+                                        "name": name,
+                                        "description": "",
+                                        "severity": severity,
+                                        "related_values": ""
+                                    }
+                                # Mevcut duruma açıklama ya da ilgili değerler ekleniyor
+                                elif current_condition:
+                                    if "değer" in line.lower() or "parametre" in line.lower():
+                                        # Bu ilgili değerler
+                                        values = line.split(":")[-1].strip() if ":" in line else line
+                                        current_condition["related_values"] = values
+                                    else:
+                                        # Bu açıklama
+                                        if current_condition["description"]:
+                                            current_condition["description"] += " " + line
+                                        else:
+                                            current_condition["description"] = line
+                        
+                            # Son durumu da ekle
+                            if current_condition:
+                                analysis_json["health_conditions"].append(current_condition)
+                        
+                        # Eğer olası sağlık durumları tespit edilemediyse, anormal değerlerden genel öneriler oluştur
+                        if not analysis_json["health_conditions"] and abnormal_values:
+                            for abnormal in abnormal_values:
+                                param_name = abnormal["parameter_name"]
+                                description = abnormal["description"]
                                 
-                                # Veritabanına kaydet
-                                c.execute(
-                                    """INSERT INTO test_values 
-                                       (analysis_id, parameter_name, value, unit, ref_min, ref_max, is_normal, category, description) 
-                                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                    (
-                                        analysis_id,
-                                        param.get('name', ''),
-                                        value,
-                                        param.get('unit', ''),
-                                        ref_min,
-                                        ref_max,
-                                        1 if param.get('is_normal', True) else 0,
-                                        group.get('group_name', 'Genel'),
-                                        param.get('comment', '')
-                                    )
-                                )
-                            except (ValueError, TypeError) as e:
-                                print(f"Değer dönüştürme hatası: {e} - Parametre: {param.get('name', 'Bilinmeyen')}")
-                                # Hataya rağmen diğer değerleri kaydetmeye devam et
+                                # Genel bir öneri oluştur
+                                condition_name = "Genel Sağlık Önerisi"
+                                
+                                # İlgili değerleri belirle
+                                related_values = param_name
+                                
+                                analysis_json["health_conditions"].append({
+                                    "name": condition_name,
+                                    "description": f"Bu değerle ilgili genel sağlık önerisi: {description}",
+                                    "severity": "Öneri",
+                                    "related_values": related_values
+                                })
+                        
+                        # JSON'ı veritabanına kaydet
+                        c.execute(
+                            """UPDATE analyses 
+                            SET analysis_json = ? 
+                            WHERE id = ?""",
+                            (json.dumps(analysis_json), analysis_id)
+                        )
+                        conn.commit()
+                        conn.close()
+                        
+                        # Ajax isteği ise JSON yanıt döndür
+                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                            return jsonify({
+                                "success": True,
+                                "message": "Tahlil başarıyla analiz edildi!",
+                                "analysis_id": analysis_id,
+                                "redirect": url_for('analysis_result', analysis_id=analysis_id)
+                            })
+                        
+                        # Başarı mesajı göster
+                        flash('Tahlil başarıyla analiz edildi!', 'success')
+                        return redirect(url_for('analysis_result', analysis_id=analysis_id))
                     
-                    conn.commit()
-                    conn.close()
-                    
-                except json.JSONDecodeError as e:
-                    print(f"JSON parse hatası: {e}")
-                    print(f"Alınan JSON: {result_clean[:500]}...")
-                    # Parse edilemiyorsa, ham metni kaydet
-                    conn = sqlite3.connect(DB_PATH)
-                    c = conn.cursor()
-                    c.execute(
-                        "INSERT INTO analyses (user_id, file_name, analysis_text, analysis_result) VALUES (?, ?, ?, ?)",
-                        (session['user_id'], file.filename, text[:1000], result_raw)
-                    )
-                    conn.commit()
-                    analysis_id = c.lastrowid
-                    conn.close()
+                    except Exception as e:
+                        # Veritabanı hatası durumunda
+                        print(f"Veritabanı hatası: {str(e)}")
+                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                            return jsonify({"error": f"Veritabanı hatası: {str(e)}"}), 500
+                        flash(f'Veritabanı hatası: {str(e)}', 'danger')
+                        return redirect(url_for('analyze'))
+                else:
+                    print(f"API yanıtı candidates içermiyor: {response_data}")
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify({"error": "API yanıtı beklenen formatta değil."}), 500
+                    flash('API yanıtı beklenen formatta değil.', 'danger')
+                    return redirect(url_for('analyze'))
                 
-                # Ajax isteği ise JSON yanıt döndür
+            except requests.exceptions.Timeout:
+                print("API isteği zaman aşımına uğradı")
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return jsonify({
-                        "success": True,
-                        "message": "Tahlil başarıyla analiz edildi!",
-                        "analysis_id": analysis_id,
-                        "redirect": url_for('analysis_result', analysis_id=analysis_id)
-                    })
-                
-                # Başarı mesajı göster
-                flash('Tahlil başarıyla analiz edildi!', 'success')
-                return redirect(url_for('analysis_result', analysis_id=analysis_id))
-            else:
-                print(f"API yanıtı candidates içermiyor: {response_data}")
-                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return jsonify({"error": "API yanıtı beklenen formatta değil."}), 500
-                flash('API yanıtı beklenen formatta değil.', 'danger')
+                    return jsonify({"error": "API isteği zaman aşımına uğradı. Lütfen tekrar deneyin."}), 504
+                flash('API isteği zaman aşımına uğradı. Lütfen tekrar deneyin.', 'danger')
                 return redirect(url_for('analyze'))
-                
-        except requests.exceptions.Timeout:
-            print("API isteği zaman aşımına uğradı")
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({"error": "API isteği zaman aşımına uğradı. Lütfen tekrar deneyin."}), 504
-            flash('API isteği zaman aşımına uğradı. Lütfen tekrar deneyin.', 'danger')
-            return redirect(url_for('analyze'))
-        except Exception as e:
-            print(f"Hata oluştu: {str(e)}")
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({"error": f"Yorum alınamadı: {str(e)}"}), 500
-            flash(f'Yorum alınamadı: {e}', 'danger')
-            return redirect(url_for('analyze'))
+            except Exception as e:
+                print(f"Hata oluştu: {str(e)}")
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({"error": f"Yorum alınamadı: {str(e)}"}), 500
+                flash(f'Yorum alınamadı: {e}', 'danger')
+                return redirect(url_for('analyze'))
+    
+    except Exception as e:
+        app.logger.error(f"Tahlil analizinde hata: {str(e)}")
+        flash(f'Tahlil analizinde bir hata oluştu: {str(e)}', 'danger')
+        return redirect(url_for('analyze'))
     
     return render_template('analyze.html',
-                          current_plan=current_plan,
-                          plan_name=plan_name,
-                          analysis_limit=analysis_limit,
-                          remaining_analyses=remaining_analyses)
-    return render_template('analyze.html')
+                         current_plan=current_plan,
+                         plan_name=plan_name,
+                         analysis_limit=analysis_limit,
+                         remaining_analyses=remaining_analyses)
 
 @app.route('/analysis/<int:analysis_id>')
 def analysis_result(analysis_id):
@@ -815,27 +832,6 @@ def analysis_result(analysis_id):
         flash('Tahlil sonucu bulunamadı veya işlenemedi. Lütfen yeni bir tahlil yükleyin.', 'warning')
         return redirect(url_for('dashboard'))
     
-    # Test değerlerini getir (Yeni)
-    c.execute("""
-        SELECT * FROM test_values 
-        WHERE analysis_id = ? 
-        ORDER BY category, parameter_name
-    """, (analysis_id,))
-    test_values = [dict(row) for row in c.fetchall()]
-    
-    # Kategorilere göre değerleri grupla (Yeni)
-    categories = {}
-    abnormal_values = []
-    for value in test_values:
-        category = value['category']
-        if category not in categories:
-            categories[category] = []
-        categories[category].append(value)
-        
-        # Normal dışı değerleri ayrıca topla
-        if not value['is_normal']:
-            abnormal_values.append(value)
-    
     # Analiz JSON'ını parse et
     analysis_json = {}
     if analysis['analysis_json']:
@@ -844,48 +840,208 @@ def analysis_result(analysis_id):
         except json.JSONDecodeError:
             pass  # JSON parse edilemezse, boş dict kullan
     
-    # Kullanıcının geçmiş analizlerini getir (trend analizi için)
-    c.execute("""
-        SELECT a.id, a.created_at 
-        FROM analyses a 
-        WHERE a.user_id = ? AND a.id != ? 
-        ORDER BY a.created_at DESC 
-        LIMIT 5
-    """, (session['user_id'], analysis_id))
-    previous_analyses = c.fetchall()
-    
-    # Eğer geçmiş analizler varsa, karşılaştırma için değerleri hazırla
-    comparison_data = {}
-    if previous_analyses:
-        # En son analizden başlayarak karşılaştırma verilerini topla
-        for prev_analysis in previous_analyses:
-            c.execute("""
-                SELECT parameter_name, value, created_at 
-                FROM test_values 
-                WHERE analysis_id = ?
-            """, (prev_analysis['id'],))
-            prev_values = c.fetchall()
-            
-            for pv in prev_values:
-                param_name = pv['parameter_name']
-                if param_name not in comparison_data:
-                    comparison_data[param_name] = []
+    # Anormal değerleri metinden çıkarmaya çalış
+    abnormal_values = []
+    if analysis_json and 'abnormal_count' in analysis_json and analysis_json['abnormal_count'] > 0:
+        # JSON'dan abnormal değer sayısını al
+        abnormal_count = analysis_json['abnormal_count']
+        
+        # Metinden anormal değerleri çıkarmaya çalış
+        result_text = analysis['analysis_result']
+        lines = result_text.split('\n')
+        
+        for i, line in enumerate(lines):
+            line_lower = line.lower()
+            if ('normal değil' in line_lower or 
+                'yüksek' in line_lower or 
+                'düşük' in line_lower or 
+                'anormal' in line_lower or
+                'dikkat' in line_lower):
                 
-                comparison_data[param_name].append({
-                    'date': prev_analysis['created_at'].split()[0],  # Sadece tarih kısmını al
-                    'value': pv['value']
-                })
+                # Değer adını ve açıklamasını çıkarmaya çalış
+                parts = line.split(':')
+                if len(parts) >= 2:
+                    param_name = parts[0].strip()
+                    param_desc = parts[1].strip()
+                    
+                    # Birim ve değer bilgilerini çıkarmaya çalış
+                    value_match = None
+                    unit_match = None
+                    ref_range = None
+                    
+                    if "(" in param_desc and ")" in param_desc:
+                        # Referans aralığı parantez içinde olabilir
+                        ref_parts = param_desc.split("(")
+                        if len(ref_parts) > 1:
+                            ref_range = ref_parts[1].split(")")[0].strip()
+                    
+                    abnormal_values.append({
+                        'parameter_name': param_name,
+                        'description': param_desc,
+                        'value': value_match if value_match else param_desc.split(" ")[0] if " " in param_desc else "",
+                        'unit': unit_match if unit_match else "",
+                        'reference_range': ref_range if ref_range else ""
+                    })
+                else:
+                    # Eğer : karakteri yoksa, sadece satırı ekle
+                    abnormal_values.append({
+                        'parameter_name': 'Anormal Değer',
+                        'description': line,
+                        'value': "",
+                        'unit': "",
+                        'reference_range': ""
+                    })
+    
+    # AI ile hastalık tahminlerini getir
+    if 'health_conditions' not in analysis_json or not analysis_json.get('health_conditions'):
+        # Daha önce AI analizi yapılmamışsa veya boşsa, yeni tahminler al
+        health_conditions = analyze_test_results_with_ai(abnormal_values)
+        
+        # Sonuçları kaydet
+        if health_conditions:
+            # Mevcut JSON'a ekle
+            if not analysis_json:
+                analysis_json = {}
+            analysis_json['health_conditions'] = health_conditions
+            
+            # Veritabanında güncelle
+            try:
+                c.execute("UPDATE analyses SET analysis_json = ? WHERE id = ?", 
+                         (json.dumps(analysis_json), analysis_id))
+                conn.commit()
+            except Exception as e:
+                app.logger.error(f"Analiz JSON güncellemesinde hata: {str(e)}")
+                conn.rollback()
+    else:
+        # Zaten AI analizi varsa, onu kullan
+        health_conditions = analysis_json.get('health_conditions', [])
     
     conn.close()
     
-    # Ek bilgileri şablona aktar
+    # Şablona bilgileri aktar
     return render_template('result.html', 
                           analysis=analysis,
-                          test_values=test_values,
-                          categories=categories,
                           abnormal_values=abnormal_values,
                           analysis_json=analysis_json,
-                          comparison_data=comparison_data)
+                          test_values=[])  # Test değerlerini şu an boş liste olarak gönder
+
+# Anormal değerlere göre hastalık tahminleri yapmak için Gemini API fonksiyonu
+def analyze_test_results_with_ai(abnormal_values):
+    """
+    Anormal test değerlerini Gemini API'ye göndererek olası hastalık tahminleri alır
+    """
+    # Abnormal değerler yoksa bile belirli bilgileri gönder
+    if not abnormal_values:
+        print("[AI Analiz] Anormal değer yok, ancak genel tahlil analizi isteniyor")
+        # Varsayılan metin oluştur
+        abnormal_text = "Tahlil sonuçlarında belirgin anormal değer bulunmamaktadır. Ancak normal değerlere bakarak olası riskleri değerlendiriniz."
+    else:
+        # Abnormal değerleri tek bir metinde birleştir
+        abnormal_text = "\n".join([f"{value['parameter_name']}: {value['description']}" for value in abnormal_values])
+    
+    # Gemini API'ye gönderilecek prompt
+    prompt = f"""
+    Aşağıdaki kan tahlili sonuçlarıyla ilgili olası hastalık tahminleri yapmanız gerekiyor.
+    
+    {"Tahlilde normal değerlerin dışında olan parametreler verilmiştir." if abnormal_values else "Tahlil sonuçlarının çoğu normal aralıkta görünmektedir, ancak bu durum bazı gizli veya erken aşama hastalık risklerini dışlamaz."}
+    
+    Lütfen, anormal değer var ya da yok, HER DURUMDA en az 3, en fazla 5 olası hastalık tahmini ver.
+    
+    ÖNEMLİ KURALLAR:
+    1. "Vitamin D Eksikliği", "Sağlıklı Durum" veya "Hafif Metabolik Değişiklikler" gibi belirsiz durumlar YERİNE, gerçek tıbbi hastalık isimlerini (örn. "Hipotiroidi", "Tip 2 Diyabet", "Demir Eksikliği Anemisi") kullan.
+    2. Tahlil sonuçları tamamen normal olsa bile, genel popülasyonda yaygın olan ve erken belirtileri kolayca tespit edilemeyen hastalıklar hakkında bilgi ver.
+    3. Her bir tahmin için hastalığın adını, kısa bir açıklamasını ve hangi test değerleriyle ilişkili olduğunu belirt.
+    4. Hastalık tahminleri listesi ASLA BOŞ OLMAMALI, mutlaka en az 3 hastalık içermelidir.
+    
+    Durum:
+    {abnormal_text}
+    
+    Yanıtını şu JSON formatında ver (sadece JSON döndür, ek açıklama ekleme):
+    {{
+        "health_conditions": [
+            {{
+                "name": "Hastalık adı",
+                "description": "Hastalığın kısa açıklaması",
+                "related_values": "İlgili test parametreleri (virgülle ayrılmış)"
+            }}
+        ]
+    }}
+    """
+    
+    # API isteği için gerekli veri
+    request_data = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": prompt
+                    }
+                ]
+            }
+        ],
+        "generationConfig": {
+            "temperature": 1.0,  # Yaratıcılığı artırmak için temperature değerini yükselttim
+            "topP": 0.95,
+            "topK": 40,
+            "maxOutputTokens": 800
+        }
+    }
+    
+    try:
+        # API'ye istek gönder
+        print("[AI Analiz] Gemini API'ye istek gönderiliyor...")
+        response = requests.post(
+            GEMINI_API_URL,
+            json=request_data,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        # Yanıtı işle
+        if response.status_code == 200:
+            print(f"[AI Analiz] API yanıtı başarılı: HTTP {response.status_code}")
+            response_data = response.json()
+            if 'candidates' in response_data and len(response_data['candidates']) > 0:
+                text_response = response_data['candidates'][0]['content']['parts'][0]['text']
+                
+                # Konsola tam yanıtı yazdir
+                print(f"[AI Analiz] Ham API yanıtı:\n{text_response}\n")
+                
+                # JSON içeriğini ayıkla (bazen API JSON'ı kod bloğu içinde gönderir)
+                if "```json" in text_response:
+                    json_text = text_response.split("```json")[1].split("```")[0].strip()
+                elif "```" in text_response:
+                    json_text = text_response.split("```")[1].strip()
+                else:
+                    json_text = text_response
+                
+                try:
+                    ai_result = json.loads(json_text)
+                    print(f"[AI Analiz] İşlenmiş JSON sonucu: {json.dumps(ai_result, indent=2, ensure_ascii=False)}")
+                    
+                    # AI'dan gelen health_conditions'ı doğrudan döndür, yoksa boş liste
+                    health_conditions = ai_result.get('health_conditions', [])
+                    if health_conditions:
+                        print(f"[AI Analiz] {len(health_conditions)} hastalık tahmini bulundu")
+                    else:
+                        print("[AI Analiz] Hiç hastalık tahmini bulunamadı")
+                        # Varsayılan hastalık listeleri istenmediği için boş liste döndür
+                        health_conditions = []
+                    return health_conditions
+                    
+                except json.JSONDecodeError as e:
+                    print(f"[AI Analiz] JSON ayrıştırma hatası: {str(e)}")
+                    print(f"[AI Analiz] Ayrıştırılamayan JSON metni: {json_text}")
+                    # Varsayılan hastalık tahminleri istenmiyor, boş liste döndür
+                    return []
+        else:
+            print(f"[AI Analiz] API hatası: HTTP {response.status_code}")
+            print(f"[AI Analiz] Hata detayı: {response.text}")
+            # Varsayılan hastalık tahminleri istenmiyor, boş liste döndür
+            return []
+    except Exception as e:
+        print(f"[AI Analiz] İstek hatası: {str(e)}")
+        # Varsayılan hastalık tahminleri istenmiyor, boş liste döndür
+        return []
 
 # API endpoint'leri
 @app.route('/api/login', methods=['POST'])

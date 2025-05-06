@@ -6,151 +6,305 @@
 <!-- Chart.js kütüphanesi -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
 <style>
+    /* Temel stilller ve ana renkler */
+    :root {
+        --accent-color: #3B82F6;
+        --accent-light: #EFF6FF;
+        --accent-dark: #1D4ED8;
+        --warning-color: #F59E0B;
+        --warning-light: #FFFBEB;
+        --danger-color: #EF4444;
+        --danger-light: #FEF2F2;
+        --success-color: #10B981;
+        --success-light: #ECFDF5;
+        --text-primary: #1F2937;
+        --text-secondary: #6B7280;
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    [data-bs-theme="dark"] {
+        --accent-color: #3B82F6;
+        --accent-light: #1E3A8A;
+        --accent-dark: #60A5FA;
+        --warning-color: #F59E0B;
+        --warning-light: #78350F;
+        --danger-color: #EF4444;
+        --danger-light: #7F1D1D;
+        --success-color: #10B981;
+        --success-light: #064E3B;
+        --text-primary: #F9FAFB;
+        --text-secondary: #E5E7EB;
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+        --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Gövde stilleri */
+    body {
+        overflow-x: hidden;
+    }
+    
+    .container {
+        animation: fadeIn 0.6s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Kart ve içerik stilleri */
+    .card {
+        border-radius: 0.75rem !important;
+        transition: all 0.3s ease !important;
+        border: none !important;
+        box-shadow: var(--card-shadow) !important;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px) !important;
+        box-shadow: var(--hover-shadow) !important;
+    }
+    
+    .card-header {
+        border-top-left-radius: 0.75rem !important;
+        border-top-right-radius: 0.75rem !important;
+        background-color: white !important; 
+    }
+    
+    [data-bs-theme="dark"] .card-header {
+        background-color: #1F2937 !important;
+    }
+    
     .analysis-result {
         line-height: 1.7;
-        color: #333;
+        color: var(--text-primary);
     }
     
     [data-bs-theme="dark"] .analysis-result {
-        color: #ffffff;
+        color: var(--text-primary);
     }
     
     .analysis-result strong {
-        color: #0d6efd;
+        color: var(--accent-color);
         font-weight: 600;
     }
     
     .tahlil-content {
         white-space: pre-line;
         font-size: 1.05rem;
+        line-height: 1.8;
     }
     
-    /* Referans çubuğu stilleri */
-    .value-bar {
-        height: 25px;
-        border-radius: 4px;
-        position: relative;
+    .tahlil-content h1, 
+    .tahlil-content h2, 
+    .tahlil-content h3, 
+    .tahlil-content h4, 
+    .tahlil-content h5, 
+    .tahlil-content h6 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--accent-color);
+        font-weight: 600;
+    }
+    
+    .tahlil-content p {
+        margin-bottom: 1rem;
+    }
+    
+    .tahlil-content ul, 
+    .tahlil-content ol {
+        padding-left: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .tahlil-content li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .tahlil-content strong {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    [data-bs-theme="dark"] .tahlil-content strong {
+        color: var(--text-secondary);
+    }
+    
+    /* Grafik Kartları */
+    .chart-card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .chart-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Değer çubukları */
+    .value-gauge {
+        height: 8px;
+        border-radius: 12px;
         background-color: #e9ecef;
         margin: 8px 0;
+        position: relative;
+        overflow: hidden;
     }
     
-    [data-bs-theme="dark"] .value-bar {
-        background-color: #343a40;
+    [data-bs-theme="dark"] .value-gauge {
+        background-color: #374151;
     }
     
-    .ref-range {
+    .value-gauge-fill {
         position: absolute;
+        left: 0;
+        top: 0;
         height: 100%;
-        background-color: rgba(25, 135, 84, 0.15);
-        z-index: 1;
+        border-radius: 12px;
+        transition: width 1.2s cubic-bezier(0.65, 0, 0.35, 1);
     }
     
-    .value-marker {
-        position: absolute;
-        width: 2px;
-        height: 25px;
-        background-color: #212529;
-        z-index: 2;
+    .value-gauge-fill.normal {
+        background-color: var(--success-color);
     }
     
-    [data-bs-theme="dark"] .value-marker {
-        background-color: #ffffff;
+    .value-gauge-fill.warning {
+        background-color: var(--warning-color);
     }
     
-    .value-marker.normal {
-        background-color: #198754; /* Yeşil */
+    .value-gauge-fill.danger {
+        background-color: var(--danger-color);
     }
     
-    .value-marker.abnormal {
-        background-color: #dc3545; /* Kırmızı */
-    }
-    
-    .value-marker::after {
-        content: '';
-        position: absolute;
-        bottom: -6px;
-        left: -4px;
-        width: 10px;
-        height: 10px;
-        background-color: inherit;
-        border-radius: 50%;
-    }
-    
+    /* Tablo stilleri */
     .table-hover tbody tr:hover {
-        background-color: rgba(13, 110, 253, 0.05);
+        background-color: var(--accent-light);
     }
     
-    [data-bs-theme="dark"] .table-hover tbody tr:hover {
-        background-color: rgba(13, 110, 253, 0.15);
+    .table th {
+        font-weight: 600;
+        color: var(--text-primary);
     }
     
-    /* Kategori sekmesi stilleri */
-    .nav-pills .nav-link.active {
-        background-color: #0d6efd;
+    /* Skor dairesi */
+    .score-circle {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        margin: 0 auto;
+        animation: pulse 2s infinite;
     }
     
-    .tab-content {
-        padding-top: 1rem;
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
     
-    /* Karanlık mod için tablo renkleri */
-    [data-bs-theme="dark"] table {
-        color: #ffffff;
+    .score-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
     }
     
-    [data-bs-theme="dark"] table thead th {
-        color: #ffffff;
+    .score-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0;
+        line-height: 1;
+        background: linear-gradient(45deg, var(--accent-color), var(--accent-dark));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
     
-    [data-bs-theme="dark"] table tbody td {
-        color: #ffffff;
+    .score-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
     }
     
-    [data-bs-theme="dark"] .card-title,
-    [data-bs-theme="dark"] .card-text,
-    [data-bs-theme="dark"] .card-header h4,
-    [data-bs-theme="dark"] .card-body h5,
-    [data-bs-theme="dark"] .card-body h6,
-    [data-bs-theme="dark"] .card-body p {
-        color: #ffffff;
-    }
-    
+    /* Karanlık mod uyumluluğu */
     [data-bs-theme="dark"] .bg-light {
-        background-color: #343a40 !important;
+        background-color: #1F2937 !important;
     }
     
     [data-bs-theme="dark"] .text-muted {
-        color: #e0e0e0 !important;
+        color: #D1D5DB !important;
     }
     
     [data-bs-theme="dark"] .bg-white {
-        background-color: #2b3035 !important;
+        background-color: #111827 !important;
     }
     
+    /* Özel animasyonlar ve efektler */
+    .badge {
+        transition: all 0.3s ease;
+    }
+    
+    .badge:hover {
+        transform: scale(1.1);
+    }
+    
+    .rotate-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover .rotate-icon {
+        transform: rotate(15deg);
+    }
+    
+    /* Özel kartlar için stil */
+    .parameter-card {
+        border-radius: 0.75rem;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .parameter-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .parameter-card .card-body {
+        padding: 1.25rem;
+    }
+    
+    .parameter-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--accent-light), var(--accent-color));
+        color: white;
+        font-size: 1.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .parameter-card:hover .parameter-icon {
+        transform: scale(1.1) rotate(10deg);
+    }
+    
+    /* Yazdırma stilleri */
     @media print {
         .navbar, .footer, .btn, .accordion, .alert, .card-footer, .nav-pills {
             display: none !important;
         }
         
-        .tab-pane {
-            display: block !important;
-            opacity: 1 !important;
-            visibility: visible !important;
+        .chart-container canvas {
+            max-width: 100% !important;
+            height: auto !important;
         }
         
-        /* Baskı için tablonun tamamını göster */
-        .tab-content > .tab-pane {
-            display: block !important;
+        .card {
+            break-inside: avoid;
+            box-shadow: none !important;
         }
-    }
-    
-    /* Tavsiye kartları */
-    .recommendation-card {
-        transition: transform 0.3s ease;
-    }
-    
-    .recommendation-card:hover {
-        transform: translateY(-5px);
     }
 </style>
 {% endblock %}
@@ -170,257 +324,248 @@
                 <div class="card-body p-4">
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <div class="card h-100 border-0 bg-light">
+                            <div class="card h-100 border-0 bg-light parameter-card">
                                 <div class="card-body">
                                     <h5 class="card-title mb-3">Dosya Bilgileri</h5>
                                     <div class="d-flex align-items-center mb-3">
-                                        <i class="fas fa-file-pdf text-danger me-3" style="font-size: 2rem;"></i>
+                                        <div class="parameter-icon">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </div>
                                         <div>
                                             <h6 class="mb-0">{{ analysis.file_name }}</h6>
                                             <p class="text-muted mb-0 small">{{ analysis.created_at }}</p>
                                         </div>
                                     </div>
                                     <div class="mt-3">
-                                        <span class="badge bg-primary me-2">Kan Tahlili</span>
-                                        <span class="badge bg-secondary">{{ test_values|length }} Parametre</span>
+                                        <span class="badge bg-primary-subtle text-primary-emphasis me-2">Kan Tahlili</span>
+                                        <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ test_values|length }} Parametre</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="card h-100 border-0 {% if abnormal_values %}bg-warning bg-opacity-10{% else %}bg-success bg-opacity-10{% endif %}">
+                            <div class="card h-100 parameter-card bg-light">
                                 <div class="card-body">
-                                    <h5 class="card-title mb-3">Özet Durum</h5>
-                                    <div class="d-flex align-items-center mb-3">
-                                        {% if abnormal_values %}
-                                            <i class="fas fa-exclamation-triangle text-warning me-3" style="font-size: 2rem;"></i>
-                                            <div>
-                                                <h6 class="mb-0">Dikkat Gerektiren Değerler</h6>
-                                                <p class="mb-0">{{ abnormal_values|length }} parametre normal aralığın dışında</p>
+                                    <h5 class="card-title mb-3">Sağlık Durumu Özeti</h5>
+                                    
+                                    <!-- İnsan vücudu sistemleri gösterimi -->
+                                    <div class="body-systems mb-3">
+                                        <div class="row g-2 text-center">
+                                            <!-- Kardiyovasküler Sistem -->
+                                            <div class="col-4">
+                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                    <div class="system-icon mb-2">
+                                                        <i class="fas fa-heartbeat {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
+                                                    </div>
+                                                    <div class="system-name small fw-medium">Kalp</div>
+                                                    <div class="system-status fs-6">
+                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}
+                                                            <i class="fas fa-exclamation-circle text-warning"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check-circle text-success"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
                                             </div>
-                                        {% else %}
-                                            <i class="fas fa-check-circle text-success me-3" style="font-size: 2rem;"></i>
-                                            <div>
-                                                <h6 class="mb-0">Normal Değerler</h6>
-                                                <p class="mb-0">Tüm değerler referans aralıklarında</p>
+                                            
+                                            <!-- Karaciğer Sistemi -->
+                                            <div class="col-4">
+                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Bilirubin')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                    <div class="system-icon mb-2">
+                                                        <i class="fas fa-notes-medical {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Bilirubin')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
+                                                    </div>
+                                                    <div class="system-name small fw-medium">Karaciğer</div>
+                                                    <div class="system-status fs-6">
+                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Bilirubin')|list %}
+                                                            <i class="fas fa-exclamation-circle text-warning"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check-circle text-success"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
                                             </div>
-                                        {% endif %}
+                                            
+                                            <!-- Böbrek Sistemi -->
+                                            <div class="col-4">
+                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                    <div class="system-icon mb-2">
+                                                        <i class="fas fa-filter {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
+                                                    </div>
+                                                    <div class="system-name small fw-medium">Böbrek</div>
+                                                    <div class="system-status fs-6">
+                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}
+                                                            <i class="fas fa-exclamation-circle text-warning"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check-circle text-success"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Metabolizma -->
+                                            <div class="col-4 mt-2">
+                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                    <div class="system-icon mb-2">
+                                                        <i class="fas fa-apple-alt {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
+                                                    </div>
+                                                    <div class="system-name small fw-medium">Metabolizma</div>
+                                                    <div class="system-status fs-6">
+                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}
+                                                            <i class="fas fa-exclamation-circle text-warning"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check-circle text-success"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Hematoloji -->
+                                            <div class="col-4 mt-2">
+                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                    <div class="system-icon mb-2">
+                                                        <i class="fas fa-tint {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
+                                                    </div>
+                                                    <div class="system-name small fw-medium">Kan</div>
+                                                    <div class="system-status fs-6">
+                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}
+                                                            <i class="fas fa-exclamation-circle text-warning"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check-circle text-success"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Bağışıklık -->
+                                            <div class="col-4 mt-2">
+                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'CRP')|list or abnormal_values|selectattr('parameter_name', 'search', 'Sedim')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                    <div class="system-icon mb-2">
+                                                        <i class="fas fa-shield-alt {% if abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'CRP')|list or abnormal_values|selectattr('parameter_name', 'search', 'Sedim')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
+                                                    </div>
+                                                    <div class="system-name small fw-medium">Bağışıklık</div>
+                                                    <div class="system-status fs-6">
+                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'CRP')|list or abnormal_values|selectattr('parameter_name', 'search', 'Sedim')|list %}
+                                                            <i class="fas fa-exclamation-circle text-warning"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-check-circle text-success"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="progress mt-3" style="height: 10px;">
-                                        {% if test_values|length > 0 %}
-                                            {% set normal_percent = ((test_values|length - abnormal_values|length) / test_values|length * 100)|round %}
-                                        {% else %}
-                                            {% set normal_percent = 0 %}
-                                        {% endif %}
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ normal_percent }}%;" 
-                                            aria-valuenow="{{ normal_percent }}" aria-valuemin="0" aria-valuemax="100">{{ normal_percent }}%</div>
+                                    
+                                    <!-- Sonuç Durumu -->
+                                    <div class="result-summary">
+                                        <div class="d-flex align-items-center p-2 rounded-3 {% if abnormal_values %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %}">
+                                            <div class="me-3">
+                                                {% if abnormal_values %}
+                                                    <i class="fas fa-exclamation-circle fa-2x text-warning"></i>
+                                                {% else %}
+                                                    <i class="fas fa-check-circle fa-2x text-success"></i>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">
+                                                    {% if abnormal_values %}
+                                                        Kontrol Edilmeli
+                                                    {% else %}
+                                                        Genel Sağlık Durumu Normal
+                                                    {% endif %}
+                                                </div>
+                                                <div class="small">
+                                                    {% if abnormal_values %}
+                                                        {{ abnormal_values|length }} parametre normal aralığın dışında
+                                                    {% else %}
+                                                        Tüm değerler referans aralıklarında
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% if test_values|length > 0 %}
+                                                {% set normal_percent = ((test_values|length - abnormal_values|length) / test_values|length * 100)|round %}
+                                                <div class="ms-auto">
+                                                    <span class="badge {% if normal_percent > 80 %}bg-success{% elif normal_percent > 60 %}bg-info{% elif normal_percent > 40 %}bg-warning{% else %}bg-danger{% endif %} rounded-pill px-2 py-1">
+                                                        <strong>{{ normal_percent }}%</strong> Normal
+                                                    </span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Anormal Değerler Özeti (Eğer Varsa) -->
-                    {% if abnormal_values %}
-                    <div class="alert alert-warning mb-4">
-                        <div class="d-flex">
-                            <div class="me-3">
-                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    <!-- Hızlı Sonuç Göstergeleri -->
+                    <div class="row mb-4 g-3">
+                        <div class="col-md-3 col-6">
+                            <div class="card parameter-card bg-white h-100 text-center">
+                                <div class="card-body p-3">
+                                    <div class="parameter-icon mx-auto" style="background: linear-gradient(135deg, #FF6B6B, #FF8787);">
+                                        <i class="fas fa-heartbeat"></i>
+                                    </div>
+                                    <h6 class="text-uppercase mt-3 mb-0 small fw-bold">Kalp Sağlığı</h6>
+                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or 
+                                          abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or 
+                                          abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list or 
+                                          abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis d-block mt-2">Kontrol Edilmeli</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success-emphasis d-block mt-2">Normal</span>
+                                    {% endif %}
+                                </div>
                             </div>
-                            <div>
-                                <h5 class="alert-heading">Dikkat Edilmesi Gereken Değerler</h5>
-                                <p class="mb-0">Aşağıdaki değerler normal referans aralığının dışındadır:</p>
-                                <ul class="mt-2 mb-0">
-                                    {% for value in abnormal_values %}
-                                    <li>
-                                        <strong>{{ value.parameter_name }}:</strong> {{ value.value }} {{ value.unit }} 
-                                        (Referans: {{ value.ref_min }}-{{ value.ref_max }} {{ value.unit }})
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Yapay Zeka Yorumu -->
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                                <i class="fas fa-robot"></i>
-                            </div>
-                            <h5 class="mb-0">Yapay Zeka Yorumu</h5>
                         </div>
                         
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body p-4">
-                                <div class="analysis-result">
-                                    {% if analysis_json and analysis_json.summary %}
-                                        <div class="mb-4">
-                                            <h6 class="fw-bold text-primary mb-2">Genel Değerlendirme</h6>
-                                            <p>{{ analysis_json.summary }}</p>
-                                        </div>
-                                        
-                                        {% if analysis_json.test_groups %}
-                                        <div class="mt-4">
-                                            <h6 class="fw-bold text-primary mb-2">Grup Analizi</h6>
-                                            {% for group in analysis_json.test_groups %}
-                                            <div class="mb-3">
-                                                <h6 class="fw-bold">{{ group.group_name }}</h6>
-                                                {% if group.group_description %}
-                                                <p class="small text-muted mb-2">{{ group.group_description }}</p>
-                                                {% endif %}
-                                                <ul class="list-unstyled">
-                                                    {% for param in group.parameters %}
-                                                    <li class="mb-2">
-                                                        <div class="d-flex align-items-center">
-                                                            <span class="me-2 {% if not param.is_normal %}text-danger fw-bold{% endif %}">
-                                                                {{ param.name }}: {{ param.value }} {{ param.unit }}
-                                                                (Referans: {{ param.ref_min }} - {{ param.ref_max }} {{ param.unit }})
-                                                            </span>
-                                                            {% if param.is_normal %}
-                                                            <span class="badge bg-success ms-1">Normal</span>
-                                                            {% else %}
-                                                            <span class="badge bg-danger ms-1">Normal Dışı</span>
-                                                            {% endif %}
-                                                        </div>
-                                                        {% if param.comment %}
-                                                        <small class="d-block mb-1">{{ param.comment }}</small>
-                                                        {% endif %}
-                                                        {% if param.explanation %}
-                                                        <small class="text-muted d-block">{{ param.explanation }}</small>
-                                                        {% endif %}
-                                                    </li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                        {% endif %}
-                                        
-                                        {% if analysis_json.possible_conditions %}
-                                        <div class="mt-4">
-                                            <h6 class="fw-bold text-primary mb-3">Olası Sağlık Durumları</h6>
-                                            <div class="row">
-                                                {% for condition in analysis_json.possible_conditions %}
-                                                <div class="col-md-6 mb-3">
-                                                    <div class="card border-0 {% if condition.likelihood == 'yüksek' %}border-start border-4 border-danger{% elif condition.likelihood == 'orta' %}border-start border-4 border-warning{% else %}border-start border-4 border-info{% endif %} shadow-sm">
-                                                        <div class="card-body py-3">
-                                                            <h6 class="card-title d-flex justify-content-between mb-2">
-                                                                {{ condition.condition }}
-                                                                <span class="badge {% if condition.likelihood == 'yüksek' %}bg-danger{% elif condition.likelihood == 'orta' %}bg-warning{% else %}bg-info{% endif %}">{{ condition.likelihood }} olasılık</span>
-                                                            </h6>
-                                                            <p class="card-text small mb-2">{{ condition.explanation }}</p>
-                                                            {% if condition.related_parameters %}
-                                                            <p class="card-text small text-muted">
-                                                                İlgili parametreler: {{ condition.related_parameters|join(', ') }}
-                                                            </p>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                            <div class="alert alert-info mt-2 small">
-                                                <i class="fas fa-info-circle me-2"></i>
-                                                Bu değerlendirmeler yalnızca tahlil sonuçlarına dayanmaktadır ve kesin tanı yerine geçmez. Kesin tanı için mutlaka doktorunuza danışın.
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        
-                                        {% if analysis_json.general_analysis %}
-                                        <div class="mt-4">
-                                            <h6 class="fw-bold text-primary mb-2">Detaylı Yorum</h6>
-                                            <p>{{ analysis_json.general_analysis }}</p>
-                                        </div>
-                                        {% endif %}
-                                        
-                                        {% if analysis_json.doctor_consultation %}
-                                        <div class="mt-4">
-                                            <h6 class="fw-bold text-primary mb-2">Doktor Danışma Önerisi</h6>
-                                            <div class="card border-0 shadow-sm">
-                                                <div class="card-body">
-                                                    <div class="d-flex">
-                                                        <div class="me-3 text-{% if analysis_json.doctor_consultation.urgency == 'acil' %}danger{% elif analysis_json.doctor_consultation.urgency == 'öncelikli' %}warning{% else %}primary{% endif %}">
-                                                            <i class="fas fa-user-md fa-2x"></i>
-                                                        </div>
-                                                        <div>
-                                                            {% if analysis_json.doctor_consultation.recommended %}
-                                                            <p class="mb-2">Bu tahlil sonuçlarına göre bir doktor görüşü almanız önerilmektedir.</p>
-                                                            {% if analysis_json.doctor_consultation.specialties %}
-                                                            <p class="mb-2">Önerilen branşlar: <strong>{{ analysis_json.doctor_consultation.specialties|join(', ') }}</strong></p>
-                                                            {% endif %}
-                                                            <p class="mb-0 small">
-                                                                <span class="badge bg-{% if analysis_json.doctor_consultation.urgency == 'acil' %}danger{% elif analysis_json.doctor_consultation.urgency == 'öncelikli' %}warning{% else %}primary{% endif %}">
-                                                                    {{ analysis_json.doctor_consultation.urgency|capitalize }} seviye
-                                                                </span>
-                                                            </p>
-                                                            {% else %}
-                                                            <p class="mb-0">Bu tahlil sonuçlarına göre acil bir doktor görüşü gerekmemektedir. Ancak rutin sağlık kontrollerinizi sürdürmeniz önerilir.</p>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        
-                                        {% if analysis_json.lifestyle_advice %}
-                                        <div class="mt-4">
-                                            <h6 class="fw-bold text-primary mb-3">Yaşam Tarzı Önerileri</h6>
-                                            <div class="row">
-                                                {% for advice in analysis_json.lifestyle_advice %}
-                                                <div class="col-md-6 mb-3">
-                                                    <div class="card border-0 shadow-sm h-100">
-                                                        <div class="card-body">
-                                                            <div class="d-flex">
-                                                                <div class="me-3 text-success">
-                                                                    <i class="fas fa-leaf fa-2x"></i>
-                                                                </div>
-                                                                <div>
-                                                                    <p class="mb-0">{{ advice }}</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                        
-                                        {% if analysis_json.additional_tests %}
-                                        <div class="mt-4">
-                                            <h6 class="fw-bold text-primary mb-3">Önerilen Ek Tetkikler</h6>
-                                            <div class="card border-0 shadow-sm">
-                                                <div class="card-body">
-                                                    <div class="d-flex">
-                                                        <div class="me-3 text-info">
-                                                            <i class="fas fa-flask fa-2x"></i>
-                                                        </div>
-                                                        <div>
-                                                            <p class="mb-2">Bu tahlil sonuçlarına göre aşağıdaki ek tetkiklerin yapılması faydalı olabilir:</p>
-                                                            <ul class="mb-0">
-                                                                {% for test in analysis_json.additional_tests %}
-                                                                <li>{{ test }}</li>
-                                                                {% endfor %}
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-                                    {% elif analysis.analysis_result %}
-                                        {% set analysis_text = analysis.analysis_result|replace('\n\n', '<div class="my-3"></div>')|replace('\n', '<br>')|replace('**', '<strong>')|safe %}
-                                        <div class="tahlil-content">
-                                            {{ analysis_text }}
-                                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="card parameter-card bg-white h-100 text-center">
+                                <div class="card-body p-3">
+                                    <div class="parameter-icon mx-auto" style="background: linear-gradient(135deg, #4DABF7, #228BE6);">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                    <h6 class="text-uppercase mt-3 mb-0 small fw-bold">Hematoloji</h6>
+                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or 
+                                          abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or 
+                                          abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis d-block mt-2">Kontrol Edilmeli</span>
                                     {% else %}
-                                        <div class="alert alert-danger mb-3 d-flex align-items-center">
-                                            <i class="fas fa-exclamation-circle me-2"></i>
-                                            <div>Tahlil sonucu yüklenirken bir hata oluştu. Lütfen yeni bir tahlil yüklemeyi deneyin.</div>
-                                        </div>
+                                        <span class="badge bg-success-subtle text-success-emphasis d-block mt-2">Normal</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 col-6">
+                            <div class="card parameter-card bg-white h-100 text-center">
+                                <div class="card-body p-3">
+                                    <div class="parameter-icon mx-auto" style="background: linear-gradient(135deg, #82C91E, #5C940D);">
+                                        <i class="fas fa-apple-alt"></i>
+                                    </div>
+                                    <h6 class="text-uppercase mt-3 mb-0 small fw-bold">Metabolizma</h6>
+                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or 
+                                          abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or 
+                                          abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis d-block mt-2">Kontrol Edilmeli</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success-emphasis d-block mt-2">Normal</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 col-6">
+                            <div class="card parameter-card bg-white h-100 text-center">
+                                <div class="card-body p-3">
+                                    <div class="parameter-icon mx-auto" style="background: linear-gradient(135deg, #BE4BDB, #9C36B5);">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <h6 class="text-uppercase mt-3 mb-0 small fw-bold">Bağışıklık</h6>
+                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list or 
+                                          abnormal_values|selectattr('parameter_name', 'search', 'CRP')|list or 
+                                          abnormal_values|selectattr('parameter_name', 'search', 'Sedim')|list %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis d-block mt-2">Kontrol Edilmeli</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success-emphasis d-block mt-2">Normal</span>
                                     {% endif %}
                                 </div>
                             </div>
@@ -433,263 +578,597 @@
                             <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
                                 <i class="fas fa-table"></i>
                             </div>
-                            <h5 class="mb-0">Tahlil Değerleri</h5>
+                            <h5 class="mb-0">Tahlil Özeti</h5>
                         </div>
                         
-                        <!-- Kategori Sekmeleri -->
-                        <ul class="nav nav-pills mb-3" id="valuesTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-values" 
-                                        type="button" role="tab" aria-controls="all-values" aria-selected="true">
-                                    Tüm Değerler
-                                </button>
-                            </li>
-                            {% for category_name in categories|sort %}
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="{{category_name|lower|replace(' ', '-')}}-tab" data-bs-toggle="pill" 
-                                        data-bs-target="#{{category_name|lower|replace(' ', '-')}}-values" type="button" role="tab" 
-                                        aria-controls="{{category_name|lower|replace(' ', '-')}}-values" aria-selected="false">
-                                    {{category_name}}
-                                </button>
-                            </li>
-                            {% endfor %}
-                            {% if abnormal_values %}
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="abnormal-tab" data-bs-toggle="pill" data-bs-target="#abnormal-values" 
-                                        type="button" role="tab" aria-controls="abnormal-values" aria-selected="false">
-                                    <i class="fas fa-exclamation-triangle text-warning me-1"></i> Anormal Değerler
-                                </button>
-                            </li>
-                            {% endif %}
-                        </ul>
-                        
-                        <!-- Kategori İçerikleri -->
-                        <div class="tab-content" id="valuesTabsContent">
-                            <!-- Tüm Değerler -->
-                            <div class="tab-pane fade show active" id="all-values" role="tabpanel" aria-labelledby="all-tab">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Parametre</th>
-                                                <th>Değer</th>
-                                                <th>Birim</th>
-                                                <th>Referans Aralığı</th>
-                                                <th>Durum</th>
-                                                <th>Görselleştirme</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for value in test_values %}
-                                            <tr>
-                                                <td>
-                                                    <strong>{{ value.parameter_name }}</strong>
-                                                    <div class="small text-muted">{{ value.category }}</div>
-                                                </td>
-                                                <td class="{% if not value.is_normal %}text-danger fw-bold{% endif %}">{{ value.value }}</td>
-                                                <td>{{ value.unit }}</td>
-                                                <td>{{ value.ref_min }} - {{ value.ref_max }}</td>
-                                                <td>
-                                                    {% if value.is_normal %}
-                                                    <span class="badge bg-success">Normal</span>
-                                                    {% else %}
-                                                    <span class="badge bg-danger">Normal Dışı</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    <div class="value-bar">
-                                                        <div class="ref-range" 
-                                                             style="left: 20%; right: 20%;">
-                                                        </div>
-                                                        <div class="value-marker {% if value.is_normal %}normal{% else %}abnormal{% endif %}"
-                                                             style="left: {% if value.value is not none and value.ref_min is not none and value.ref_max is not none %}
-                                                                       {% if value.value < value.ref_min %}
-                                                                          10%
-                                                                       {% elif value.value > value.ref_max %}
-                                                                          90%
-                                                                       {% else %}
-                                                                          {{ ((value.value - value.ref_min) / (value.ref_max - value.ref_min) * 60 + 20)|round }}%
-                                                                       {% endif %}
-                                                                    {% else %}
-                                                                       50%
-                                                                    {% endif %};">
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            
-                            <!-- Her Kategori İçin Ayrı Sekme -->
-                            {% for category_name, values in categories.items() %}
-                            <div class="tab-pane fade" id="{{category_name|lower|replace(' ', '-')}}-values" role="tabpanel"
-                                 aria-labelledby="{{category_name|lower|replace(' ', '-')}}-tab">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Parametre</th>
-                                                <th>Değer</th>
-                                                <th>Birim</th>
-                                                <th>Referans Aralığı</th>
-                                                <th>Durum</th>
-                                                <th>Görselleştirme</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for value in values %}
-                                            <tr>
-                                                <td>
-                                                    <strong>{{ value.parameter_name }}</strong>
-                                                    {% if value.description %}
-                                                    <div class="small text-muted">{{ value.description }}</div>
-                                                    {% endif %}
-                                                </td>
-                                                <td class="{% if not value.is_normal %}text-danger fw-bold{% endif %}">{{ value.value }}</td>
-                                                <td>{{ value.unit }}</td>
-                                                <td>{{ value.ref_min }} - {{ value.ref_max }}</td>
-                                                <td>
-                                                    {% if value.is_normal %}
-                                                    <span class="badge bg-success">Normal</span>
-                                                    {% else %}
-                                                    <span class="badge bg-danger">Normal Dışı</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    <div class="value-bar">
-                                                        <div class="ref-range" 
-                                                             style="left: 20%; right: 20%;">
-                                                        </div>
-                                                        <div class="value-marker {% if value.is_normal %}normal{% else %}abnormal{% endif %}"
-                                                             style="left: {% if value.value is not none and value.ref_min is not none and value.ref_max is not none %}
-                                                                       {% if value.value < value.ref_min %}
-                                                                          10%
-                                                                       {% elif value.value > value.ref_max %}
-                                                                          90%
-                                                                       {% else %}
-                                                                          {{ ((value.value - value.ref_min) / (value.ref_max - value.ref_min) * 60 + 20)|round }}%
-                                                                       {% endif %}
-                                                                    {% else %}
-                                                                       50%
-                                                                    {% endif %};">
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            {% endfor %}
-                            
-                            <!-- Anormal Değerler Sekmesi -->
-                            {% if abnormal_values %}
-                            <div class="tab-pane fade" id="abnormal-values" role="tabpanel" aria-labelledby="abnormal-tab">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Parametre</th>
-                                                <th>Değer</th>
-                                                <th>Birim</th>
-                                                <th>Referans Aralığı</th>
-                                                <th>Sapma</th>
-                                                <th>Görselleştirme</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for value in abnormal_values %}
-                                            <tr>
-                                                <td>
-                                                    <strong>{{ value.parameter_name }}</strong>
-                                                    <div class="small text-muted">{{ value.category }}</div>
-                                                </td>
-                                                <td class="text-danger fw-bold">{{ value.value }}</td>
-                                                <td>{{ value.unit }}</td>
-                                                <td>{{ value.ref_min }} - {{ value.ref_max }}</td>
-                                                <td>
-                                                    {% if value.value is not none and value.ref_min is not none and value.ref_max is not none %}
-                                                        {% if value.value < value.ref_min %}
-                                                        <span class="badge bg-info">Düşük</span>
-                                                        {% elif value.value > value.ref_max %}
-                                                        <span class="badge bg-danger">Yüksek</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        <span class="badge bg-secondary">Belirsiz</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    <div class="value-bar">
-                                                        <div class="ref-range" 
-                                                             style="left: 20%; right: 20%;">
-                                                        </div>
-                                                        <div class="value-marker abnormal"
-                                                             style="left: {% if value.value is not none and value.ref_min is not none and value.ref_max is not none %}
-                                                                       {% if value.value < value.ref_min %}
-                                                                          10%
-                                                                       {% elif value.value > value.ref_max %}
-                                                                          90%
-                                                                       {% else %}
-                                                                          50%
-                                                                       {% endif %}
-                                                                    {% else %}
-                                                                       50%
-                                                                    {% endif %};">
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Geçmiş Karşılaştırma (Eğer veri varsa) -->
-                    {% if comparison_data and comparison_data|length > 0 %}
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <h5 class="mb-0">Geçmiş Tahlillerle Karşılaştırma</h5>
-                        </div>
-                        
+                        <!-- Anormal Değerler Özeti -->
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="row">
-                                    <!-- Parametre seçimi -->
-                                    <div class="col-md-3">
-                                        <div class="form-group mb-3">
-                                            <label for="param-select" class="form-label">Parametre Seçin</label>
-                                            <select class="form-select" id="param-select">
-                                                {% for param_name, history in comparison_data.items() %}
-                                                {% if history|length > 0 %}
-                                                <option value="{{ param_name }}">{{ param_name }}</option>
-                                                {% endif %}
-                                                {% endfor %}
-                                            </select>
+                                    <div class="col-md-12">
+                    {% if abnormal_values %}
+                                        <div class="alert alert-warning mb-3">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Dikkat Edilmesi Gereken Değerler</h5>
+                                                    <p>Aşağıdaki değerler normal referans aralığının dışındadır:</p>
+                                <ul class="mt-2 mb-0">
+                                    {% for value in abnormal_values %}
+                                    <li>
+                                                            <strong>{{ value.parameter_name }}</strong>
+                                                            {% if value.description %}
+                                                            <div class="small">{{ value.description }}</div>
+                                                            {% endif %}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                                        {% else %}
+                                        <div class="alert alert-success mb-0">
+                                            <div class="d-flex">
+                                                <div class="me-3">
+                                                    <i class="fas fa-check-circle fa-2x"></i>
+                                                </div>
+                                                <div>
+                                                    <h5 class="alert-heading">Tüm Değerler Normal Aralıkta</h5>
+                                                    <p class="mb-0">Yapılan değerlendirmeye göre kan tahlili değerleri normal referans aralıklarında bulunmaktadır.</p>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    
-                                    <!-- Grafik alanı -->
-                                    <div class="col-md-9">
-                                        <div class="chart-container" style="position: relative; height:250px;">
-                                            <canvas id="trendChart"></canvas>
-                                        </div>
+                    {% endif %}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% endif %}
+                    
+                    <!-- GENEL DEĞERLENDİRME ve NORMAL DIŞI DEĞERLER bölümleri için güncellemeler -->
+                    <div class="row mb-4 g-3">
+                        <div class="col-md-6">
+                            <div class="card h-100 parameter-card bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+                                            <i class="fas fa-clipboard-check"></i>
+                                        </div>
+                                        <h6 class="card-title mb-1 fw-semibold">GENEL DEĞERLENDİRME</h6>
+                                        {% if abnormal_values %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis ms-auto rounded-pill px-2 py-1">
+                                            <i class="fas fa-exclamation-circle me-1"></i>Dikkat
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-success-subtle text-success-emphasis ms-auto rounded-pill px-2 py-1">
+                                            <i class="fas fa-check-circle me-1"></i>Normal
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mb-0 small">
+                                        {% if abnormal_values %}
+                                        Tahlil sonuçlarınızda bazı değerler referans aralıklarının dışındadır. Bu durum sağlık durumunuzu değerlendirmek için bir sağlık uzmanına danışmanızı gerektirebilir.
+                                        {% else %}
+                                        Tahlil sonuçlarınız genel olarak normal aralıklarda görünmektedir. Sağlığınızı korumak için düzenli kontrollere devam etmeniz önerilir.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100 parameter-card bg-light">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <div class="bg-info bg-opacity-10 text-info rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+                                            <i class="fas fa-filter"></i>
+                                        </div>
+                                        <h6 class="card-title mb-1 fw-semibold">NORMAL DIŞI DEĞERLER</h6>
+                                        {% if abnormal_values %}
+                                        <span class="badge bg-danger-subtle text-danger-emphasis ms-auto rounded-pill px-2 py-1">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>{{ abnormal_values|length }} değer
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-success-subtle text-success-emphasis ms-auto rounded-pill px-2 py-1">
+                                            <i class="fas fa-check-circle me-1"></i>0 değer
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mb-0 small">
+                                        {% if abnormal_values %}
+                                        Tespit edilen normal dışı değerler: 
+                                        {% for value in abnormal_values[:3] %}
+                                            <span class="badge {% if 'yüksek' in value.description|lower %}bg-danger-subtle text-danger-emphasis{% else %}bg-warning-subtle text-warning-emphasis{% endif %} me-1">{{ value.parameter_name }}</span>
+                                        {% endfor %}
+                                        {% if abnormal_values|length > 3 %}
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis">+{{ abnormal_values|length - 3 }} daha</span>
+                                        {% endif %}
+                                        {% else %}
+                                        Tahlil sonuçlarınızda normal dışı değer tespit edilmemiştir. Bu sonuçlar genel sağlık durumunuzun iyi olduğunu gösterir.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Yapay Zeka Yorumu -->
+                    <div class="mb-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-3 d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <h5 class="mb-0">Yapay Zeka Yorumu</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="analysis-result">
+                                    {% if analysis.analysis_result %}
+                                        {% if analysis_json and analysis_json.summary %}
+                                        <div class="mb-4 p-3 bg-primary-subtle border border-primary-subtle rounded">
+                                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-comment-dots me-2"></i>Genel Değerlendirme</h6>
+                                            <p class="mb-0 small">{{ analysis_json.summary }}</p>
+                                        </div>
+                                        {% else %}
+                                        <div class="mb-4 p-3 bg-light border rounded">
+                                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-comment-dots me-2"></i>Genel Değerlendirme</h6>
+                                            <p class="mb-0 small">Tahlil sonuçlarınız genel olarak incelenmiştir. Sonuçlarınızın önemli bir kısmı normal aralıkta görünmektedir. Anormal değerlerinizi takip etmeniz ve düzenli sağlık kontrollerinizi sürdürmeniz önerilir.</p>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if abnormal_values %}
+                                        <div class="alert alert-warning mb-4">
+                                            <div class="d-flex">
+                                                <div class="me-3"><i class="fas fa-exclamation-triangle fa-2x"></i></div>
+                                                <div>
+                                                    <h6 class="alert-heading fw-semibold">Referans Dışı Değerler</h6>
+                                                    <p class="mb-1 small">Aşağıdaki parametreler referans aralıklarının dışındadır ve yapay zeka analizinde dikkate alınmıştır:</p>
+                                                    <ul class="list-unstyled mb-0 small">
+                                                    {% for value in abnormal_values %}
+                                                        <li><i class="fas fa-caret-right me-1 text-warning"></i><strong>{{ value.parameter_name }}</strong>: {{ value.value }} {{ value.unit }} (Referans: {{ value.reference_range }})</li>
+                                                    {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- DETAYLI PARAMETRE ANALİZİ (Tahlil Analizi - cards with gauges) -->
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-microscope me-2"></i>Detaylı Parametre Analizi</h6>
+                                            
+                                            <!-- Genel Değerlendirme ve Normal Dışı Değerler -->
+                                            <div class="row mb-4 g-3">
+                                                <!-- GENEL DEĞERLENDİRME kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card {% if abnormal_values %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="parameter-icon bg-primary" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-clipboard-check"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">GENEL DEĞERLENDİRME</h6>
+                                                                    <p class="mb-0 small">
+                                                                        {% if abnormal_values %}
+                                                                        Tahlil sonuçlarınızda bazı değerler referans aralıklarının dışındadır. Bu durum çeşitli sağlık sorunlarına işaret edebilir. Detaylı değerlendirme için mutlaka bir hekime başvurunuz.
+                                                                        {% else %}
+                                                                        Tahlil sonuçlarınız genel olarak normal aralıklarda görünmektedir. Sağlığınızı korumak için düzenli kontrollere devam etmeniz önerilir.
+                                                                        {% endif %}
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge {% if abnormal_values %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-auto rounded-pill px-2 py-1">
+                                                                    {% if abnormal_values %}
+                                                                    <i class="fas fa-exclamation-circle me-1"></i>Dikkat
+                                                                    {% else %}
+                                                                    <i class="fas fa-check-circle me-1"></i>Normal
+                                                                    {% endif %}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- DEĞERLERİN GRUPLANDIRILMASI kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card bg-light">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="parameter-icon bg-success" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-layer-group"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">DEĞERLERİN GRUPLANDIRILMASI</h6>
+                                                                    <p class="mb-0 small">
+                                                                        Kan değerleriniz sistem tarafından kategorize edilmiştir. Hematoloji, biyokimya, lipid ve diğer gruplar olarak sınıflandırılmıştır. Bu gruplama, sağlık durumunuzun farklı yönlerini değerlendirmeye yardımcı olur.
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge bg-success-subtle text-success-emphasis ms-auto rounded-pill px-2 py-1">
+                                                                    <i class="fas fa-check-circle me-1"></i>Normal
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- NORMAL DIŞI DEĞERLER kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card {% if abnormal_values %}bg-danger-subtle{% else %}bg-success-subtle{% endif %}">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="parameter-icon {% if abnormal_values %}bg-danger{% else %}bg-success{% endif %}" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-filter"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">NORMAL DIŞI DEĞERLER</h6>
+                                                                    <p class="mb-0 small">
+                                                                        {% if abnormal_values %}
+                                                                        Tahlil sonuçlarınızda {{ abnormal_values|length }} adet normal dışı değer tespit edilmiştir. Bu değerler çeşitli sağlık sorunlarını işaret edebilir. Detaylı değerlendirme için bir sağlık uzmanına danışmalısınız.
+                                                                        {% else %}
+                                                                        Tahlil sonuçlarınızda normal dışı değer tespit edilmemiştir. Bu durum genel sağlık durumunuzun iyi olduğunu gösterir. Düzenli kontrollere devam etmeniz önerilir.
+                                                                        {% endif %}
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge {% if abnormal_values %}bg-danger-subtle text-danger-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-auto rounded-pill px-2 py-1">
+                                                                    {% if abnormal_values %}
+                                                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ abnormal_values|length }}
+                                                                    {% else %}
+                                                                    <i class="fas fa-check-circle me-1"></i>0
+                                                                    {% endif %}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- TAM KAN SAYIMI kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card bg-info-subtle">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="parameter-icon bg-info" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-tint"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">TAM KAN SAYIMI (HEMOGRAM)</h6>
+                                                                    <p class="mb-0 small">
+                                                                        Kan hücrelerinizin sayıları ve özellikleri incelenmiştir. Bu analiz kırmızı kan hücreleri, beyaz kan hücreleri ve trombositleri değerlendirir. Anemi, enfeksiyon veya kanama bozuklukları hakkında bilgi verir.
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge bg-info-subtle text-info-emphasis ms-auto rounded-pill px-2 py-1">
+                                                                    <i class="fas fa-info-circle me-1"></i>Bilgi
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- BİYOKİMYA kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card bg-success-subtle">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="parameter-icon bg-success" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-flask"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">BİYOKİMYA (KAN)</h6>
+                                                                    <p class="mb-0 small">
+                                                                        Kan biyokimya parametreleri, vücudunuzdaki organ fonksiyonlarını değerlendirir. Böbrek ve karaciğer fonksiyonları, elektrolit dengesi ve metabolik durumunuz hakkında önemli bilgiler sağlar.
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge bg-success-subtle text-success-emphasis ms-auto rounded-pill px-2 py-1">
+                                                                    <i class="fas fa-check-circle me-1"></i>Normal
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- TAM İDRAR ANALİZİ kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card bg-warning-subtle">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="parameter-icon bg-warning" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-vial"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">TAM İDRAR ANALİZİ</h6>
+                                                                    <p class="mb-0 small">
+                                                                        İdrar analizi, böbrek fonksiyonları ve genel sağlık durumu hakkında değerli bilgiler sağlar. İdrarda protein, kan, lökosit varlığı ve diğer parametreler incelenir. İdrar yolu enfeksiyonu veya böbrek hastalıkları hakkında ipuçları verebilir.
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge bg-warning-subtle text-warning-emphasis ms-auto rounded-pill px-2 py-1">
+                                                                    <i class="fas fa-sync-alt me-1"></i>Kontrol
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- İDRAR KÜLTÜRÜ kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card bg-primary-subtle">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="parameter-icon bg-primary" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-bacteria"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">İDRAR KÜLTÜRÜ</h6>
+                                                                    <p class="mb-0 small">
+                                                                        İdrar kültürü, idrar yolu enfeksiyonlarının tanısında kullanılır. İdrarda bakteri üremesi olup olmadığını kontrol eder. İdrar yolu enfeksiyonlarının teşhisi ve tedavi planlaması için önemli bir testtir.
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge bg-primary-subtle text-primary-emphasis ms-auto rounded-pill px-2 py-1">
+                                                                    <i class="fas fa-info-circle me-1"></i>Bilgi
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {% if analysis.analysis_result %}
+                                                {% set lines = analysis.analysis_result.split('\n') %}
+                                                <div class="row g-3">
+                                                    {% for line in lines %}
+                                                    {% if ':' in line %}
+                                                    {% set parts = line.split(':', 1) %}
+                                                    {% set param_name = parts[0]|trim %}
+                                                    {% set value_section = parts[1]|trim if parts|length > 1 else '' %}
+                                                    
+                                                    {% set value_parts = value_section.split('(', 1) if '(' in value_section else [value_section, ''] %}
+                                                    {% set value_text = value_parts[0]|trim %}
+                                                    {% set interpretation_text = value_parts[1].replace(')', '')|trim if value_parts|length > 1 and value_parts[1] else '' %}
+                                                    
+                                                    <div class="col-md-6 col-lg-4">
+                                                        <div class="card h-100 parameter-card shadow-sm">
+                                                            {% set interpretation_lower = interpretation_text.lower() %}
+                                                            {% set value_text_lower = value_text.lower() %}
+                                                            {% if 'yüksek' in interpretation_lower or 'artmış' in interpretation_lower or 'yüksek' in value_text_lower %}
+                                                                <div class="card-body d-flex flex-column p-3" style="border-top: 3px solid var(--danger-color);">
+                                                            {% elif 'düşük' in interpretation_lower or 'azalmış' in interpretation_lower or 'düşük' in value_text_lower %}
+                                                                <div class="card-body d-flex flex-column p-3" style="border-top: 3px solid var(--warning-color);">
+                                                            {% else %}
+                                                                <div class="card-body d-flex flex-column p-3" style="border-top: 3px solid var(--success-color);">
+                                                            {% endif %}
+                                                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                                                    <h6 class="card-title mb-0 fw-semibold" style="font-size: 0.9rem;">{{ param_name|replace("**", "") }}</h6>
+                                                                    
+                                                                    {% if 'yüksek' in interpretation_lower or 'artmış' in interpretation_lower or 'yüksek' in value_text_lower %}
+                                                                        <span class="badge bg-danger-subtle text-danger-emphasis rounded-pill px-2 py-1 small">
+                                                                            <i class="fas fa-arrow-up me-1 rotate-icon"></i>Yüksek
+                                                                        </span>
+                                                                    {% elif 'düşük' in interpretation_lower or 'azalmış' in interpretation_lower or 'düşük' in value_text_lower %}
+                                                                        <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-1 small">
+                                                                            <i class="fas fa-arrow-down me-1 rotate-icon"></i>Düşük
+                                                                        </span>
+                                                                    {% elif 'normal' in interpretation_lower or value_text.strip() == '**' or value_text.strip() == '-' or 'normal' in value_text_lower %}
+                                                                        <span class="badge bg-success-subtle text-success-emphasis rounded-pill px-2 py-1 small">
+                                                                            <i class="fas fa-check me-1"></i>Normal
+                                                                        </span>
+                                                                    {% else %}
+                                                                        <!-- No badge if state is unclear -->
+                                                                    {% endif %}
+                                                                </div>
+                                    
+                                                                {% if value_text.strip() != '**' and value_text.strip() != '-' %}
+                                                                    <div class="mt-auto">
+                                                                        <div class="mb-2">
+                                                                            <div class="small text-muted mb-1">
+                                                                                <span class="fw-medium">Sonuç: </span><strong class="text-body">{{ value_text|replace("**", "") }}</strong>
+                                                                            </div>
+                                                                            <div class="value-gauge">
+                                                                                {% if 'yüksek' in interpretation_lower or 'artmış' in interpretation_lower or 'yüksek' in value_text_lower %}
+                                                                                    <div class="value-gauge-fill danger" style="width: 90%;"></div>
+                                                                                {% elif 'düşük' in interpretation_lower or 'azalmış' in interpretation_lower or 'düşük' in value_text_lower %}
+                                                                                    <div class="value-gauge-fill warning" style="width: 30%;"></div>
+                                                                                {% else %}
+                                                                                    <div class="value-gauge-fill normal" style="width: 60%;"></div>
+                                                                                {% endif %}
+                                                                            </div>
+                                                                        </div>
+                                                                        {% set ref_range_in_value = "" %}
+                                                                        {% if "referans aralığı" in value_text %}
+                                                                            {% set ref_range_parts = value_text.split("referans aralığı") %}
+                                                                            {% if ref_range_parts|length > 1 %}
+                                                                                {% set ref_part = ref_range_parts[1] %}
+                                                                                {% set ref_parts = ref_part.split(".") %}
+                                                                                {% if ref_parts|length > 0 %}
+                                                                                    {% set ref_range_in_value = ref_parts[0]|trim %}
+                                                                                {% endif %}
+                                                                            {% endif %}
+                                                                            {% if ref_range_in_value %}
+                                                                            <div class="small text-muted">
+                                                                                <i class="fas fa-ruler-horizontal me-1"></i>Referans: <span class="fw-medium">{{ ref_range_in_value }}</span>
+                                                                            </div>
+                                                                            {% endif %}
+                                                                        {% endif %}
+                                                                        
+                                                                        {% if interpretation_text and ('yüksek' not in interpretation_text.lower() and 'düşük' not in interpretation_text.lower() and 'normal' not in interpretation_text.lower()) %}
+                                                                        <div class="mt-2 small text-muted fst-italic">
+                                                                            <i class="fas fa-info-circle text-primary me-1"></i>{{ interpretation_text }}
+                                                                        </div>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                {% else %}
+                                                                    <div class="mt-auto text-center text-muted small py-2">
+                                                                        <p class="mb-1">
+                                                                            {% if param_name == 'Tam İdrar Analizi' %}
+                                                                            <em>İdrar analizi sonuçlarınız hakkında bilgi edinmek için laboratuvar raporunu inceleyiniz.</em>
+                                                                            {% elif param_name == 'Hemoglobin' %}
+                                                                            <em>Hemoglobin değeri, kanın oksijen taşıma kapasitesini gösterir.</em>
+                                                                            {% elif param_name == 'Biyokimya' %}
+                                                                            <em>Biyokimya testleri, vücudunuzdaki organ fonksiyonlarını değerlendirmek için kullanılır.</em>
+                                                                            {% elif 'Sodyum' in param_name or 'Potasyum' in param_name %}
+                                                                            <em>Elektrolit değerleri, vücudunuzdaki sıvı dengesinin korunmasında önemlidir.</em>
+                                                                            {% elif 'Kreatinin' in param_name or 'Üre' in param_name %}
+                                                                            <em>Böbrek fonksiyonlarının değerlendirilmesinde kullanılan önemli parametrelerdir.</em>
+                                                                            {% elif 'Glukoz' in param_name or 'Şeker' in param_name %}
+                                                                            <em>Kan şekeri düzeyi, metabolik sağlığınızın önemli bir göstergesidir.</em>
+                                                                            {% elif 'Kolesterol' in param_name or 'Lipit' in param_name or 'HDL' in param_name or 'LDL' in param_name %}
+                                                                            <em>Kan yağ değerleri, kalp-damar hastalık riskinizi gösterir.</em>
+                                                                            {% elif 'Tiroid' in param_name or 'TSH' in param_name %}
+                                                                            <em>Tiroid fonksiyonları, metabolizma hızınızı düzenlemede önemlidir.</em>
+                                                                            {% else %}
+                                                                            <em>Bu parametre hakkında detaylı bilgi için sağlık uzmanınıza danışınız.</em>
+                                                                            {% endif %}
+                                                                        </p>
+                                                                        <div class="value-gauge">
+                                                                             <div class="value-gauge-fill" style="width: 50%; background-color: #e9ecef;"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                                
+                                                <div class="alert alert-light mt-3 mb-0 small border">
+                                                    <h6 class="alert-heading small fw-semibold mb-1">Değer Gösterge Renkleri</h6>
+                                                    <div class="d-flex flex-wrap gap-3">
+                                                        <span><i class="fas fa-circle text-success me-1"></i>Normal</span>
+                                                        <span><i class="fas fa-circle text-warning me-1"></i>Düşük</span>
+                                                        <span><i class="fas fa-circle text-danger me-1"></i>Yüksek</span>
+                                                    </div>
+                                                </div>
+                                            {% else %}
+                                                <div class="alert alert-secondary">Tahlil analizi sonuçları yüklenemedi.</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <!-- OLASI HASTALIK TAHMİNLERİ -->
+                                        {% if analysis_json and analysis_json.health_conditions is defined %}
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-stethoscope me-2"></i>Olası Hastalık Tahminleri</h6>
+                                            <div class="alert alert-warning d-flex align-items-center small mb-3 p-2">
+                                                <i class="fas fa-exclamation-triangle fa-lg me-2"></i>
+                                                <div><strong>Önemli Not:</strong> Bu bölümdeki tahminler, sadece tahlil değerlerinize dayanmaktadır ve kesin tanı niteliği taşımaz. Mutlaka bir sağlık uzmanına danışınız.</div>
+                                            </div>
+                                            {% if analysis_json.health_conditions %}
+                                            <div class="row g-3">
+                                                {% for condition in analysis_json.health_conditions %}
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 shadow-sm border-light">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:36px; height:36px; font-size:0.9rem;">
+                                                                    <i class="fas fa-notes-medical"></i>
+                                                                </div>
+                                                                <h6 class="card-title mb-1 fw-semibold small">{{ condition.name }}</h6>
+                                                            </div>
+                                                            <p class="mb-2 text-muted" style="font-size: 0.85rem;">{{ condition.description }}</p>
+                                                            {% if condition.related_values %}
+                                                            <div class="mt-2">
+                                                                <small class="text-muted fw-medium" style="font-size: 0.8rem;">İlgili Değerler:</small>
+                                                                <div>
+                                                                {% for value_item in condition.related_values.split(',') %}
+                                                                    <span class="badge bg-info-subtle text-info-emphasis me-1 mb-1 small">{{ value_item|trim }}</span>
+                                                                {% endfor %}
+                                                                </div>
+                                                            </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                            {% else %}
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                Tahlil değerlerinize göre belirli bir hastalık tahmini yapılamamıştır.
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% else %}
+                                        <!-- OLASI SAĞLIK DURUMLARI - Varsayılan görünüm -->
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-stethoscope me-2"></i>Olası Sağlık Durumları</h6>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 shadow-sm border-light">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="bg-success bg-opacity-10 text-success rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:36px; height:36px; font-size:0.9rem;">
+                                                                    <i class="fas fa-heartbeat"></i>
+                                                                </div>
+                                                                <h6 class="card-title mb-1 fw-semibold small">Genel Sağlık Değerlendirmesi</h6>
+                                                            </div>
+                                                            <p class="mb-2 text-muted" style="font-size: 0.85rem;">Tahlil sonuçlarınız genel olarak normal aralıkta görünmektedir. Olası sağlık durumları için yapay zeka analizi yapılamamıştır. Sonuçlarınızı bir sağlık uzmanıyla detaylı olarak değerlendirmenizi öneririz.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 shadow-sm border-light">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="bg-info bg-opacity-10 text-info rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:36px; height:36px; font-size:0.9rem;">
+                                                                    <i class="fas fa-calendar-check"></i>
+                                                                </div>
+                                                                <h6 class="card-title mb-1 fw-semibold small">Önleyici Sağlık Tavsiyeleri</h6>
+                                                            </div>
+                                                            <p class="mb-2 text-muted" style="font-size: 0.85rem;">Düzenli sağlık kontrollerini sürdürmek, dengeli beslenme ve düzenli fiziksel aktivite, çoğu hastalığın önlenmesinde önemli rol oynar. Yılda bir kez genel sağlık kontrolü yaptırmanız önerilir.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <!-- SAĞLIK VE YAŞAM TARZI ÖNERİLERİ -->
+                                        {% if (analysis_json and analysis_json.recommendations) or (analysis_json and analysis_json.lifestyle_advice) %}
+                                        <div class="mb-0">
+                                            <h6 class="fw-bold text-primary mb-3"><i class="fas fa-heartbeat me-2"></i>Sağlık ve Yaşam Tarzı Önerileri</h6>
+                                            <div class="row g-3">
+                                                {% if analysis_json.recommendations %}
+                                                    {% for advice in analysis_json.recommendations %}
+                                                    <div class="col-md-6">
+                                                        <div class="card h-100 shadow-sm border-light">
+                                                            <div class="card-body d-flex align-items-start p-3">
+                                                                <div class="bg-success-subtle text-success-emphasis rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:36px; height:36px; font-size:0.9rem;">
+                                                                    <i class="fas fa-check"></i>
+                                                                </div>
+                                                                <p class="mb-0" style="font-size: 0.85rem;">{{ advice }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                                {% if analysis_json.lifestyle_advice %}
+                                                    {% for advice in analysis_json.lifestyle_advice %}
+                                                    <div class="col-md-6">
+                                                        <div class="card h-100 shadow-sm border-light">
+                                                            <div class="card-body d-flex align-items-start p-3">
+                                                                <div class="bg-warning-subtle text-warning-emphasis rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:36px; height:36px; font-size:0.9rem;">
+                                                                    <i class="fas fa-leaf"></i>
+                                                                </div>
+                                                                <p class="mb-0" style="font-size: 0.85rem;">{{ advice }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                    {% else %}
+                                        <div class="alert alert-danger mb-3 d-flex align-items-center">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <div>Tahlil sonucu yüklenirken bir hata oluştu. Lütfen yeni bir tahlil yüklemeyi deneyin.</div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Öneriler -->
                     <div class="mb-4">
@@ -793,7 +1272,7 @@
                             </h2>
                             <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#tahlilAccordion">
                                 <div class="accordion-body bg-light">
-                                    <pre class="mb-0 text-muted small">{{ analysis.analysis_text }}</pre>
+                                    <pre class="mb-0 text-muted small" style="white-space: pre-wrap; word-break: break-all;">{{ analysis.analysis_text }}</pre>
                                 </div>
                             </div>
                         </div>
@@ -806,7 +1285,7 @@
                         <i class="fas fa-arrow-left me-1"></i>Panele Dön
                     </a>
                     <div>
-                        <button class="btn btn-outline-primary me-2" onclick="window.print()">
+                        <button class="btn btn-outline-primary me-2 btn-print" onclick="window.print()">
                             <i class="fas fa-print me-1"></i>Yazdır
                         </button>
                         <a href="{{ url_for('analyze') }}" class="btn btn-primary">
@@ -836,123 +1315,118 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Chart.js kütüphanesi -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Trend grafiği için veri
-        const comparisonData = {{ comparison_data|tojson }};
+    // Print fonksiyonu için sayfa düzeni ayarlamaları
+    document.querySelector('.btn-print').addEventListener('click', function() {
+        window.print();
+    });
+    
+    // Tahlil içeriğini biçimlendir
+    const tahlilContent = document.querySelector('.tahlil-content');
+    if (tahlilContent) {
+        // Başlıkları vurgula
+        const textContent = tahlilContent.innerHTML;
+        let formattedContent = textContent;
         
-        // Trend grafiği oluştur (varsa)
-        if (Object.keys(comparisonData).length > 0) {
-            let trendChart;
-            const paramSelect = document.getElementById('param-select');
-            
-            function updateChart(paramName) {
-                if (!paramName || !comparisonData[paramName]) return;
-                
-                // Veriyi hazırla
-                const chartData = comparisonData[paramName] || [];
-                
-                // Şu anki değeri ekle
-                const testValues = {{ test_values|tojson }};
-                const currentValue = testValues ? testValues.find(v => v.parameter_name === paramName) : null;
-                if (currentValue) {
-                    chartData.push({
-                        date: '{{ analysis.created_at.split()[0] }}',
-                        value: isNaN(parseFloat(currentValue.value)) ? currentValue.value : parseFloat(currentValue.value)
-                    });
-                }
-                
-                // Tarihleri ve değerleri ayır
-                const dates = chartData.map(item => item.date);
-                const values = chartData.map(item => {
-                    if (typeof item.value === 'number') {
-                        return item.value;
+        // Başlıkları belirleyip biçimlendir
+        const headerRegex = /([A-ZĞÜŞİÖÇIğüşıöçi]+:)/g;
+        formattedContent = formattedContent.replace(headerRegex, '<strong class="text-primary">$1</strong>');
+        
+        // Normal ve anormal değerleri vurgula
+        formattedContent = formattedContent.replace(/(normal değil|yüksek|düşük|anormal)/gi, '<span class="text-danger fw-bold">$1</span>');
+        formattedContent = formattedContent.replace(/(normal aralıkta|normal sınırlar)/gi, '<span class="text-success">$1</span>');
+        
+        // İçeriği güncelle
+        tahlilContent.innerHTML = formattedContent;
+    }
+    
+    // Değer çubukları animasyonu
+    const animateValueGauges = () => {
+        const gauges = document.querySelectorAll('.value-gauge-fill');
+        gauges.forEach(gauge => {
+            const width = gauge.style.width;
+            gauge.style.width = '0%';
+            setTimeout(() => {
+                gauge.style.width = width;
+            }, 300);
+        });
+    };
+    
+    // Kart animasyonları
+    const animateCards = () => {
+        const cards = document.querySelectorAll('.card:not(.animated)');
+        cards.forEach((card, index) => {
+            card.classList.add('animated');
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    };
+    
+    // Parametre kartlarını izle ve görünür olduğunda animasyonu başlat
+    const observeElements = () => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    if (entry.target.classList.contains('value-gauge-fill')) {
+                        entry.target.style.width = entry.target.getAttribute('data-width') || '0%';
+                    } else if (entry.target.classList.contains('parameter-card')) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
                     }
-                    const parsedValue = parseFloat(item.value);
-                    return isNaN(parsedValue) ? 0 : parsedValue;
-                });
-                
-                // Grafiği güncelle veya oluştur
-                if (trendChart) {
-                    trendChart.data.labels = dates;
-                    trendChart.data.datasets[0].data = values;
-                    trendChart.update();
-                } else {
-                    const ctx = document.getElementById('trendChart');
-                    if (!ctx) return;
-                    
-                    trendChart = new Chart(ctx.getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: dates,
-                            datasets: [{
-                                label: paramName,
-                                data: values,
-                                backgroundColor: 'rgba(13, 110, 253, 0.2)',
-                                borderColor: 'rgba(13, 110, 253, 1)',
-                                borderWidth: 2,
-                                tension: 0.1,
-                                pointBackgroundColor: 'rgba(13, 110, 253, 1)',
-                                pointBorderColor: '#fff',
-                                pointBorderWidth: 2,
-                                pointRadius: 6,
-                                pointHoverRadius: 8,
-                                fill: true
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'top'
-                                },
-                                tooltip: {
-                                    mode: 'index',
-                                    intersect: false,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return `${context.dataset.label}: ${context.raw}`;
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: false,
-                                    ticks: {
-                                        callback: function(value) {
-                                            return value;
-                                        }
-                                    }
-                                },
-                                x: {
-                                    ticks: {
-                                        maxRotation: 45,
-                                        minRotation: 45
-                                    }
-                                }
-                            }
-                        }
-                    });
+                    observer.unobserve(entry.target);
                 }
-            }
-            
-            // İlk parametre için grafiği oluştur
-            if (paramSelect && paramSelect.value) {
-                updateChart(paramSelect.value);
-            }
-            
-            // Parametre değişimini dinle
-            if (paramSelect) {
-                paramSelect.addEventListener('change', function() {
-                    updateChart(this.value);
-                });
-            }
-        }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.value-gauge-fill').forEach(gauge => {
+            const width = gauge.style.width;
+            gauge.setAttribute('data-width', width);
+            gauge.style.width = '0%';
+            observer.observe(gauge);
+        });
+        
+        document.querySelectorAll('.parameter-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            observer.observe(card);
+        });
+    };
+    
+    // Tüm animasyonları başlat
+    setTimeout(() => {
+        animateValueGauges();
+        animateCards();
+        observeElements();
+    }, 500);
+    
+    // Sayfa içi geçişler için yumuşak kaydırma
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+    
+    // Olası hastalık kartlarına hover efekti
+    const hastalıkKartları = document.querySelectorAll('.card');
+    hastalıkKartları.forEach(kart => {
+        kart.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+            this.style.boxShadow = 'var(--hover-shadow)';
+        });
+        
+        kart.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'var(--card-shadow)';
+        });
+    });
     });
 </script>
 {% endblock %}

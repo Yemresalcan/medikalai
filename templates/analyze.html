@@ -111,18 +111,15 @@
                         </div>
                     </div>
                     
-                    <form method="post" enctype="multipart/form-data" action="{{ url_for('analyze') }}" id="tahlil-upload-form" class="needs-validation">
-                        <!-- CSRF Token -->
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        
-                        <div class="mb-4">
-                            <label for="pdf_file" class="form-label">PDF Dosyası</label>
+                    <form id="uploadForm" method="POST" enctype="multipart/form-data" class="mt-4">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label for="pdf_file" class="form-label">PDF Dosyası Seçin</label>
                             <div class="input-group">
-                                <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf" required {% if remaining_analyses <= 0 and current_plan != 'premium' and current_plan != 'family' %}disabled{% endif %}>
+                                <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf" required>
                                 <label class="input-group-text" for="pdf_file"><i class="fas fa-file-pdf"></i></label>
                             </div>
                             <div class="form-text">Sadece PDF formatında dosyalar kabul edilmektedir. Maksimum dosya boyutu 10MB.</div>
-                            <div class="invalid-feedback">Lütfen bir PDF dosyası seçin.</div>
                         </div>
                         
                         <!-- İlerleme Çubuğu -->
@@ -137,7 +134,7 @@
                             </div>
                         </div>
                         
-                        <!-- Analiz Mesajı - Daha detaylı hale getiriyoruz -->
+                        <!-- Analiz Mesajı -->
                         <div id="analyzing-message" class="alert alert-primary d-none mb-4" role="alert">
                             <div class="d-flex">
                                 <div class="me-3">
@@ -145,32 +142,17 @@
                                         <span class="visually-hidden">Yükleniyor...</span>
                                     </div>
                                 </div>
-                                <div id="analyzing-message-text">
-                                    Tahlil analiz ediliyor, lütfen bekleyin...
+                                <div>
+                                    <h6 class="mb-1">Tahlil Analiz Ediliyor</h6>
+                                    <p class="mb-0 small">Bu işlem birkaç saniye sürebilir, lütfen bekleyin...</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="alert alert-info d-flex" role="alert">
-                            <div class="me-3">
-                                <i class="fas fa-info-circle fa-2x"></i>
-                            </div>
-                            <div>
-                                <h5 class="alert-heading">Bilgilendirme</h5>
-                                <p class="mb-0">Yapay zeka analizi, profesyonel tıbbi tavsiye yerine geçmez. Sonuçlarınızı daima sağlık uzmanınızla değerlendirin.</p>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary py-2" id="submit-button" {% if remaining_analyses <= 0 and current_plan != 'premium' and current_plan != 'family' %}disabled{% endif %}>
-                                <i class="fas fa-robot me-2"></i>Analiz Et
+                        <button type="submit" id="submitBtn" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="loadingSpinner"></span>
+                            <span id="submitText">Analiz Et</span>
                             </button>
-                            {% if remaining_analyses <= 0 and current_plan != 'premium' and current_plan != 'family' %}
-                            <div class="alert alert-warning mt-2" role="alert">
-                                <i class="fas fa-exclamation-triangle me-2"></i>Tahlil hakkınız kalmadı. Daha fazla analiz yapabilmek için lütfen üyeliğinizi yükseltin.
-                            </div>
-                            {% endif %}
-                        </div>
                     </form>
                 </div>
             </div>
@@ -232,30 +214,97 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script>
-    // Dosya türü değişikliğini anlık izleme
-    document.getElementById('pdf_file').addEventListener('change', function() {
-        const fileInput = this;
-        if (fileInput.files && fileInput.files.length > 0) {
-            const file = fileInput.files[0];
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const submitText = document.getElementById('submitText');
+    const fileInput = document.getElementById('pdf_file');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const analyzingMessage = document.getElementById('analyzing-message');
+    
+    // Form doğrulama
+    if (!fileInput.files[0]) {
+        alert('Lütfen bir PDF dosyası seçin.');
+        return;
+    }
+    
+    if (!fileInput.files[0].name.toLowerCase().endsWith('.pdf')) {
+        alert('Lütfen sadece PDF dosyası yükleyin.');
+        return;
+    }
+    
+    // Submit butonunu devre dışı bırak
+    submitBtn.disabled = true;
+    loadingSpinner.classList.remove('d-none');
+    submitText.textContent = 'Yükleniyor...';
+    
+    // Progress bar'ı göster
+    progressContainer.classList.remove('d-none');
+    
+    const formData = new FormData(form);
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/analyze', true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+    // Upload progress
+    xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            progressBar.style.width = percentComplete + '%';
+            progressBar.setAttribute('aria-valuenow', percentComplete);
+            progressBar.textContent = Math.round(percentComplete) + '%';
+            progressText.textContent = Math.round(percentComplete) + '%';
             
-            // Dosya türü kontrolü
-            if (!file.name.toLowerCase().endsWith('.pdf')) {
-                fileInput.value = ''; // Seçimi temizle
-                fileInput.classList.add('is-invalid');
-                return;
+            if (percentComplete === 100) {
+                // Yükleme tamamlandığında analiz mesajını göster
+                progressContainer.classList.add('d-none');
+                analyzingMessage.classList.remove('d-none');
             }
-            
-            // Dosya boyutu kontrolü (10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                fileInput.value = ''; // Seçimi temizle
-                fileInput.classList.add('is-invalid');
-                document.querySelector('.invalid-feedback').textContent = 'Dosya boyutu 10MB\'dan büyük olamaz.';
-                return;
-            }
-            
-            fileInput.classList.remove('is-invalid');
-            fileInput.classList.add('is-valid');
         }
+    };
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.redirect) {
+                window.location.href = response.redirect;
+            }
+        } else {
+            let errorMessage = 'Bir hata oluştu.';
+            try {
+                const response = JSON.parse(xhr.responseText);
+                errorMessage = response.error || errorMessage;
+            } catch (e) {
+                console.error('JSON parse error:', e);
+            }
+            alert('Hata: ' + errorMessage);
+            
+            // Hata durumunda UI'ı sıfırla
+            submitBtn.disabled = false;
+            loadingSpinner.classList.add('d-none');
+            submitText.textContent = 'Analiz Et';
+            progressContainer.classList.add('d-none');
+            analyzingMessage.classList.add('d-none');
+        }
+    };
+    
+    xhr.onerror = function() {
+        alert('Bağlantı hatası oluştu.');
+        // Hata durumunda UI'ı sıfırla
+        submitBtn.disabled = false;
+        loadingSpinner.classList.add('d-none');
+        submitText.textContent = 'Analiz Et';
+        progressContainer.classList.add('d-none');
+        analyzingMessage.classList.add('d-none');
+    };
+    
+    xhr.send(formData);
     });
 </script>
 {% endblock %}

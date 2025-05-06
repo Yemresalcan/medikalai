@@ -12,27 +12,27 @@ Bu doküman, MediTahlil uygulamasının sürekli geliştirme (continuous improve
 
 ## Versiyon 1.2 - Kullanıcı Deneyimi İyileştirmeleri
 
-- [ ] Tahlil yükleme sırasında ilerleme çubuğu ekleme
-- [ ] Frontend validasyon ve hata yönetimi
-- [ ] Koyu tema desteği
-- [ ] Mobil görünüm optimizasyonu
-- [ ] Ürün turu ve ipuçları ekleme
+- [x] Tahlil yükleme sırasında ilerleme çubuğu ekleme
+- [x] Frontend validasyon ve hata yönetimi
+- [x] Koyu tema desteği
+- [x] Mobil görünüm optimizasyonu
+- [x] Ürün turu ve ipuçları ekleme
 
 ## Versiyon 1.3 - Yapay Zeka Analiz Geliştirmeleri
 
-- [ ] Tahlil değerlerini tablo formatında gösterme
-- [ ] Referans aralıklarıyla karşılaştırmalı görselleştirme
-- [ ] Geçmiş tahlillerle karşılaştırmalı grafikler
-- [ ] AI önerilerinin kategorize edilmesi
-- [ ] Farklı tahlil tipleri için özelleştirilmiş analiz
+- [x] Tahlil değerlerini tablo formatında gösterme
+- [x] Referans aralıklarıyla karşılaştırmalı görselleştirme
+- [x] Geçmiş tahlillerle karşılaştırmalı grafikler
+- [x] AI önerilerinin kategorize edilmesi
+- [x] Farklı tahlil tipleri için özelleştirilmiş analiz
 
 ## Versiyon 1.4 - Gelir Modeli
 
-- [ ] Farklı üyelik planları oluşturma
-- [ ] Ödeme sistemi entegrasyonu (Stripe/PayPal)
-- [ ] Ücretsiz deneme süresi ile premium özelliklere geçiş
-- [ ] Kurumsal paketler (doktorlar/klinikler için)
-- [ ] Abonelik yönetimi ekranı
+- [x] Farklı üyelik planları oluşturma
+- [x] Ödeme sistemi entegrasyonu (Stripe/PayPal)
+- [x] Ücretsiz deneme süresi ile premium özelliklere geçiş
+- [x] Kurumsal paketler (doktorlar/klinikler için)
+- [x] Abonelik yönetimi ekranı
 
 ## Versiyon 1.5 - Sosyal Özellikler ve Entegrasyonlar
 
