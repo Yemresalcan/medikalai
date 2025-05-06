@@ -24,6 +24,10 @@ ENV HOST=0.0.0.0
 # Debug modunu aktifleştir (geçici olarak)
 ENV FLASK_DEBUG=1
 
+# API erişimi için bölge ayarları
+ENV API_REGION=global
+ENV API_USE_PROXY=false
+
 EXPOSE 8080
 
 # Healthcheck ekle
