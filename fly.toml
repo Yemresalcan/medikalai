@@ -19,7 +19,7 @@ primary_region = "ams"
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1  # En az bir makine her zaman çalışacak
   processes = ["app"]
 
 [http_service.concurrency]
@@ -27,20 +27,17 @@ primary_region = "ams"
   hard_limit = 25
   soft_limit = 20
 
-# Daha toleranslı health check için - yolu değiştirdik
+# Daha basit health check ayarı
 [checks]
-  [checks.http_health]
-    grace_period = "180s"
-    interval = "30s"
-    method = "GET"
-    path = "/login"  # Login sayfasını kontrol et
-    port = 8080
-    timeout = "15s"
-    type = "http"
-    restart_limit = 5
+  [checks.alive]
+    type = "tcp"
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "120s"
 
 [deploy]
   release_command = "python -c 'from app import init_db; init_db()'"
+  strategy = "bluegreen"  # Immediate yerine bluegreen deployment stratejisi
 
 [mounts]
   source = "data"
