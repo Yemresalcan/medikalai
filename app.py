@@ -13,11 +13,6 @@ from flask_wtf.csrf import CSRFError
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from functools import wraps
 import stripe
-import logging
-
-# Logging yapılandırması
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB limit
@@ -38,7 +33,7 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # Token geçerlilik
 jwt = JWTManager(app)
 
 # Gemini API anahtarı ve endpoint
-GEMINI_API_KEY = "AIzaSyCE8YbG-RnskAL51MmzAKthVme7l-ZEaRs"  # Gerçek API anahtarınızla değiştirin
+GEMINI_API_KEY = "AIzaSyDWTCuYXFcw_LWQ-o1FusgPlAiFFc9jamA"  # Gerçek API anahtarınızla değiştirin
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
 # Veritabanı ayarları
@@ -595,40 +590,18 @@ KAN TAHLİLİ RAPORU:
                     "X-Requested-With": "XMLHttpRequest"  # API'ye AJAX isteği olduğunu bildir
                 }
                 
-                # API isteği gönderiliyor - proxy veya region parametresi ekliyoruz
-                url = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"
-                
-                # Kullanıcı bölgesini proxy parametresi olarak ekle
-                # Bu API'nin bazı bölgelerde kısıtlamaları çözebilir
-                params = {
-                    "region": API_REGION,  # Yapılandırılmış bölge değerini kullan
-                }
-                
-                logger.info(f"Gemini API'ye istek gönderiliyor: {url}, Bölge: {API_REGION}")
-                
-                # Proxy kullanımı etkinleştirilmişse proxy ayarları ekle
-                proxies = None
-                if API_USE_PROXY:
-                    # Örnek proxy - gerçek proxy bilgilerinizle değiştirin
-                    proxies = {
-                        "http": os.environ.get('HTTP_PROXY', None),
-                        "https": os.environ.get('HTTPS_PROXY', None)
-                    }
-                    logger.info(f"Proxy kullanılıyor: {proxies}")
-                
+                # API isteği gönderiliyor
                 response = requests.post(
-                    url,
+                    GEMINI_API_URL,
                     headers=headers,
                     json=data,
-                    params=params,
-                    proxies=proxies,
                     timeout=30  # Zaman aşımını 30 saniyeye ayarlıyoruz
                 )
                 
                 # HTTP hatası kontrol et
                 if response.status_code != 200:
-                    logger.error(f"API Hata Kodu: {response.status_code}")
-                    logger.error(f"API Yanıtı: {response.text[:500]}")
+                    print(f"API Hata Kodu: {response.status_code}")
+                    print(f"API Yanıtı: {response.text[:500]}")
                     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                         return jsonify({"error": f"API hatası: HTTP {response.status_code}"}), 500
                     flash(f'API hatası: HTTP {response.status_code}', 'danger')
@@ -959,7 +932,7 @@ def analyze_test_results_with_ai(abnormal_values):
     """
     # Abnormal değerler yoksa bile belirli bilgileri gönder
     if not abnormal_values:
-        logger.info("[AI Analiz] Anormal değer yok, ancak genel tahlil analizi isteniyor")
+        print("[AI Analiz] Anormal değer yok, ancak genel tahlil analizi isteniyor")
         # Varsayılan metin oluştur
         abnormal_text = "Tahlil sonuçlarında belirgin anormal değer bulunmamaktadır. Ancak normal değerlere bakarak olası riskleri değerlendiriniz."
     else:
@@ -1016,32 +989,22 @@ def analyze_test_results_with_ai(abnormal_values):
     
     try:
         # API'ye istek gönder
-        logger.info("[AI Analiz] Gemini API'ye istek gönderiliyor...")
-        
-        # URL ve parametreleri ayarla
-        url = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"
-        params = {
-            "region": API_REGION,  # Yapılandırılmış bölge değerini kullan
-        }
-        
-        # İsteği gönder
+        print("[AI Analiz] Gemini API'ye istek gönderiliyor...")
         response = requests.post(
-            url,
+            GEMINI_API_URL,
             json=request_data,
-            headers={"Content-Type": "application/json"},
-            params=params,
-            timeout=30
+            headers={"Content-Type": "application/json"}
         )
         
         # Yanıtı işle
         if response.status_code == 200:
-            logger.info(f"[AI Analiz] API yanıtı başarılı: HTTP {response.status_code}")
+            print(f"[AI Analiz] API yanıtı başarılı: HTTP {response.status_code}")
             response_data = response.json()
             if 'candidates' in response_data and len(response_data['candidates']) > 0:
                 text_response = response_data['candidates'][0]['content']['parts'][0]['text']
                 
                 # Konsola tam yanıtı yazdir
-                logger.info(f"[AI Analiz] Ham API yanıtı:\n{text_response}\n")
+                print(f"[AI Analiz] Ham API yanıtı:\n{text_response}\n")
                 
                 # JSON içeriğini ayıkla (bazen API JSON'ı kod bloğu içinde gönderir)
                 if "```json" in text_response:
@@ -1053,30 +1016,30 @@ def analyze_test_results_with_ai(abnormal_values):
                 
                 try:
                     ai_result = json.loads(json_text)
-                    logger.info(f"[AI Analiz] İşlenmiş JSON sonucu: {json.dumps(ai_result, indent=2, ensure_ascii=False)}")
+                    print(f"[AI Analiz] İşlenmiş JSON sonucu: {json.dumps(ai_result, indent=2, ensure_ascii=False)}")
                     
                     # AI'dan gelen health_conditions'ı doğrudan döndür, yoksa boş liste
                     health_conditions = ai_result.get('health_conditions', [])
                     if health_conditions:
-                        logger.info(f"[AI Analiz] {len(health_conditions)} hastalık tahmini bulundu")
+                        print(f"[AI Analiz] {len(health_conditions)} hastalık tahmini bulundu")
                     else:
-                        logger.info("[AI Analiz] Hiç hastalık tahmini bulunamadı")
+                        print("[AI Analiz] Hiç hastalık tahmini bulunamadı")
                         # Varsayılan hastalık listeleri istenmediği için boş liste döndür
                         health_conditions = []
                     return health_conditions
                     
                 except json.JSONDecodeError as e:
-                    logger.error(f"[AI Analiz] JSON ayrıştırma hatası: {str(e)}")
-                    logger.error(f"[AI Analiz] Ayrıştırılamayan JSON metni: {json_text}")
+                    print(f"[AI Analiz] JSON ayrıştırma hatası: {str(e)}")
+                    print(f"[AI Analiz] Ayrıştırılamayan JSON metni: {json_text}")
                     # Varsayılan hastalık tahminleri istenmiyor, boş liste döndür
                     return []
         else:
-            logger.error(f"[AI Analiz] API hatası: HTTP {response.status_code}")
-            logger.error(f"[AI Analiz] Hata detayı: {response.text}")
+            print(f"[AI Analiz] API hatası: HTTP {response.status_code}")
+            print(f"[AI Analiz] Hata detayı: {response.text}")
             # Varsayılan hastalık tahminleri istenmiyor, boş liste döndür
             return []
     except Exception as e:
-        logger.error(f"[AI Analiz] İstek hatası: {str(e)}")
+        print(f"[AI Analiz] İstek hatası: {str(e)}")
         # Varsayılan hastalık tahminleri istenmiyor, boş liste döndür
         return []
 

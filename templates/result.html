@@ -248,6 +248,45 @@
         transform: scale(1.1);
     }
     
+    /* Badge'ler için responsive tasarım */
+    .badge {
+        white-space: normal;
+        text-align: left;
+        line-height: 1.3;
+        font-size: 0.75rem;
+        font-weight: normal;
+    }
+    
+    @media (max-width: 768px) {
+        .badge {
+            padding: 0.35em 0.65em;
+            font-size: 0.7rem;
+        }
+        
+        .d-flex.flex-wrap.gap-1 {
+            gap: 0.3rem !important;
+        }
+        
+        .small.fw-medium.text-primary.mb-1 {
+            font-size: 11px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .badge {
+            padding: 0.25em 0.5em;
+            font-size: 0.65rem;
+        }
+        
+        .card-title.mb-0.fw-semibold {
+            font-size: 0.9rem !important;
+        }
+        
+        .card-text.small.mb-3 {
+            font-size: 0.7rem !important;
+        }
+    }
+    
     .rotate-icon {
         transition: transform 0.3s ease;
     }
@@ -345,119 +384,75 @@
                         </div>
                         <div class="col-md-6">
                             <div class="card h-100 parameter-card bg-light">
-                                <div class="card-body">
+                                <div class="card-body p-3">
                                     <h5 class="card-title mb-3">Sağlık Durumu Özeti</h5>
                                     
-                                    <!-- İnsan vücudu sistemleri gösterimi -->
-                                    <div class="body-systems mb-3">
-                                        <div class="row g-2 text-center">
-                                            <!-- Kardiyovasküler Sistem -->
-                                            <div class="col-4">
-                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
-                                                    <div class="system-icon mb-2">
-                                                        <i class="fas fa-heartbeat {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
-                                                    </div>
-                                                    <div class="system-name small fw-medium">Kalp</div>
-                                                    <div class="system-status fs-6">
-                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}
-                                                            <i class="fas fa-exclamation-circle text-warning"></i>
-                                                        {% else %}
-                                                            <i class="fas fa-check-circle text-success"></i>
-                                                        {% endif %}
-                                                    </div>
+                                    <!-- Vücut sistemleri gösterimi -->
+                                    <div class="row g-3 text-center mb-3">
+                                        <!-- Kardiyovasküler Sistem -->
+                                        <div class="col-4">
+                                            <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                <div class="system-icon mb-1">
+                                                    <i class="fas fa-heartbeat {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}text-warning{% else %}text-success{% endif %} fa-lg"></i>
                                                 </div>
+                                                <div class="system-name small">Kalp</div>
                                             </div>
-                                            
-                                            <!-- Karaciğer Sistemi -->
-                                            <div class="col-4">
-                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Bilirubin')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
-                                                    <div class="system-icon mb-2">
-                                                        <i class="fas fa-notes-medical {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Bilirubin')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
-                                                    </div>
-                                                    <div class="system-name small fw-medium">Karaciğer</div>
-                                                    <div class="system-status fs-6">
-                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Bilirubin')|list %}
-                                                            <i class="fas fa-exclamation-circle text-warning"></i>
-                                                        {% else %}
-                                                            <i class="fas fa-check-circle text-success"></i>
-                                                        {% endif %}
-                                                    </div>
+                                        </div>
+                                        
+                                        <!-- Karaciğer Sistemi -->
+                                        <div class="col-4">
+                                            <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Bilirubin')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                <div class="system-icon mb-1">
+                                                    <i class="fas fa-notes-medical {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Bilirubin')|list %}text-warning{% else %}text-success{% endif %} fa-lg"></i>
                                                 </div>
+                                                <div class="system-name small">Karaciğer</div>
                                             </div>
-                                            
-                                            <!-- Böbrek Sistemi -->
-                                            <div class="col-4">
-                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
-                                                    <div class="system-icon mb-2">
-                                                        <i class="fas fa-filter {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
-                                                    </div>
-                                                    <div class="system-name small fw-medium">Böbrek</div>
-                                                    <div class="system-status fs-6">
-                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}
-                                                            <i class="fas fa-exclamation-circle text-warning"></i>
-                                                        {% else %}
-                                                            <i class="fas fa-check-circle text-success"></i>
-                                                        {% endif %}
-                                                    </div>
+                                        </div>
+                                        
+                                        <!-- Böbrek Sistemi -->
+                                        <div class="col-4">
+                                            <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                <div class="system-icon mb-1">
+                                                    <i class="fas fa-filter {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}text-warning{% else %}text-success{% endif %} fa-lg"></i>
                                                 </div>
+                                                <div class="system-name small">Böbrek</div>
                                             </div>
-                                            
-                                            <!-- Metabolizma -->
-                                            <div class="col-4 mt-2">
-                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
-                                                    <div class="system-icon mb-2">
-                                                        <i class="fas fa-apple-alt {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
-                                                    </div>
-                                                    <div class="system-name small fw-medium">Metabolizma</div>
-                                                    <div class="system-status fs-6">
-                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}
-                                                            <i class="fas fa-exclamation-circle text-warning"></i>
-                                                        {% else %}
-                                                            <i class="fas fa-check-circle text-success"></i>
-                                                        {% endif %}
-                                                    </div>
+                                        </div>
+                                        
+                                        <!-- Metabolizma -->
+                                        <div class="col-4">
+                                            <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                <div class="system-icon mb-1">
+                                                    <i class="fas fa-apple-alt {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}text-warning{% else %}text-success{% endif %} fa-lg"></i>
                                                 </div>
+                                                <div class="system-name small">Metabolizma</div>
                                             </div>
-                                            
-                                            <!-- Hematoloji -->
-                                            <div class="col-4 mt-2">
-                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
-                                                    <div class="system-icon mb-2">
-                                                        <i class="fas fa-tint {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
-                                                    </div>
-                                                    <div class="system-name small fw-medium">Kan</div>
-                                                    <div class="system-status fs-6">
-                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}
-                                                            <i class="fas fa-exclamation-circle text-warning"></i>
-                                                        {% else %}
-                                                            <i class="fas fa-check-circle text-success"></i>
-                                                        {% endif %}
-                                                    </div>
+                                        </div>
+                                        
+                                        <!-- Hematoloji -->
+                                        <div class="col-4">
+                                            <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                <div class="system-icon mb-1">
+                                                    <i class="fas fa-tint {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}text-warning{% else %}text-success{% endif %} fa-lg"></i>
                                                 </div>
+                                                <div class="system-name small">Kan</div>
                                             </div>
-                                            
-                                            <!-- Bağışıklık -->
-                                            <div class="col-4 mt-2">
-                                                <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'CRP')|list or abnormal_values|selectattr('parameter_name', 'search', 'Sedim')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
-                                                    <div class="system-icon mb-2">
-                                                        <i class="fas fa-shield-alt {% if abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'CRP')|list or abnormal_values|selectattr('parameter_name', 'search', 'Sedim')|list %}text-warning{% else %}text-success{% endif %} fa-2x"></i>
-                                                    </div>
-                                                    <div class="system-name small fw-medium">Bağışıklık</div>
-                                                    <div class="system-status fs-6">
-                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'CRP')|list or abnormal_values|selectattr('parameter_name', 'search', 'Sedim')|list %}
-                                                            <i class="fas fa-exclamation-circle text-warning"></i>
-                                                        {% else %}
-                                                            <i class="fas fa-check-circle text-success"></i>
-                                                        {% endif %}
-                                                    </div>
+                                        </div>
+                                        
+                                        <!-- Bağışıklık -->
+                                        <div class="col-4">
+                                            <div class="system-card p-2 rounded {% if abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'CRP')|list or abnormal_values|selectattr('parameter_name', 'search', 'Sedim')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                <div class="system-icon mb-1">
+                                                    <i class="fas fa-shield-alt {% if abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'CRP')|list or abnormal_values|selectattr('parameter_name', 'search', 'Sedim')|list %}text-warning{% else %}text-success{% endif %} fa-lg"></i>
                                                 </div>
+                                                <div class="system-name small">Bağışıklık</div>
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <!-- Sonuç Durumu -->
                                     <div class="result-summary">
-                                        <div class="d-flex align-items-center p-2 rounded-3 {% if abnormal_values %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %}">
+                                        <div class="d-flex align-items-center p-3 rounded-3 {% if abnormal_values %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %}">
                                             <div class="me-3">
                                                 {% if abnormal_values %}
                                                     <i class="fas fa-exclamation-circle fa-2x text-warning"></i>
@@ -510,12 +505,12 @@
                                           abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list or 
                                           abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}
                                         <span class="badge bg-warning-subtle text-warning-emphasis d-block mt-2">Kontrol Edilmeli</span>
-                                    {% else %}
+                                        {% else %}
                                         <span class="badge bg-success-subtle text-success-emphasis d-block mt-2">Normal</span>
-                                    {% endif %}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                         
                         <div class="col-md-3 col-6">
                             <div class="card parameter-card bg-white h-100 text-center">
@@ -636,7 +631,7 @@
                                         <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:36px; height:36px;">
                                             <i class="fas fa-clipboard-check"></i>
                                         </div>
-                                        <h6 class="card-title mb-1 fw-semibold">GENEL DEĞERLENDİRME</h6>
+                                       
                                         {% if abnormal_values %}
                                         <span class="badge bg-warning-subtle text-warning-emphasis ms-auto rounded-pill px-2 py-1">
                                             <i class="fas fa-exclamation-circle me-1"></i>Dikkat
@@ -698,15 +693,15 @@
                     <div class="mb-4">
                         <div class="card border-0 shadow-sm">
                             <div class="card-header bg-white py-3 d-flex align-items-center">
-                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <h5 class="mb-0">Yapay Zeka Yorumu</h5>
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                                <i class="fas fa-robot"></i>
                             </div>
+                            <h5 class="mb-0">Yapay Zeka Yorumu</h5>
+                        </div>
                             <div class="card-body p-4">
                                 <div class="analysis-result">
                                     {% if analysis.analysis_result %}
-                                        {% if analysis_json and analysis_json.summary %}
+                                    {% if analysis_json and analysis_json.summary %}
                                         <div class="mb-4 p-3 bg-primary-subtle border border-primary-subtle rounded">
                                             <h6 class="fw-bold text-primary mb-2"><i class="fas fa-comment-dots me-2"></i>Genel Değerlendirme</h6>
                                             <p class="mb-0 small">{{ analysis_json.summary }}</p>
@@ -720,9 +715,9 @@
                                         
                                         {% if abnormal_values %}
                                         <div class="alert alert-warning mb-4">
-                                            <div class="d-flex">
+                                                            <div class="d-flex">
                                                 <div class="me-3"><i class="fas fa-exclamation-triangle fa-2x"></i></div>
-                                                <div>
+                                                                <div>
                                                     <h6 class="alert-heading fw-semibold">Referans Dışı Değerler</h6>
                                                     <p class="mb-1 small">Aşağıdaki parametreler referans aralıklarının dışındadır ve yapay zeka analizinde dikkate alınmıştır:</p>
                                                     <ul class="list-unstyled mb-0 small">
@@ -730,11 +725,11 @@
                                                         <li><i class="fas fa-caret-right me-1 text-warning"></i><strong>{{ value.parameter_name }}</strong>: {{ value.value }} {{ value.unit }} (Referans: {{ value.reference_range }})</li>
                                                     {% endfor %}
                                                     </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {% endif %}
-
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                {% endif %}
+                                                        
                                         <!-- DETAYLI PARAMETRE ANALİZİ (Tahlil Analizi - cards with gauges) -->
                                         <div class="mb-4">
                                             <h6 class="fw-bold text-primary mb-3"><i class="fas fa-microscope me-2"></i>Detaylı Parametre Analizi</h6>
@@ -746,16 +741,16 @@
                                                     <div class="card h-100 parameter-card {% if abnormal_values %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
                                                         <div class="card-body p-3">
                                                             <div class="d-flex align-items-start mb-2">
-                                                                <div class="parameter-icon bg-primary" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                <div class="parameter-icon {% if abnormal_values %}bg-warning{% else %}bg-success{% endif %}" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
                                                                     <i class="fas fa-clipboard-check"></i>
                                                                 </div>
                                                                 <div>
                                                                     <h6 class="card-title mb-1 fw-semibold">GENEL DEĞERLENDİRME</h6>
                                                                     <p class="mb-0 small">
                                                                         {% if abnormal_values %}
-                                                                        Tahlil sonuçlarınızda bazı değerler referans aralıklarının dışındadır. Bu durum çeşitli sağlık sorunlarına işaret edebilir. Detaylı değerlendirme için mutlaka bir hekime başvurunuz.
+                                                                        Tahlil sonuçlarınızda bazı anormal değerler tespit edildi. Sağlık durumunuzun daha detaylı değerlendirilmesi için uzman kontrolü önerilir.
                                                                         {% else %}
-                                                                        Tahlil sonuçlarınız genel olarak normal aralıklarda görünmektedir. Sağlığınızı korumak için düzenli kontrollere devam etmeniz önerilir.
+                                                                        Tahlil sonuçlarınız değerlendirildi ve tüm parametreleriniz normal aralıkta görünmektedir. Genel sağlık durumunuz iyi görünüyor.
                                                                         {% endif %}
                                                                     </p>
                                                                 </div>
@@ -782,7 +777,7 @@
                                                                 <div>
                                                                     <h6 class="card-title mb-1 fw-semibold">DEĞERLERİN GRUPLANDIRILMASI</h6>
                                                                     <p class="mb-0 small">
-                                                                        Kan değerleriniz sistem tarafından kategorize edilmiştir. Hematoloji, biyokimya, lipid ve diğer gruplar olarak sınıflandırılmıştır. Bu gruplama, sağlık durumunuzun farklı yönlerini değerlendirmeye yardımcı olur.
+                                                                        Kan tahlil sonuçlarınız hematoloji, biyokimya, lipit profili ve metabolik değerler şeklinde gruplandırılmıştır. Bu gruplandırma, farklı organ ve sistemlerin durumunu değerlendirmenize yardımcı olur.
                                                                     </p>
                                                                 </div>
                                                                 <span class="badge bg-success-subtle text-success-emphasis ms-auto rounded-pill px-2 py-1">
@@ -793,21 +788,516 @@
                                                     </div>
                                                 </div>
                                                 
+                                                <!-- HEMATOLOJİ kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-3">
+                                                                <div class="parameter-icon {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}bg-warning{% else %}bg-success{% endif %}" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-tint"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">HEMATOLOJİ (KAN SAYIMI)</h6>
+                                                                    <p class="mb-0 small">
+                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}
+                                                                        Kan hücresi değerlerinizde bazı anormallikler mevcut. Alyuvar, akyuvar veya hemoglobin seviyeleri normal aralık dışında olabilir. Uzman değerlendirmesi gerekir.
+                                                                        {% else %}
+                                                                        Kan hücreleri ve hemoglobin değerleriniz normal sınırlar içinde. Kırmızı ve beyaz kan hücreleriniz, vücudunuzun oksijen taşıma ve bağışıklık fonksiyonlarının iyi çalıştığını gösteriyor.
+                                                                        {% endif %}
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-auto rounded-pill px-2 py-1">
+                                                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}
+                                                                    <i class="fas fa-exclamation-circle me-1"></i>Kontrol
+                                                                    {% else %}
+                                                                    <i class="fas fa-check-circle me-1"></i>Normal
+                                                                    {% endif %}
+                                                                </span>
+                                                            </div>
+                                                            
+                                                            <!-- Kan Hücreleri Bileşenleri -->
+                                                            <div class="mt-3">
+                                                                <div class="row g-2">
+                                                                    <!-- Hemoglobin/Eritrosit -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-tint me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Alyuvar / Hemoglobin</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Oksijen taşıma kapasitesinde değişim
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Oksijen taşıma kapasitesi normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Lökosit -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-shield-virus me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Akyuvar (WBC)</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lenfosit')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Bağışıklık sisteminde değişim
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Bağışıklık sistemi dengeli
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Trombosit -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Trombosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'PLT')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-hand-holding-medical me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Trombosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'PLT')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Trombosit (PLT)</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Trombosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'PLT')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Pıhtılaşma mekanizmasında değişim
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Pıhtılaşma mekanizması normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Genel Durum -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-stethoscope me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Genel Değerlendirme</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Hemoglobin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Eritrosit')|list or abnormal_values|selectattr('parameter_name', 'search', 'Lökosit')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Hematolojik değerlendirme gerekli
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Hematolojik açıdan sorun yok
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- BİYOKİMYA kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-3">
+                                                                <div class="parameter-icon {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list %}bg-warning{% else %}bg-success{% endif %}" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-flask"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">BİYOKİMYA (ORGAN FONKSİYONLARI)</h6>
+                                                                    <p class="mb-0 small">
+                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list %}
+                                                                        Organ fonksiyon testlerinizde bazı anormallikler tespit edildi. Karaciğer enzimleri veya böbrek fonksiyon değerleriniz referans aralık dışında olabilir.
+                                                                        {% else %}
+                                                                        Tüm karaciğer, böbrek ve diğer biyokimyasal parametreleriniz normal aralıkta görünüyor.
+                                                                        {% endif %}
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-auto rounded-pill px-2 py-1">
+                                                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list %}
+                                                                    <i class="fas fa-exclamation-circle me-1"></i>Kontrol
+                                                                    {% else %}
+                                                                    <i class="fas fa-check-circle me-1"></i>Normal
+                                                                    {% endif %}
+                                                                </span>
+                                                            </div>
+                                                            
+                                                            <!-- Biyokimya Alt Parametreleri -->
+                                                            <div class="mt-3">
+                                                                <div class="row g-2">
+                                                                    <!-- Karaciğer Fonksiyonları -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'GGT')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-procedures me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'GGT')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Karaciğer</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'GGT')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Kontrol edilmeli
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Böbrek Fonksiyonları -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-kidneys me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Böbrek</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list or abnormal_values|selectattr('parameter_name', 'search', 'Üre')|list or abnormal_values|selectattr('parameter_name', 'search', 'Ürik Asit')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Kontrol edilmeli
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Elektrolitler -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Sodyum')|list or abnormal_values|selectattr('parameter_name', 'search', 'Potasyum')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kalsiyum')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-battery-half me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Sodyum')|list or abnormal_values|selectattr('parameter_name', 'search', 'Potasyum')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kalsiyum')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Elektrolitler</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Sodyum')|list or abnormal_values|selectattr('parameter_name', 'search', 'Potasyum')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kalsiyum')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Kontrol edilmeli
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Genel Değerlendirme -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-stethoscope me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Genel Durum</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'ALT')|list or abnormal_values|selectattr('parameter_name', 'search', 'AST')|list or abnormal_values|selectattr('parameter_name', 'search', 'Kreatinin')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Doktor kontrolü
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Sorun yok
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- LİPİD PROFİLİ kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-3">
+                                                                <div class="parameter-icon {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}bg-warning{% else %}bg-success{% endif %}" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-heartbeat"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">LİPİD PROFİLİ (KAN YAĞLARI)</h6>
+                                                                    <p class="mb-0 small">
+                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}
+                                                                        Kan yağlarınızda (kolesterol, HDL, LDL, trigliserit) bazı anormallikler tespit edildi. Bu değerler kalp-damar sağlığınız açısından önemlidir.
+                                                                        {% else %}
+                                                                        Kolesterol, HDL, LDL ve trigliserit gibi kan yağı değerleriniz normal aralıkta görünüyor. Kalp-damar sağlığınız iyi durumda.
+                                                                        {% endif %}
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-auto rounded-pill px-2 py-1">
+                                                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}
+                                                                    <i class="fas fa-exclamation-circle me-1"></i>Kontrol
+                                                                    {% else %}
+                                                                    <i class="fas fa-check-circle me-1"></i>Normal
+                                                                    {% endif %}
+                                                                </span>
+                                                            </div>
+                                                            
+                                                            <!-- Lipid Profili Alt Parametreleri -->
+                                                            <div class="mt-3">
+                                                                <div class="row g-2">
+                                                                    <!-- Toplam Kolesterol -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-chart-pie me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Toplam Kolesterol</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Yüksek
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- LDL Kolesterol -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-thumbs-down me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">LDL (Kötü) Kolesterol</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Yüksek
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- HDL Kolesterol -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-thumbs-up me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">HDL (İyi) Kolesterol</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Düşük
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Trigliserit -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-oil-can me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Trigliseritler</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Yüksek
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                {% if abnormal_values|selectattr('parameter_name', 'search', 'Kolesterol')|list or abnormal_values|selectattr('parameter_name', 'search', 'HDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'LDL')|list or abnormal_values|selectattr('parameter_name', 'search', 'Trigliserit')|list %}
+                                                                <div class="alert alert-warning mt-3 p-2 mb-0 small">
+                                                                    <i class="fas fa-info-circle me-1"></i>
+                                                                    <span>Anormal lipid değerleri kalp-damar hastalık riskinizi artırabilir. Doktorunuza danışmanız önerilir.</span>
+                                                                </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- ENDOKRİN kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'T4')|list or abnormal_values|selectattr('parameter_name', 'search', 'T3')|list or abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-3">
+                                                                <div class="parameter-icon {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'T4')|list or abnormal_values|selectattr('parameter_name', 'search', 'T3')|list or abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list %}bg-warning{% else %}bg-success{% endif %}" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-chart-line"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">ENDOKRİN FONKSİYONLAR (METABOLİZMA)</h6>
+                                                                    <p class="mb-0 small">
+                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'T4')|list or abnormal_values|selectattr('parameter_name', 'search', 'T3')|list or abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list %}
+                                                                        Metabolik ve hormonal değerlerinizde bazı anormallikler tespit edildi. Tiroid hormonları veya kan şekeri değerleriniz referans aralık dışında olabilir.
+                                                                        {% else %}
+                                                                        Tiroid hormonları, kan şekeri ve diğer metabolik parametreleriniz normal aralıkta görünüyor.
+                                                                        {% endif %}
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'T4')|list or abnormal_values|selectattr('parameter_name', 'search', 'T3')|list or abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-auto rounded-pill px-2 py-1">
+                                                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'T4')|list or abnormal_values|selectattr('parameter_name', 'search', 'T3')|list or abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list %}
+                                                                    <i class="fas fa-exclamation-circle me-1"></i>Kontrol
+                                                                    {% else %}
+                                                                    <i class="fas fa-check-circle me-1"></i>Normal
+                                                                    {% endif %}
+                                                                </span>
+                                                            </div>
+                                                            
+                                                            <!-- Endokrin Alt Parametreleri -->
+                                                            <div class="mt-3">
+                                                                <div class="row g-2">
+                                                                    <!-- Tiroid Fonksiyonları -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'T4')|list or abnormal_values|selectattr('parameter_name', 'search', 'T3')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-burn me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'T4')|list or abnormal_values|selectattr('parameter_name', 'search', 'T3')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Tiroid Hormonları</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'T4')|list or abnormal_values|selectattr('parameter_name', 'search', 'T3')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Kontrol edilmeli
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Glukoz Metabolizması -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-cookie-bite me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Kan Şekeri</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'HbA1c')|list or abnormal_values|selectattr('parameter_name', 'search', 'İnsülin')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Kontrol edilmeli
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Vitamin D & B12 -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'Vitamin')|list or abnormal_values|selectattr('parameter_name', 'search', 'B12')|list or abnormal_values|selectattr('parameter_name', 'search', 'D')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-sun me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'Vitamin')|list or abnormal_values|selectattr('parameter_name', 'search', 'B12')|list or abnormal_values|selectattr('parameter_name', 'search', 'D')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Vitamin Seviyeleri</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Vitamin')|list or abnormal_values|selectattr('parameter_name', 'search', 'B12')|list or abnormal_values|selectattr('parameter_name', 'search', 'D')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Kontrol edilmeli
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Normal
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Genel Değerlendirme -->
+                                                                    <div class="col-6">
+                                                                        <div class="p-2 rounded-3 {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'Vitamin')|list %}bg-warning-subtle border border-warning-subtle{% else %}bg-success-subtle border border-success-subtle{% endif %}">
+                                                                            <div class="d-flex align-items-center">
+                                                                                <i class="fas fa-clipboard-check me-2 {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'Vitamin')|list %}text-warning{% else %}text-success{% endif %}"></i>
+                                                                                <div class="small">
+                                                                                    <div class="fw-medium mb-1">Genel Durum</div>
+                                                                                    <div class="small">
+                                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list or abnormal_values|selectattr('parameter_name', 'search', 'Vitamin')|list %}
+                                                                                        <i class="fas fa-exclamation-circle me-1"></i>Doktor kontrolü
+                                                                                        {% else %}
+                                                                                        <i class="fas fa-check-circle me-1"></i>Sorun yok
+                                                                                        {% endif %}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list or abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list %}
+                                                                <div class="alert alert-warning mt-3 p-2 mb-0 small">
+                                                                    <i class="fas fa-info-circle me-1"></i>
+                                                                    <span>
+                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'TSH')|list %}
+                                                                        Anormal tiroid değerleri metabolizma hızınızı etkileyebilir. 
+                                                                        {% endif %}
+                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'Glukoz')|list %}
+                                                                        Yüksek kan şekeri değerleriniz diyabet riski açısından değerlendirilmelidir.
+                                                                        {% endif %}
+                                                                    </span>
+                                                                </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- TAM İDRAR ANALİZİ kartı -->
+                                                <div class="col-md-6">
+                                                    <div class="card h-100 parameter-card {% if abnormal_values|selectattr('parameter_name', 'search', 'İdrar')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
+                                                        <div class="card-body p-3">
+                                                            <div class="d-flex align-items-start mb-2">
+                                                                <div class="parameter-icon {% if abnormal_values|selectattr('parameter_name', 'search', 'İdrar')|list %}bg-warning{% else %}bg-success{% endif %}" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-vial"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="card-title mb-1 fw-semibold">TAM İDRAR ANALİZİ</h6>
+                                                                    <p class="mb-0 small">
+                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'İdrar')|list %}
+                                                                        İdrarda protein, kan, lökosit veya glikoz gibi anormal bulgular tespit edildi. İdrar yolu enfeksiyonu veya böbrek sorunlarına işaret edebilir.
+                                                                        {% else %}
+                                                                        İdrar analizi sonuçlarınız normal. İdrarda patolojik bulgu saptanmadı.
+                                                                        {% endif %}
+                                                                    </p>
+                                                                </div>
+                                                                <span class="badge {% if abnormal_values|selectattr('parameter_name', 'search', 'İdrar')|list %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-auto rounded-pill px-2 py-1">
+                                                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'İdrar')|list %}
+                                                                    <i class="fas fa-exclamation-circle me-1"></i>Kontrol
+                                                                    {% else %}
+                                                                    <i class="fas fa-check-circle me-1"></i>Normal
+                                                                    {% endif %}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
                                                 <!-- NORMAL DIŞI DEĞERLER kartı -->
                                                 <div class="col-md-6">
                                                     <div class="card h-100 parameter-card {% if abnormal_values %}bg-danger-subtle{% else %}bg-success-subtle{% endif %}">
                                                         <div class="card-body p-3">
-                                                            <div class="d-flex align-items-start mb-2">
+                                                            <div class="d-flex align-items-start mb-3">
                                                                 <div class="parameter-icon {% if abnormal_values %}bg-danger{% else %}bg-success{% endif %}" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
-                                                                    <i class="fas fa-filter"></i>
+                                                                    <i class="fas fa-exclamation-triangle"></i>
                                                                 </div>
                                                                 <div>
                                                                     <h6 class="card-title mb-1 fw-semibold">NORMAL DIŞI DEĞERLER</h6>
                                                                     <p class="mb-0 small">
                                                                         {% if abnormal_values %}
-                                                                        Tahlil sonuçlarınızda {{ abnormal_values|length }} adet normal dışı değer tespit edilmiştir. Bu değerler çeşitli sağlık sorunlarını işaret edebilir. Detaylı değerlendirme için bir sağlık uzmanına danışmalısınız.
+                                                                        {{ abnormal_values|length }} adet normal dışı değer tespit edildi. Bu değerler sağlık durumunuzun değerlendirilmesinde önemlidir.
                                                                         {% else %}
-                                                                        Tahlil sonuçlarınızda normal dışı değer tespit edilmemiştir. Bu durum genel sağlık durumunuzun iyi olduğunu gösterir. Düzenli kontrollere devam etmeniz önerilir.
+                                                                        Tüm test değerleriniz normal referans aralıklarında. Normal dışı değer saptanmadı.
                                                                         {% endif %}
                                                                     </p>
                                                                 </div>
@@ -819,76 +1309,72 @@
                                                                     {% endif %}
                                                                 </span>
                                                             </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- TAM KAN SAYIMI kartı -->
-                                                <div class="col-md-6">
-                                                    <div class="card h-100 parameter-card bg-info-subtle">
-                                                        <div class="card-body p-3">
-                                                            <div class="d-flex align-items-start mb-2">
-                                                                <div class="parameter-icon bg-info" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
-                                                                    <i class="fas fa-tint"></i>
+                                                            
+                                                            {% if abnormal_values %}
+                                                            <div class="mt-3">
+                                                                <div class="small fw-medium mb-2">Öne Çıkan Normal Dışı Değerler:</div>
+                                                                <div class="d-flex flex-wrap gap-2">
+                                                                    {% for value in abnormal_values[:5] %}
+                                                                    <div class="badge {% if 'yüksek' in value.description|lower %}bg-danger-subtle text-danger-emphasis{% else %}bg-warning-subtle text-warning-emphasis{% endif %} p-2 d-flex align-items-center">
+                                                                        <span>{{ value.parameter_name }}</span>
+                                                                        <span class="ms-1 small">
+                                                                            {% if 'yüksek' in value.description|lower %}
+                                                                            <i class="fas fa-arrow-up ms-1"></i>
+                                                                            {% else %}
+                                                                            <i class="fas fa-arrow-down ms-1"></i>
+                                                                            {% endif %}
+                                                                        </span>
+                                                                    </div>
+                                                                    {% endfor %}
+                                                                    {% if abnormal_values|length > 5 %}
+                                                                    <div class="badge bg-secondary-subtle text-secondary-emphasis p-2">
+                                                                        +{{ abnormal_values|length - 5 }} daha
+                                                                    </div>
+                                                                    {% endif %}
                                                                 </div>
-                                                                <div>
-                                                                    <h6 class="card-title mb-1 fw-semibold">TAM KAN SAYIMI (HEMOGRAM)</h6>
-                                                                    <p class="mb-0 small">
-                                                                        Kan hücrelerinizin sayıları ve özellikleri incelenmiştir. Bu analiz kırmızı kan hücreleri, beyaz kan hücreleri ve trombositleri değerlendirir. Anemi, enfeksiyon veya kanama bozuklukları hakkında bilgi verir.
-                                                                    </p>
+                                                                
+                                                                <div class="mt-3 small text-danger-emphasis">
+                                                                    <i class="fas fa-info-circle me-1"></i> 
+                                                                    <em>Normal dışı değerleriniz için doktorunuza danışmanız önerilir.</em>
                                                                 </div>
-                                                                <span class="badge bg-info-subtle text-info-emphasis ms-auto rounded-pill px-2 py-1">
-                                                                    <i class="fas fa-info-circle me-1"></i>Bilgi
-                                                                </span>
                                                             </div>
+                                                            {% endif %}
                                                         </div>
                                                     </div>
                                                 </div>
                                                 
-                                                <!-- BİYOKİMYA kartı -->
+                                                <!-- TÜMÖR BELİRTEÇLERİ kartı -->
                                                 <div class="col-md-6">
-                                                    <div class="card h-100 parameter-card bg-success-subtle">
+                                                    <div class="card h-100 parameter-card {% if abnormal_values|selectattr('parameter_name', 'search', 'CEA')|list or abnormal_values|selectattr('parameter_name', 'search', 'CA')|list or abnormal_values|selectattr('parameter_name', 'search', 'PSA')|list or abnormal_values|selectattr('parameter_name', 'search', 'AFP')|list %}bg-warning-subtle{% else %}bg-success-subtle{% endif %}">
                                                         <div class="card-body p-3">
                                                             <div class="d-flex align-items-start mb-2">
-                                                                <div class="parameter-icon bg-success" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
-                                                                    <i class="fas fa-flask"></i>
+                                                                <div class="parameter-icon {% if abnormal_values|selectattr('parameter_name', 'search', 'CEA')|list or abnormal_values|selectattr('parameter_name', 'search', 'CA')|list or abnormal_values|selectattr('parameter_name', 'search', 'PSA')|list or abnormal_values|selectattr('parameter_name', 'search', 'AFP')|list %}bg-warning{% else %}bg-success{% endif %}" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
+                                                                    <i class="fas fa-search"></i>
                                                                 </div>
                                                                 <div>
-                                                                    <h6 class="card-title mb-1 fw-semibold">BİYOKİMYA (KAN)</h6>
+                                                                    <h6 class="card-title mb-1 fw-semibold">TÜMÖR BELİRTEÇLERİ</h6>
                                                                     <p class="mb-0 small">
-                                                                        Kan biyokimya parametreleri, vücudunuzdaki organ fonksiyonlarını değerlendirir. Böbrek ve karaciğer fonksiyonları, elektrolit dengesi ve metabolik durumunuz hakkında önemli bilgiler sağlar.
+                                                                        {% if abnormal_values|selectattr('parameter_name', 'search', 'CEA')|list or abnormal_values|selectattr('parameter_name', 'search', 'CA')|list or abnormal_values|selectattr('parameter_name', 'search', 'PSA')|list or abnormal_values|selectattr('parameter_name', 'search', 'AFP')|list %}
+                                                                        CEA, CA 19-9, CA 15-3, PSA, AFP gibi tümör belirteçlerinde anormallik tespit edildi. Daha ileri değerlendirme gerekebilir.
+                                                                        {% else %}
+                                                                        CEA, CA 19-9, CA 15-3, PSA, AFP gibi tümör belirteçleri normal aralıkta.
+                                                                        {% endif %}
                                                                     </p>
                                                                 </div>
-                                                                <span class="badge bg-success-subtle text-success-emphasis ms-auto rounded-pill px-2 py-1">
+                                                                <span class="badge {% if abnormal_values|selectattr('parameter_name', 'search', 'CEA')|list or abnormal_values|selectattr('parameter_name', 'search', 'CA')|list or abnormal_values|selectattr('parameter_name', 'search', 'PSA')|list or abnormal_values|selectattr('parameter_name', 'search', 'AFP')|list %}bg-warning-subtle text-warning-emphasis{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-auto rounded-pill px-2 py-1">
+                                                                    {% if abnormal_values|selectattr('parameter_name', 'search', 'CEA')|list or abnormal_values|selectattr('parameter_name', 'search', 'CA')|list or abnormal_values|selectattr('parameter_name', 'search', 'PSA')|list or abnormal_values|selectattr('parameter_name', 'search', 'AFP')|list %}
+                                                                    <i class="fas fa-exclamation-circle me-1"></i>Kontrol
+                                                                    {% else %}
                                                                     <i class="fas fa-check-circle me-1"></i>Normal
+                                                                    {% endif %}
                                                                 </span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- TAM İDRAR ANALİZİ kartı -->
-                                                <div class="col-md-6">
-                                                    <div class="card h-100 parameter-card bg-warning-subtle">
-                                                        <div class="card-body p-3">
-                                                            <div class="d-flex align-items-start mb-2">
-                                                                <div class="parameter-icon bg-warning" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
-                                                                    <i class="fas fa-vial"></i>
-                                                                </div>
-                                                                <div>
-                                                                    <h6 class="card-title mb-1 fw-semibold">TAM İDRAR ANALİZİ</h6>
-                                                                    <p class="mb-0 small">
-                                                                        İdrar analizi, böbrek fonksiyonları ve genel sağlık durumu hakkında değerli bilgiler sağlar. İdrarda protein, kan, lökosit varlığı ve diğer parametreler incelenir. İdrar yolu enfeksiyonu veya böbrek hastalıkları hakkında ipuçları verebilir.
-                                                                    </p>
-                                                                </div>
-                                                                <span class="badge bg-warning-subtle text-warning-emphasis ms-auto rounded-pill px-2 py-1">
-                                                                    <i class="fas fa-sync-alt me-1"></i>Kontrol
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
+                                            </div>
+                                        </div>
+                                        
                                                 <!-- İDRAR KÜLTÜRÜ kartı -->
                                                 <div class="col-md-6">
                                                     <div class="card h-100 parameter-card bg-primary-subtle">
@@ -896,7 +1382,7 @@
                                                             <div class="d-flex align-items-start mb-2">
                                                                 <div class="parameter-icon bg-primary" style="width:40px; height:40px; margin-bottom:0; margin-right:12px;">
                                                                     <i class="fas fa-bacteria"></i>
-                                                                </div>
+                                                        </div>
                                                                 <div>
                                                                     <h6 class="card-title mb-1 fw-semibold">İDRAR KÜLTÜRÜ</h6>
                                                                     <p class="mb-0 small">
@@ -908,10 +1394,10 @@
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
+                                                        </div>
+                                </div>
+                            </div>
+                            
                                             {% if analysis.analysis_result %}
                                                 {% set lines = analysis.analysis_result.split('\n') %}
                                                 <div class="row g-3">
@@ -954,14 +1440,14 @@
                                                                     {% else %}
                                                                         <!-- No badge if state is unclear -->
                                                                     {% endif %}
-                                                                </div>
+                                                        </div>
                                     
                                                                 {% if value_text.strip() != '**' and value_text.strip() != '-' %}
                                                                     <div class="mt-auto">
                                                                         <div class="mb-2">
                                                                             <div class="small text-muted mb-1">
                                                                                 <span class="fw-medium">Sonuç: </span><strong class="text-body">{{ value_text|replace("**", "") }}</strong>
-                                                                            </div>
+                                                        </div>
                                                                             <div class="value-gauge">
                                                                                 {% if 'yüksek' in interpretation_lower or 'artmış' in interpretation_lower or 'yüksek' in value_text_lower %}
                                                                                     <div class="value-gauge-fill danger" style="width: 90%;"></div>
@@ -970,8 +1456,8 @@
                                                                                 {% else %}
                                                                                     <div class="value-gauge-fill normal" style="width: 60%;"></div>
                                                                                 {% endif %}
-                                                                            </div>
-                                                                        </div>
+                                                    </div>
+                                </div>
                                                                         {% set ref_range_in_value = "" %}
                                                                         {% if "referans aralığı" in value_text %}
                                                                             {% set ref_range_parts = value_text.split("referans aralığı") %}
@@ -985,16 +1471,16 @@
                                                                             {% if ref_range_in_value %}
                                                                             <div class="small text-muted">
                                                                                 <i class="fas fa-ruler-horizontal me-1"></i>Referans: <span class="fw-medium">{{ ref_range_in_value }}</span>
-                                                                            </div>
+                            </div>
                                                                             {% endif %}
                                                                         {% endif %}
                                                                         
                                                                         {% if interpretation_text and ('yüksek' not in interpretation_text.lower() and 'düşük' not in interpretation_text.lower() and 'normal' not in interpretation_text.lower()) %}
                                                                         <div class="mt-2 small text-muted fst-italic">
                                                                             <i class="fas fa-info-circle text-primary me-1"></i>{{ interpretation_text }}
-                                                                        </div>
+                                                        </div>
                                                                         {% endif %}
-                                                                    </div>
+                                                        </div>
                                                                 {% else %}
                                                                     <div class="mt-auto text-center text-muted small py-2">
                                                                         <p class="mb-1">
@@ -1027,8 +1513,8 @@
                                                         </div>
                                                     </div>
                                                     {% endif %}
-                                                    {% endfor %}
-                                                </div>
+                                            {% endfor %}
+                                </div>
                                                 
                                                 <div class="alert alert-light mt-3 mb-0 small border">
                                                     <h6 class="alert-heading small fw-semibold mb-1">Değer Gösterge Renkleri</h6>
@@ -1036,11 +1522,11 @@
                                                         <span><i class="fas fa-circle text-success me-1"></i>Normal</span>
                                                         <span><i class="fas fa-circle text-warning me-1"></i>Düşük</span>
                                                         <span><i class="fas fa-circle text-danger me-1"></i>Yüksek</span>
-                                                    </div>
-                                                </div>
+                            </div>
+                        </div>
                                             {% else %}
                                                 <div class="alert alert-secondary">Tahlil analizi sonuçları yüklenemedi.</div>
-                                            {% endif %}
+                                        {% endif %}
                                         </div>
                                         
                                         <!-- OLASI HASTALIK TAHMİNLERİ -->
@@ -1050,7 +1536,7 @@
                                             <div class="alert alert-warning d-flex align-items-center small mb-3 p-2">
                                                 <i class="fas fa-exclamation-triangle fa-lg me-2"></i>
                                                 <div><strong>Önemli Not:</strong> Bu bölümdeki tahminler, sadece tahlil değerlerinize dayanmaktadır ve kesin tanı niteliği taşımaz. Mutlaka bir sağlık uzmanına danışınız.</div>
-                                            </div>
+                            </div>
                                             {% if analysis_json.health_conditions %}
                                             <div class="row g-3">
                                                 {% for condition in analysis_json.health_conditions %}
@@ -1060,25 +1546,25 @@
                                                             <div class="d-flex align-items-start mb-2">
                                                                 <div class="bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width:36px; height:36px; font-size:0.9rem;">
                                                                     <i class="fas fa-notes-medical"></i>
-                                                                </div>
+                                        </div>
                                                                 <h6 class="card-title mb-1 fw-semibold small">{{ condition.name }}</h6>
                                                             </div>
                                                             <p class="mb-2 text-muted" style="font-size: 0.85rem;">{{ condition.description }}</p>
                                                             {% if condition.related_values %}
                                                             <div class="mt-2">
                                                                 <small class="text-muted fw-medium" style="font-size: 0.8rem;">İlgili Değerler:</small>
-                                                                <div>
+                                                                    <div>
                                                                 {% for value_item in condition.related_values.split(',') %}
                                                                     <span class="badge bg-info-subtle text-info-emphasis me-1 mb-1 small">{{ value_item|trim }}</span>
                                                                 {% endfor %}
-                                                                </div>
-                                                            </div>
+                                    </div>
+                                        </div>
                                                             {% endif %}
-                                                        </div>
+                                    </div>
+                                </div>
                                                     </div>
-                                                </div>
-                                                {% endfor %}
-                                            </div>
+                                                    {% endfor %}
+                            </div>
                                             {% else %}
                                             <div class="alert alert-info">
                                                 <i class="fas fa-info-circle me-2"></i>
@@ -1118,9 +1604,9 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
                                         
                                         <!-- SAĞLIK VE YAŞAM TARZI ÖNERİLERİ -->
                                         {% if (analysis_json and analysis_json.recommendations) or (analysis_json and analysis_json.lifestyle_advice) %}
