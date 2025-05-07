@@ -591,6 +591,7 @@ KAN TAHLİLİ RAPORU:
                 }
                 
                 # API isteği gönderiliyor
+                print(f"Gemini API'ye istek gönderiliyor: {GEMINI_API_URL}")    
                 response = requests.post(
                     GEMINI_API_URL,
                     headers=headers,
