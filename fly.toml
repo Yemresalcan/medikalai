@@ -1,6 +1,6 @@
 # fly.toml app configuration file
 app = "medikalai"
-primary_region = "ams"  # Frankfurt, Almanya
+primary_region = "iad"  # IAD - Ashburn, Virginia (ABD)
 
 [build]
   dockerfile = "Dockerfile.simple"
