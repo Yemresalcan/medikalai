@@ -642,6 +642,20 @@
         {% endwith %}
     </div>
 
+    <!-- Beta Test Uyarısı -->
+    <div class="container mt-2">
+        <div class="alert alert-warning alert-dismissible fade show">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-flask fa-2x me-3"></i>
+                <div>
+                    <h5 class="mb-1">Beta Test Aşaması</h5>
+                    <p class="mb-0">MediTahlil şu anda beta test aşamasındadır. Kullanım sırasında bazı hatalarla karşılaşabilirsiniz; geri bildirimleriniz uygulamamızı geliştirmemizde büyük önem taşımaktadır. Destekleriniz için teşekkür ederiz!</p>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <div class="content">
         {% block content %}{% endblock %}

@@ -163,6 +163,24 @@
                     <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Tahlil Yükleme İpuçları</h5>
                 </div>
                 <div class="card-body p-4">
+                    <!-- E-Nabız'dan Tahlil Yükleme İpuçları -->
+                    <div class="mb-4">
+                        <h6 class="mb-3 fw-bold"><i class="fas fa-hospital-user me-2"></i>E-Nabız'dan Tahlil Yükleme</h6>
+                        <p class="mb-3">E-Nabız sisteminizden kolayca tahlillerinizi yükleyebilirsiniz:</p>
+                        <ol class="mb-4">
+                            <li class="mb-2">E-Nabız hesabınıza giriş yapın</li>
+                            <li class="mb-2"><strong>"Tahlillerim"</strong> bölümüne gidin</li>
+                            <li class="mb-2">İlgili tahlil raporunun yanındaki <strong>"PDF Türkçe"</strong> butonuna tıklayın</li>
+                            <li class="mb-2">İndirdiğiniz tahlil raporunu MediTahlil'e yükleyin</li>
+                        </ol>
+                        <div class="text-center mb-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#enabizModal">
+                                <i class="fas fa-image me-1"></i>Örnek Görsel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-3 fw-bold"><i class="fas fa-list-check me-2"></i>Daha İyi Sonuçlar İçin</h6>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item border-0 ps-0">
                             <div class="d-flex">
@@ -197,6 +215,50 @@
                                 </div>
                             </div>
                         </li>
+                        <li class="list-group-item border-0 ps-0">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="badge bg-primary rounded-circle p-2">4</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Tüm Sayfaları İçeren PDF Yükleyin</h6>
+                                    <p class="text-muted mb-0 small">Tahlilinizdeki bütün parametrelerin dahil edildiğinden emin olun. Eksik sayfalar yorumların yetersiz olmasına neden olabilir.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item border-0 ps-0">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="badge bg-primary rounded-circle p-2">5</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Tahlil Tarihinin Güncel Olduğunu Kontrol Edin</h6>
+                                    <p class="text-muted mb-0 small">Yakın tarihli tahlil sonuçları daha güncel sağlık durumunuzu yansıtacaktır.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item border-0 ps-0">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="badge bg-primary rounded-circle p-2">6</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Referans Aralıkları Olan Tahliller Tercih Edin</h6>
+                                    <p class="text-muted mb-0 small">Referans değerleri içeren tahlil sonuçları daha doğru yorumlanabilir.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item border-0 ps-0">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="badge bg-primary rounded-circle p-2">7</div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Tarama Yaparken Kaliteye Dikkat Edin</h6>
+                                    <p class="text-muted mb-0 small">Tahlil sonucunuzu tarama veya fotoğraflama yapıyorsanız, iyi aydınlatılmış ortamda ve bulanık olmayan görüntüler elde edin.</p>
+                                </div>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -208,6 +270,24 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- E-Nabız Görsel Modalı -->
+<div class="modal fade" id="enabizModal" tabindex="-1" aria-labelledby="enabizModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="enabizModalLabel">E-Nabız Tahlil İndirme Örneği</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img src="{{ url_for('static', filename='assets/e-nabiz.png') }}" class="img-fluid rounded" alt="E-Nabız Tahlil İndirme Örneği">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -305,6 +385,6 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     };
     
     xhr.send(formData);
-    });
+});
 </script>
 {% endblock %}

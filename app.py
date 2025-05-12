@@ -33,7 +33,7 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # Token geçerlilik
 jwt = JWTManager(app)
 
 # Gemini API anahtarı ve endpoint
-GEMINI_API_KEY = "AIzaSyDWTCuYXFcw_LWQ-o1FusgPlAiFFc9jamA"  # Gerçek API anahtarınızla değiştirin
+GEMINI_API_KEY = "AIzaSyBQLZ2W8mHu3IOoTl1pxdeetUC_bzu-j58"  # Gerçek API anahtarınızla değiştirin
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
 # Veritabanı ayarları
