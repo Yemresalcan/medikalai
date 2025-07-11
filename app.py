@@ -20,6 +20,14 @@ from email.mime.base import MIMEBase
 from email import encoders
 import threading
 
+# .env dosyasını yükle
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("python-dotenv kütüphanesi bulunamadı. pip install python-dotenv ile yükleyebilirsiniz.")
+    print("Şimdilik environment variable'lar sistem ortamından okunacak.")
+
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB limit
 app.secret_key = secrets.token_hex(16)  # Güvenli rastgele anahtar
@@ -325,8 +333,8 @@ def check_password(hashed_password, user_password):
 EMAIL_SETTINGS = {
     'SMTP_SERVER': 'smtp.gmail.com',
     'SMTP_PORT': 587,
-    'EMAIL_ADDRESS': 'medikalai.info@gmail.com',  # Buraya gerçek email adresinizi yazın
-    'EMAIL_PASSWORD': os.environ.get('EMAIL_PASSWORD', 'uygulama_sifresi'),  # App password kullanın
+    'EMAIL_ADDRESS': 'medikalai.info@gmail.com',  # Gmail adresi
+    'EMAIL_PASSWORD': os.environ.get('EMAIL_PASSWORD'),  # .env dosyasından App password
     'FROM_NAME': 'MedikalAI Sağlık Rehberi'
 }
 
@@ -335,7 +343,7 @@ def send_email_async(to_email, subject, html_content, plain_content=None):
     def send_email():
         try:
             # Demo mod kontrolü - eğer gerçek email ayarları yoksa console'a yazdır
-            if EMAIL_SETTINGS['EMAIL_PASSWORD'] == 'uygulama_sifresi':
+            if not EMAIL_SETTINGS['EMAIL_PASSWORD']:
                 print("\n" + "="*80)
                 print("📧 EMAIL GÖNDERILDI (DEMO MOD)")
                 print("="*80)
