@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tema değiştirme işlevselliği
     setupTheme();
     
+    // Newsletter fonksiyonu
+    setupNewsletter();
+    
     // Ürün turu başlatma
     setupProductTour();
     
@@ -835,4 +838,98 @@ function addContextualTips() {
 function isNewUser() {
     // body'deki data-new-user özelliğine bak
     return document.body.getAttribute('data-new-user') === 'true';
+}
+
+/**
+ * Newsletter abone olma fonksiyonu
+ */
+function setupNewsletter() {
+    const newsletterBtn = document.querySelector('.newsletter-btn');
+    const newsletterInput = document.querySelector('.newsletter-input');
+    
+    if (newsletterBtn && newsletterInput) {
+        newsletterBtn.addEventListener('click', function() {
+            const email = newsletterInput.value.trim();
+            
+            // Email doğrulama
+            if (!email) {
+                showToast('Lütfen e-posta adresinizi girin.', 3000);
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast('Lütfen geçerli bir e-posta adresi girin.', 3000);
+                return;
+            }
+            
+            // Button loading durumu
+            const originalText = newsletterBtn.innerHTML;
+            newsletterBtn.disabled = true;
+            newsletterBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Abone ol...';
+            
+            // Gerçek API çağrısı
+            fetch('/newsletter/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Button'u eski haline getir
+                newsletterBtn.disabled = false;
+                newsletterBtn.innerHTML = originalText;
+                
+                if (data.success) {
+                    showToast('🎉 ' + data.message, 5000);
+                    newsletterInput.value = '';
+                    
+                    // Button'a başarı efekti ekle
+                    newsletterBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                    newsletterBtn.style.color = 'white';
+                    
+                    // 3 saniye sonra ikinci bir mesaj göster
+                    setTimeout(() => {
+                        showToast('📧 Hoş geldin email\'i gönderildi! E-posta kutunuzu kontrol edin.', 4000);
+                    }, 2000);
+                    
+                    setTimeout(() => {
+                        newsletterBtn.style.background = '';
+                        newsletterBtn.style.color = '';
+                    }, 3000);
+                } else {
+                    showToast('❌ ' + data.message, 4000);
+                }
+            })
+            .catch(error => {
+                console.error('Newsletter API hatası:', error);
+                
+                // Button'u eski haline getir
+                newsletterBtn.disabled = false;
+                newsletterBtn.innerHTML = originalText;
+                
+                showToast('❌ Ağ hatası. Lütfen internet bağlantınızı kontrol edin.', 4000);
+            });
+        });
+        
+        // Enter tuşu ile abone olma
+        newsletterInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                newsletterBtn.click();
+            }
+        });
+        
+        // Input focus animasyonu
+        newsletterInput.addEventListener('focus', function() {
+            this.style.transform = 'scale(1.02)';
+            this.style.transition = 'all 0.3s ease';
+        });
+        
+        newsletterInput.addEventListener('blur', function() {
+            this.style.transform = 'scale(1)';
+        });
+    }
 }

@@ -1,80 +1,574 @@
 {% extends "layout.html" %}
 
-{% block title %}Kayıt Ol - MediTahlil{% endblock %}
+{% block title %}Kayıt Ol - MedikalAI{% endblock %}
+
+{% block extra_css %}
+<meta name="description" content="MedikalAI'ya ücretsiz kayıt olun. Kan tahlillerinizi yapay zeka ile analiz edin.">
+
+<style>
+    .auth-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f1419 0%, #1a2332 30%, #33baf7 60%, #1e3a8a 90%, #0f1419 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding: 20px 0;
+    }
+    
+    .auth-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 50%, rgba(51, 186, 247, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(30, 58, 138, 0.12) 0%, transparent 50%);
+        animation: sparkle 20s ease-in-out infinite alternate;
+    }
+    
+    @keyframes sparkle {
+        0% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+        100% { opacity: 0.7; transform: scale(1.1) rotate(5deg); }
+    }
+    
+    .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 40px;
+        width: 100%;
+        max-width: 420px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 2;
+    }
+    
+    [data-bs-theme="dark"] .auth-card {
+        background: rgba(42, 45, 49, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    
+    .auth-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .auth-logo {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: white;
+        font-size: 24px;
+        box-shadow: 0 8px 20px rgba(51, 186, 247, 0.3);
+    }
+    
+    .auth-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 8px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: -0.5px;
+    }
+    
+    [data-bs-theme="dark"] .auth-title {
+        color: white;
+    }
+    
+    .auth-subtitle {
+        color: #666;
+        font-size: 0.95rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 400;
+    }
+    
+    [data-bs-theme="dark"] .auth-subtitle {
+        color: #cccccc;
+    }
+    
+    .auth-form {
+        margin-bottom: 30px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 16px 20px;
+        border: 1.5px solid #e1e5e9;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        transition: all 0.3s ease;
+        background: white;
+        color: #333;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #33baf7;
+        box-shadow: 0 0 0 3px rgba(51, 186, 247, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .form-input::placeholder {
+        color: #9ca3af;
+        font-weight: 400;
+    }
+    
+    [data-bs-theme="dark"] .form-input {
+        background: #343a40;
+        border-color: #495057;
+        color: white;
+    }
+    
+    [data-bs-theme="dark"] .form-input:focus {
+        background: #343a40;
+        border-color: #33baf7;
+    }
+    
+    [data-bs-theme="dark"] .form-input::placeholder {
+        color: #6c757d;
+    }
+    
+    .auth-button {
+        width: 100%;
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .auth-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(51, 186, 247, 0.4);
+    }
+    
+    .auth-button:active {
+        transform: translateY(0);
+    }
+    
+    .divider {
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+        color: #9ca3af;
+        font-size: 0.9rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e1e5e9;
+        z-index: 1;
+    }
+    
+    [data-bs-theme="dark"] .divider::before {
+        background: #495057;
+    }
+    
+    .divider span {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0 20px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    [data-bs-theme="dark"] .divider span {
+        background: rgba(42, 45, 49, 0.95);
+        color: #cccccc;
+    }
+    
+    .google-button {
+        width: 100%;
+        padding: 14px 24px;
+        background: white;
+        color: #374151;
+        border: 1.5px solid #e1e5e9;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 500;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .google-button:hover {
+        background: #f9fafb;
+        border-color: #d1d5db;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    [data-bs-theme="dark"] .google-button {
+        background: #343a40;
+        color: white;
+        border-color: #495057;
+    }
+    
+    [data-bs-theme="dark"] .google-button:hover {
+        background: #495057;
+        border-color: #6c757d;
+    }
+    
+    .auth-link {
+        text-align: center;
+        color: #666;
+        font-size: 0.9rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        margin-bottom: 20px;
+    }
+    
+    .auth-link a {
+        color: #33baf7;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+    
+    .auth-link a:hover {
+        color: #1e3a8a;
+        text-decoration: underline;
+    }
+    
+    [data-bs-theme="dark"] .auth-link {
+        color: #cccccc;
+    }
+    
+    .terms-link {
+        text-align: center;
+        font-size: 0.85rem;
+        color: #9ca3af;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        line-height: 1.5;
+    }
+    
+    .terms-link a {
+        color: #33baf7;
+        text-decoration: none;
+    }
+    
+    .terms-link a:hover {
+        text-decoration: underline;
+    }
+    
+    [data-bs-theme="dark"] .terms-link {
+        color: #6c757d;
+    }
+    
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    [data-bs-theme="dark"] .error-message {
+        background: rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+    }
+    
+    /* Password validation */
+    .password-hint {
+        font-size: 0.8rem;
+        color: #9ca3af;
+        margin-top: 8px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .password-requirements {
+        margin-top: 8px;
+    }
+    
+    .requirement {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: #9ca3af;
+        margin-bottom: 4px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .requirement.valid {
+        color: #10b981;
+    }
+    
+    .requirement .check {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1.5px solid #e1e5e9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .requirement.valid .check {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .auth-card {
+            padding: 30px 20px;
+            margin: 0 20px;
+            border-radius: 20px;
+        }
+        
+        .auth-title {
+            font-size: 1.5rem;
+        }
+        
+        .form-input,
+        .auth-button,
+        .google-button {
+            padding: 14px 16px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4 p-md-5">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-user-plus text-primary" style="font-size: 3rem;"></i>
-                        <h2 class="mt-3">Hesap Oluştur</h2>
-                        <p class="text-muted">MediTahlil'e ücretsiz kayıt olun</p>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1 class="auth-title">Hesap Oluştur</h1>
+            <p class="auth-subtitle">MedikalAI'ya katılmak için birkaç bilginize ihtiyacımız var</p>
+        </div>
+
+        <form method="post" action="{{ url_for('register') }}" class="auth-form" id="register-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            
+            <div class="form-group">
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    name="username" 
+                    placeholder="Kullanıcı adınızı belirleyin"
+                    required
+                    minlength="3"
+                    autocomplete="username"
+                >
+            </div>
+            
+            <div class="form-group">
+                <input 
+                    type="email" 
+                    class="form-input" 
+                    name="email" 
+                    placeholder="E-posta adresinizi girin"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+            
+            <div class="form-group">
+                <input 
+                    type="password" 
+                    class="form-input" 
+                    name="password" 
+                    placeholder="Güçlü bir şifre oluşturun"
+                    required
+                    minlength="6"
+                    autocomplete="new-password"
+                    id="password"
+                >
+                <div class="password-requirements" id="password-requirements" style="display: none;">
+                    <div class="requirement" id="length-req">
+                        <span class="check"></span>
+                        En az 6 karakter
                     </div>
-                    
-                    <!-- Validasyon Hata Mesajı -->
-                    <div id="register-error" class="alert alert-danger d-none mb-4" role="alert"></div>
-                    
-                    <form method="post" action="{{ url_for('register') }}" id="register-form">
-                        <!-- CSRF Token -->
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Kullanıcı Adı</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                <input type="text" class="form-control" id="username" name="username" required minlength="3">
-                            </div>
-                            <div class="invalid-feedback">Kullanıcı adı en az 3 karakter olmalıdır.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">E-posta Adresi</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
-                            <div class="invalid-feedback">Geçerli bir e-posta adresi giriniz.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Şifre</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" class="form-control" id="password" name="password" required minlength="6">
-                            </div>
-                            <div class="form-text">Şifreniz en az 6 karakter içermelidir.</div>
-                            <div class="invalid-feedback">Şifre en az 6 karakter olmalıdır.</div>
-                        </div>
-                        <div class="mb-4">
-                            <label for="confirm_password" class="form-label">Şifre (Tekrar)</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required minlength="6">
-                            </div>
-                            <div class="invalid-feedback">Şifreler eşleşmiyor.</div>
-                        </div>
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="terms" required>
-                            <label class="form-check-label" for="terms">
-                                <a href="#" class="text-decoration-none">Kullanım Şartları</a>'nı okudum ve kabul ediyorum
-                            </label>
-                            <div class="invalid-feedback">Devam etmek için kullanım şartlarını kabul etmelisiniz.</div>
-                        </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary py-2">Kayıt Ol</button>
-                        </div>
-                    </form>
-                    <div class="text-center mt-4">
-                        <p class="mb-0">Zaten bir hesabınız var mı? <a href="{{ url_for('login') }}" class="text-primary">Giriş Yapın</a></p>
+                    <div class="requirement" id="uppercase-req">
+                        <span class="check"></span>
+                        En az 1 büyük harf
+                    </div>
+                    <div class="requirement" id="number-req">
+                        <span class="check"></span>
+                        En az 1 sayı
                     </div>
                 </div>
             </div>
+            
+            <button type="submit" class="auth-button">
+                Hesap Oluştur
+            </button>
+        </form>
+
+        <div class="divider">
+            <span>veya</span>
+        </div>
+
+        <button class="google-button" onclick="continueWithGoogle()">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Google ile Devam Et
+        </button>
+
+        <div class="auth-link">
+            Zaten hesabınız var mı? <a href="{{ url_for('login') }}">Giriş yapın</a>
+        </div>
+
+        <div class="terms-link">
+            Kayıt olarak <a href="{{ url_for('kullanim_kosullari') }}">Kullanım Koşulları</a> ve 
+            <a href="{{ url_for('gizlilik') }}">Gizlilik Politikası</a>'mızı kabul etmiş olursunuz.
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+function continueWithGoogle() {
+    // Google OAuth integration placeholder
+    alert('Google ile kayıt özelliği yakında eklenecek!');
+}
+
+// Form validation and animations
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.auth-form');
+    const inputs = document.querySelectorAll('.form-input');
+    const passwordInput = document.getElementById('password');
+    const passwordRequirements = document.getElementById('password-requirements');
+    
+    // Input focus animations
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.style.transform = 'translateY(-2px)';
+            
+            // Show password requirements for password field
+            if (this.id === 'password') {
+                passwordRequirements.style.display = 'block';
+            }
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.style.transform = 'translateY(0)';
+            }
+            
+            // Hide password requirements if empty
+            if (this.id === 'password' && !this.value) {
+                passwordRequirements.style.display = 'none';
+            }
+        });
+    });
+    
+    // Password validation
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        
+        // Length requirement
+        const lengthReq = document.getElementById('length-req');
+        if (password.length >= 6) {
+            lengthReq.classList.add('valid');
+            lengthReq.querySelector('.check').innerHTML = '✓';
+        } else {
+            lengthReq.classList.remove('valid');
+            lengthReq.querySelector('.check').innerHTML = '';
+        }
+        
+        // Uppercase requirement
+        const uppercaseReq = document.getElementById('uppercase-req');
+        if (/[A-Z]/.test(password)) {
+            uppercaseReq.classList.add('valid');
+            uppercaseReq.querySelector('.check').innerHTML = '✓';
+        } else {
+            uppercaseReq.classList.remove('valid');
+            uppercaseReq.querySelector('.check').innerHTML = '';
+        }
+        
+        // Number requirement
+        const numberReq = document.getElementById('number-req');
+        if (/[0-9]/.test(password)) {
+            numberReq.classList.add('valid');
+            numberReq.querySelector('.check').innerHTML = '✓';
+        } else {
+            numberReq.classList.remove('valid');
+            numberReq.querySelector('.check').innerHTML = '';
+        }
+    });
+    
+    // Form submission with loading state
+    form.addEventListener('submit', function(e) {
+        const submitBtn = form.querySelector('.auth-button');
+        const originalText = submitBtn.textContent;
+        
+        submitBtn.textContent = 'Hesap oluşturuluyor...';
+        submitBtn.style.opacity = '0.7';
+        submitBtn.disabled = true;
+        
+        // Reset if there's an error (will be handled by the backend)
+        setTimeout(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.style.opacity = '1';
+            submitBtn.disabled = false;
+        }, 5000);
+    });
+    
+    // Floating animation for the card
+    const card = document.querySelector('.auth-card');
+    let mouseX = 0;
+    let mouseY = 0;
+    
+    document.addEventListener('mousemove', (e) => {
+        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+        mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+        
+        const rotateX = mouseY * 2;
+        const rotateY = mouseX * 2;
+        
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+    
+    // Reset transform on mouse leave
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
+    });
+});
+</script>
 {% endblock %}

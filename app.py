@@ -13,6 +13,12 @@ from flask_wtf.csrf import CSRFError
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from functools import wraps
 import stripe
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+import threading
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB limit
@@ -183,6 +189,18 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
         ''')
+        
+        # Newsletter aboneleri tablosu
+        c.execute('''
+        CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            status TEXT DEFAULT 'active',
+            source TEXT DEFAULT 'website',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
     else:
         # Kullanıcı tablosunu güncelle (abonelik alanları ekle)
         c.execute("PRAGMA table_info(users)")
@@ -254,6 +272,20 @@ def init_db():
                 FOREIGN KEY (user_id) REFERENCES users (id)
             )
             ''')
+        
+        # Newsletter aboneleri tablosunu kontrol et ve oluştur
+        c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='newsletter_subscribers'")
+        if not c.fetchone():
+            c.execute('''
+            CREATE TABLE newsletter_subscribers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT UNIQUE NOT NULL,
+                status TEXT DEFAULT 'active',
+                source TEXT DEFAULT 'website',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
 
     # Admin kullanıcısını kontrol et ve ekle
     c.execute("SELECT * FROM users WHERE username = 'admin'")
@@ -288,6 +320,271 @@ def check_password(hashed_password, user_password):
     except ValueError:
         # Salt hatası durumunda False döndür - güvenlik için
         return False
+
+# Email gönderme sistemi
+EMAIL_SETTINGS = {
+    'SMTP_SERVER': 'smtp.gmail.com',
+    'SMTP_PORT': 587,
+    'EMAIL_ADDRESS': 'medikalai.info@gmail.com',  # Buraya gerçek email adresinizi yazın
+    'EMAIL_PASSWORD': os.environ.get('EMAIL_PASSWORD', 'uygulama_sifresi'),  # App password kullanın
+    'FROM_NAME': 'MedikalAI Sağlık Rehberi'
+}
+
+def send_email_async(to_email, subject, html_content, plain_content=None):
+    """Asenkron email gönderme"""
+    def send_email():
+        try:
+            # Demo mod kontrolü - eğer gerçek email ayarları yoksa console'a yazdır
+            if EMAIL_SETTINGS['EMAIL_PASSWORD'] == 'uygulama_sifresi':
+                print("\n" + "="*80)
+                print("📧 EMAIL GÖNDERILDI (DEMO MOD)")
+                print("="*80)
+                print(f"Alıcı: {to_email}")
+                print(f"Konu: {subject}")
+                print(f"Gönderen: {EMAIL_SETTINGS['FROM_NAME']} <{EMAIL_SETTINGS['EMAIL_ADDRESS']}>")
+                print("-"*80)
+                print("PLAIN TEXT İÇERİK:")
+                print(plain_content if plain_content else "Plain text içerik yok")
+                print("-"*80)
+                print("HTML İÇERİK BAŞLIKLARI:")
+                print("✓ MedikalAI Hoş Geldin Emaili")
+                print("✓ Gradient Header ile Professional Tasarım")
+                print("✓ Özellik Listesi ve CTA Buttonları")
+                print("✓ Yasal Uyarılar ve Abonelik İptal Linki")
+                print("="*80)
+                app.logger.info(f"Email gönderildi (DEMO): {to_email}")
+                return
+            
+            # Gerçek email gönderimi
+            msg = MIMEMultipart('alternative')
+            msg['From'] = f"{EMAIL_SETTINGS['FROM_NAME']} <{EMAIL_SETTINGS['EMAIL_ADDRESS']}>"
+            msg['To'] = to_email
+            msg['Subject'] = subject
+
+            # Plain text version (fallback)
+            if plain_content:
+                part1 = MIMEText(plain_content, 'plain', 'utf-8')
+                msg.attach(part1)
+
+            # HTML version
+            part2 = MIMEText(html_content, 'html', 'utf-8')
+            msg.attach(part2)
+
+            # SMTP bağlantısı kur ve gönder
+            server = smtplib.SMTP(EMAIL_SETTINGS['SMTP_SERVER'], EMAIL_SETTINGS['SMTP_PORT'])
+            server.starttls()
+            server.login(EMAIL_SETTINGS['EMAIL_ADDRESS'], EMAIL_SETTINGS['EMAIL_PASSWORD'])
+            
+            text = msg.as_string()
+            server.sendmail(EMAIL_SETTINGS['EMAIL_ADDRESS'], to_email, text)
+            server.quit()
+            
+            app.logger.info(f"Email başarıyla gönderildi: {to_email}")
+            
+        except Exception as e:
+            app.logger.error(f"Email gönderme hatası: {str(e)}")
+
+    # Email'i arka planda gönder
+    thread = threading.Thread(target=send_email)
+    thread.daemon = True
+    thread.start()
+
+def get_welcome_email_template(email):
+    """Hoş geldin email template'i"""
+    html_template = f"""
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>MedikalAI'ya Hoş Geldiniz!</title>
+        <style>
+            body {{
+                font-family: 'Arial', sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }}
+            .header {{
+                background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+                color: white;
+                padding: 40px 30px;
+                text-align: center;
+            }}
+            .header h1 {{
+                margin: 0;
+                font-size: 28px;
+                font-weight: bold;
+            }}
+            .header p {{
+                margin: 10px 0 0 0;
+                font-size: 16px;
+                opacity: 0.9;
+            }}
+            .content {{
+                padding: 40px 30px;
+            }}
+            .welcome-text {{
+                font-size: 18px;
+                line-height: 1.6;
+                color: #333;
+                margin-bottom: 30px;
+            }}
+            .features {{
+                background-color: #f8f9fa;
+                padding: 25px;
+                border-radius: 8px;
+                margin: 25px 0;
+            }}
+            .features h3 {{
+                color: #33baf7;
+                font-size: 20px;
+                margin: 0 0 15px 0;
+            }}
+            .feature-list {{
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }}
+            .feature-list li {{
+                padding: 8px 0;
+                font-size: 16px;
+                color: #555;
+            }}
+            .feature-list li:before {{
+                content: "✓";
+                color: #33baf7;
+                font-weight: bold;
+                margin-right: 10px;
+            }}
+            .cta-button {{
+                display: inline-block;
+                background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+                color: white;
+                padding: 15px 30px;
+                text-decoration: none;
+                border-radius: 5px;
+                font-weight: bold;
+                margin: 20px 0;
+            }}
+            .footer {{
+                background-color: #2c3e50;
+                color: white;
+                padding: 30px;
+                text-align: center;
+                font-size: 14px;
+            }}
+            .footer a {{
+                color: #33baf7;
+                text-decoration: none;
+            }}
+            .disclaimer {{
+                background-color: #fff3cd;
+                border: 1px solid #ffeaa7;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+                font-size: 14px;
+                color: #856404;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🧠 MedikalAI</h1>
+                <p>Sağlık Rehberinize Hoş Geldiniz!</p>
+            </div>
+            
+            <div class="content">
+                <div class="welcome-text">
+                    Merhaba,<br><br>
+                    
+                    <strong>MedikalAI Sağlık Rehberi</strong>'ne abone olduğunuz için teşekkür ederiz! 🎉
+                    <br><br>
+                    
+                    Artık en güncel sağlık bilgileri, kan tahlili yorumlama ipuçları ve özel içerikleri doğrudan e-posta kutunuza gelecek.
+                </div>
+                
+                <div class="features">
+                    <h3>📧 Ne Tür İçerikler Alacaksınız?</h3>
+                    <ul class="feature-list">
+                        <li>Kan tahlili değerleri ve yorumları</li>
+                        <li>Sağlık parametrelerinizi anlama rehberleri</li>
+                        <li>Beslenme ve yaşam tarzı önerileri</li>
+                        <li>En yeni tıbbi gelişmeler ve araştırmalar</li>
+                        <li>MedikalAI platformu güncellemeleri</li>
+                        <li>Özel indirimler ve erken erişim fırsatları</li>
+                    </ul>
+                </div>
+                
+                <div style="text-align: center;">
+                    <a href="http://localhost:8080/blog" class="cta-button">
+                        📖 Sağlık Rehberini Keşfedin
+                    </a>
+                </div>
+                
+                <div class="disclaimer">
+                    <strong>⚠️ Önemli Uyarı:</strong> MedikalAI içerikleri sadece bilgilendirme amaçlıdır. 
+                    Sağlık sorunlarınız için mutlaka bir sağlık profesyoneliyle görüşün.
+                </div>
+                
+                <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                    Bu e-postayı <strong>{email}</strong> adresine gönderdik çünkü MedikalAI newsletter'ına abone oldunuz.
+                    <br><br>
+                    Artık almak istemiyorsanız, 
+                    <a href="http://localhost:8080/newsletter/unsubscribe?email={email}" style="color: #33baf7;">
+                        buradan aboneliğinizi iptal edebilirsiniz
+                    </a>.
+                </p>
+            </div>
+            
+            <div class="footer">
+                <strong>MedikalAI</strong><br>
+                Yapay Zeka Destekli Sağlık Platformu<br><br>
+                
+                📧 info@medikalai.com | 📞 +90 539 394 90 35<br>
+                🌐 <a href="http://localhost:8080">medikalai.com</a>
+                
+                <p style="margin-top: 20px; opacity: 0.8;">
+                    © 2025 MedikalAI. Tüm hakları saklıdır.
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    plain_text = f"""
+    MedikalAI Sağlık Rehberi'ne Hoş Geldiniz!
+    
+    Merhaba,
+    
+    MedikalAI newsletter'ına abone olduğunuz için teşekkür ederiz!
+    
+    Artık şunları e-posta kutunuzda alacaksınız:
+    - Kan tahlili değerleri ve yorumları
+    - Sağlık rehberleri
+    - Beslenme önerileri
+    - Tıbbi gelişmeler
+    - Platform güncellemeleri
+    
+    Sağlık rehberini keşfetmek için: http://localhost:8080/blog
+    
+    Bu e-posta {email} adresine gönderildi.
+    Aboneliği iptal etmek için: http://localhost:8080/newsletter/unsubscribe?email={email}
+    
+    MedikalAI Ekibi
+    info@medikalai.com
+    """
+    
+    return html_template, plain_text
 
 # Admin gerekli dekoratör
 def admin_required(f):
@@ -1315,6 +1612,79 @@ def admin_delete_user(user_id):
     
     return redirect(url_for('admin_users'))
 
+@app.route('/admin/newsletter')
+@admin_required
+def admin_newsletter():
+    """Admin newsletter aboneleri sayfası"""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    
+    # Toplam abone sayısı
+    c.execute("SELECT COUNT(*) as total FROM newsletter_subscribers WHERE status = 'active'")
+    total_subscribers = c.fetchone()['total']
+    
+    # Bugün abone olan sayısı
+    c.execute("SELECT COUNT(*) as today FROM newsletter_subscribers WHERE DATE(created_at) = DATE('now') AND status = 'active'")
+    today_subscribers = c.fetchone()['today']
+    
+    # Son 30 gün abone olan sayısı
+    c.execute("SELECT COUNT(*) as month FROM newsletter_subscribers WHERE created_at >= date('now', '-30 days') AND status = 'active'")
+    month_subscribers = c.fetchone()['month']
+    
+    # Son aboneler
+    c.execute("SELECT * FROM newsletter_subscribers ORDER BY created_at DESC LIMIT 50")
+    subscribers = c.fetchall()
+    
+    # Günlük abone istatistikleri (son 7 gün)
+    c.execute("""
+        SELECT COUNT(*) as count, DATE(created_at) as date
+        FROM newsletter_subscribers
+        WHERE created_at >= date('now', '-7 days') AND status = 'active'
+        GROUP BY DATE(created_at)
+        ORDER BY date
+    """)
+    daily_stats = c.fetchall()
+    
+    conn.close()
+    
+    return render_template('admin/newsletter.html',
+                         total_subscribers=total_subscribers,
+                         today_subscribers=today_subscribers,
+                         month_subscribers=month_subscribers,
+                         subscribers=subscribers,
+                         daily_stats=daily_stats)
+
+@app.route('/admin/newsletter/export')
+@admin_required
+def admin_newsletter_export():
+    """Newsletter abonelerini CSV olarak dışa aktar"""
+    import csv
+    from io import StringIO
+    from flask import make_response
+    
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT email, status, created_at FROM newsletter_subscribers ORDER BY created_at DESC")
+    subscribers = c.fetchall()
+    conn.close()
+    
+    # CSV oluştur
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Email', 'Durum', 'Kayıt Tarihi'])
+    
+    for subscriber in subscribers:
+        writer.writerow([subscriber['email'], subscriber['status'], subscriber['created_at']])
+    
+    # Response oluştur
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers['Content-Disposition'] = 'attachment; filename=newsletter_aboneleri.csv'
+    
+    return response
+
 # Abonelik işlemleri
 @app.route('/subscription/plans')
 def subscription_plans():
@@ -1553,6 +1923,415 @@ def kullanim_kosullari():
 def cerez_politikasi():
     """Çerez Politikası sayfasını görüntüle"""
     return render_template('cerez_politikasi.html')
+
+# Blog routes
+@app.route('/blog')
+def blog():
+    """Sağlık Rehberi Blog Ana Sayfası"""
+    # URL parametrelerini al
+    kategori = request.args.get('kategori', '')
+    arama = request.args.get('q', '')
+    sayfa = int(request.args.get('sayfa', 1))
+    
+    # Blog makalelerini hazırla (Gelecekte veritabanından gelecek)
+    blog_makaleleri = get_blog_articles()
+    
+    # Filtreleme
+    filtered_articles = blog_makaleleri
+    if kategori:
+        filtered_articles = [makale for makale in filtered_articles if makale['kategori'] == kategori]
+    if arama:
+        filtered_articles = [makale for makale in filtered_articles if 
+                           arama.lower() in makale['baslik'].lower() or 
+                           arama.lower() in makale['ozet'].lower()]
+    
+    # Sayfalama
+    per_page = 9
+    total = len(filtered_articles)
+    start = (sayfa - 1) * per_page
+    end = start + per_page
+    articles = filtered_articles[start:end]
+    
+    # Sayfa bilgileri
+    has_next = end < total
+    has_prev = sayfa > 1
+    next_page = sayfa + 1 if has_next else None
+    prev_page = sayfa - 1 if has_prev else None
+    
+    # Kategoriler
+    kategoriler = ['Kan Tahlilleri', 'Beslenme', 'Kalp Sağlığı', 'Diyabet', 'Kolesterol', 'Hormonlar', 'Vitaminler', 'Genel Sağlık']
+    
+    return render_template('blog/index.html', 
+                         articles=articles,
+                         kategoriler=kategoriler,
+                         secili_kategori=kategori,
+                         arama=arama,
+                         sayfa=sayfa,
+                         has_next=has_next,
+                         has_prev=has_prev,
+                         next_page=next_page,
+                         prev_page=prev_page,
+                         total=total)
+
+@app.route('/blog/<slug>')
+def blog_makale(slug):
+    """Blog makale detay sayfası"""
+    # Makaleyi slug ile bul
+    blog_makaleleri = get_blog_articles()
+    makale = next((m for m in blog_makaleleri if m['slug'] == slug), None)
+    
+    if not makale:
+        return render_template('error.html', error_message='Makale bulunamadı.'), 404
+    
+    # İlgili makaleler
+    ilgili_makaleler = [m for m in blog_makaleleri 
+                       if m['kategori'] == makale['kategori'] and m['slug'] != slug][:3]
+    
+    return render_template('blog/makale.html', 
+                         makale=makale, 
+                         ilgili_makaleler=ilgili_makaleler)
+
+# Newsletter endpoints
+@app.route('/newsletter/subscribe', methods=['POST'])
+@csrf.exempt
+def newsletter_subscribe():
+    """Newsletter abone olma endpoint'i"""
+    try:
+        data = request.get_json()
+        if not data or 'email' not in data:
+            return jsonify({'success': False, 'message': 'E-posta adresi gerekli.'}), 400
+        
+        email = data['email'].strip().lower()
+        
+        # Email doğrulama
+        import re
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            return jsonify({'success': False, 'message': 'Geçerli bir e-posta adresi girin.'}), 400
+        
+        # Veritabanına kaydet
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        
+        try:
+            c.execute("INSERT INTO newsletter_subscribers (email) VALUES (?)", (email,))
+            conn.commit()
+            
+            # Başarılı yanıt
+            response_data = {
+                'success': True, 
+                'message': 'Başarıyla abone oldunuz! Sağlık güncellemeleri e-posta kutunuza gelecek.'
+            }
+            
+            # Hoş geldin email'i gönder
+            try:
+                html_content, plain_content = get_welcome_email_template(email)
+                send_email_async(
+                    to_email=email,
+                    subject="🎉 MedikalAI Sağlık Rehberi'ne Hoş Geldiniz!",
+                    html_content=html_content,
+                    plain_content=plain_content
+                )
+                app.logger.info(f"Hoş geldin emaili gönderildi: {email}")
+            except Exception as email_error:
+                app.logger.error(f"Email gönderme hatası: {str(email_error)}")
+                # Email hatası olsa bile abonelik başarılı, sadece log'a kaydet
+            
+            return jsonify(response_data), 200
+            
+        except sqlite3.IntegrityError:
+            # E-posta zaten kayıtlı
+            return jsonify({
+                'success': False, 
+                'message': 'Bu e-posta adresi zaten abone listesinde.'
+            }), 409
+            
+        except Exception as db_error:
+            app.logger.error(f"Newsletter veritabanı hatası: {str(db_error)}")
+            return jsonify({
+                'success': False, 
+                'message': 'Abonelik işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.'
+            }), 500
+            
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        app.logger.error(f"Newsletter abone olma hatası: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'message': 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.'
+        }), 500
+
+@app.route('/newsletter/unsubscribe', methods=['POST'])
+@csrf.exempt
+def newsletter_unsubscribe():
+    """Newsletter abonelikten çıkma endpoint'i"""
+    try:
+        data = request.get_json()
+        if not data or 'email' not in data:
+            return jsonify({'success': False, 'message': 'E-posta adresi gerekli.'}), 400
+        
+        email = data['email'].strip().lower()
+        
+        # Veritabanından çıkar
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        
+        c.execute("UPDATE newsletter_subscribers SET status = 'unsubscribed' WHERE email = ?", (email,))
+        
+        if c.rowcount > 0:
+            conn.commit()
+            return jsonify({
+                'success': True, 
+                'message': 'Aboneliğiniz başarıyla iptal edildi.'
+            }), 200
+        else:
+            return jsonify({
+                'success': False, 
+                'message': 'Bu e-posta adresi abone listesinde bulunamadı.'
+            }), 404
+            
+    except Exception as e:
+        app.logger.error(f"Newsletter abonelik iptali hatası: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'message': 'Abonelik iptali sırasında bir hata oluştu.'
+        }), 500
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+def get_blog_articles():
+    """Blog makalelerini döndürür (SEO optimize edilmiş içerikler)"""
+    return [
+        {
+            'id': 1,
+            'baslik': 'Hemogram Testi Nedir? Sonuçları Nasıl Yorumlanır?',
+            'slug': 'hemogram-testi-nedir-sonuclari-nasil-yorumlanir',
+            'ozet': 'Hemogram testi kan sağlığınız hakkında önemli bilgiler verir. Değerlerinizi doğru yorumlayın.',
+            'kategori': 'Kan Tahlilleri',
+            'yazar': 'Dr. Mehmet Özkan',
+            'tarih': '2024-01-15',
+            'okuma_suresi': '8 dakika',
+            'gorsel': '/static/assets/hemogram-test.jpg',
+            'etiketler': ['hemogram', 'kan tahlili', 'akyuvar', 'alyuvar', 'trombosit'],
+            'meta_description': 'Hemogram testi sonuçlarınızı anlamak için rehber. Akyuvar, alyuvar, trombosit değerleri ve normal aralıklar.',
+            'icerik': '''
+            <h2>Hemogram Testi Nedir?</h2>
+            <p>Hemogram, kan hücrelerinizin sayısını ve özelliklerini ölçen temel kan testidir. Bu test anemiden enfeksiyona, kanama bozukluklarından kan kanserine kadar birçok durumu tespit edebilir.</p>
+            
+            <h3>Hemogram Testinde Ölçülen Değerler</h3>
+            <ul>
+                <li><strong>Alyuvar (RBC):</strong> Oksijen taşıyan kan hücreleri</li>
+                <li><strong>Hemoglobin (HGB):</strong> Oksijen bağlayan protein</li>
+                <li><strong>Hematokrit (HCT):</strong> Kandaki alyuvar oranı</li>
+                <li><strong>Akyuvar (WBC):</strong> Enfeksiyonla savaşan kan hücreleri</li>
+                <li><strong>Trombosit (PLT):</strong> Kan pıhtılaşmasını sağlayan hücreler</li>
+            </ul>
+            
+            <h3>Normal Değer Aralıkları</h3>
+            <table class="table table-striped">
+                <tr><td>Hemoglobin (Erkek)</td><td>14-18 g/dL</td></tr>
+                <tr><td>Hemoglobin (Kadın)</td><td>12-16 g/dL</td></tr>
+                <tr><td>Akyuvar</td><td>4.500-11.000 /μL</td></tr>
+                <tr><td>Trombosit</td><td>150.000-450.000 /μL</td></tr>
+            </table>
+            
+            <h3>Anormal Sonuçlar Ne Anlama Gelir?</h3>
+            <p>Hemogram sonuçlarınızda anormallik görüldüğünde panik yapmayın. Birçok faktör bu değerleri etkileyebilir.</p>
+            '''
+        },
+        {
+            'id': 2,
+            'baslik': 'Kolesterol Düzeyleri: LDL, HDL ve Total Kolesterol Rehberi',
+            'slug': 'kolesterol-duzeyleri-ldl-hdl-total-kolesterol-rehberi',
+            'ozet': 'Kolesterol değerlerinizi anlamak kalp sağlığınız için kritik. İyi ve kötü kolesterol arasındaki farkı öğrenin.',
+            'kategori': 'Kolesterol',
+            'yazar': 'Dr. Ayşe Demir',
+            'tarih': '2024-01-10',
+            'okuma_suresi': '6 dakika',
+            'gorsel': '/static/assets/kolesterol-test.jpg',
+            'etiketler': ['kolesterol', 'ldl', 'hdl', 'kalp sağlığı', 'trigliserit'],
+            'meta_description': 'Kolesterol testi sonuçları rehberi. LDL, HDL, total kolesterol normal değerleri ve yüksek kolesterolü düşürme yolları.',
+            'icerik': '''
+            <h2>Kolesterol Nedir?</h2>
+            <p>Kolesterol, vücudunuzun hücre duvarları ve hormon üretimi için ihtiyaç duyduğu mumsu bir maddedir. Ancak fazlası kalp hastalığı riskini artırır.</p>
+            
+            <h3>Kolesterol Türleri</h3>
+            <h4>LDL Kolesterol (Kötü Kolesterol)</h4>
+            <p>Düşük yoğunluklu lipoprotein (LDL), arterlerde plak birikimine neden olabilir.</p>
+            <ul>
+                <li>İdeal: 100 mg/dL altı</li>
+                <li>Sınırda yüksek: 130-159 mg/dL</li>
+                <li>Yüksek: 160 mg/dL üzeri</li>
+            </ul>
+            
+            <h4>HDL Kolesterol (İyi Kolesterol)</h4>
+            <p>Yüksek yoğunluklu lipoprotein (HDL), arterlerden kolesterolü temizler.</p>
+            <ul>
+                <li>Erkekler için ideal: 40 mg/dL üzeri</li>
+                <li>Kadınlar için ideal: 50 mg/dL üzeri</li>
+                <li>Mükemmel: 60 mg/dL üzeri</li>
+            </ul>
+            '''
+        },
+        {
+            'id': 3,
+            'baslik': 'Diyabet Tanısında Kullanılan Testler: HbA1c ve Açlık Şekeri',
+            'slug': 'diyabet-tanisinda-kullanilan-testler-hba1c-aclik-sekeri',
+            'ozet': 'Diyabet tanısı için hangi testler yapılır? HbA1c ve açlık şekeri testlerini anlayın.',
+            'kategori': 'Diyabet',
+            'yazar': 'Dr. Mehmet Özkan',
+            'tarih': '2024-01-05',
+            'okuma_suresi': '7 dakika',
+            'gorsel': '/static/assets/diyabet-test.jpg',
+            'etiketler': ['diyabet', 'hba1c', 'açlık şekeri', 'glukoz', 'insülin'],
+            'meta_description': 'Diyabet testleri rehberi. HbA1c, açlık şekeri ve glukoz tolerans testi normal değerleri ve yorumları.',
+            'icerik': '''
+            <h2>Diyabet Tanı Testleri</h2>
+            <p>Diyabet tanısı için kullanılan temel testler kan şekeri seviyenizi farklı açılardan değerlendirir.</p>
+            
+            <h3>HbA1c Testi</h3>
+            <p>Son 2-3 ayın ortalama kan şekeri seviyesini gösterir.</p>
+            <ul>
+                <li>Normal: %5.7 altı</li>
+                <li>Prediyabet: %5.7-6.4</li>
+                <li>Diyabet: %6.5 üzeri</li>
+            </ul>
+            
+            <h3>Açlık Kan Şekeri</h3>
+            <p>8-12 saat açlık sonrası ölçülen kan şekeri değeri.</p>
+            <ul>
+                <li>Normal: 70-99 mg/dL</li>
+                <li>Prediyabet: 100-125 mg/dL</li>
+                <li>Diyabet: 126 mg/dL üzeri</li>
+            </ul>
+            '''
+        },
+        {
+            'id': 4,
+            'baslik': 'Tiroid Fonksiyon Testleri: TSH, T3, T4 Değerleri',
+            'slug': 'tiroid-fonksiyon-testleri-tsh-t3-t4-degerleri',
+            'ozet': 'Tiroid bezinizin sağlığını TSH, T3, T4 testleriyle kontrol edin. Normal değerler ve anlamları.',
+            'kategori': 'Hormonlar',
+            'yazar': 'Dr. Fatma Yılmaz',
+            'tarih': '2024-01-12',
+            'okuma_suresi': '9 dakika',
+            'gorsel': '/static/assets/tiroid-test.jpg',
+            'etiketler': ['tiroid', 'tsh', 't3', 't4', 'hipotiroid', 'hipertiroid'],
+            'meta_description': 'Tiroid testleri rehberi. TSH, T3, T4 normal değerleri, hipotiroid ve hipertiroid belirtileri.',
+            'icerik': '''
+            <h2>Tiroid Fonksiyon Testleri</h2>
+            <p>Tiroid bezi metabolizmanızı kontrol eden önemli hormonlar üretir. Bu testler tiroid sağlığınızı değerlendirir.</p>
+            
+            <h3>TSH (Tiroid Stimülan Hormon)</h3>
+            <p>Hipofiz bezinden salgılanan ve tiroid bezini uyaran hormon.</p>
+            <ul>
+                <li>Normal aralık: 0.5-4.5 mIU/L</li>
+                <li>Yüksek TSH: Hipotiroid</li>
+                <li>Düşük TSH: Hipertiroid</li>
+            </ul>
+            '''
+        },
+        {
+            'id': 5,
+            'baslik': 'Vitamin D Eksikliği: Belirtiler ve Test Sonuçları',
+            'slug': 'vitamin-d-eksikligi-belirtiler-test-sonuclari',
+            'ozet': 'Vitamin D eksikliği yaygın bir sağlık sorunu. Test sonuçlarınızı anlayın ve eksikliği giderin.',
+            'kategori': 'Vitaminler',
+            'yazar': 'Dr. Can Öztürk',
+            'tarih': '2024-01-08',
+            'okuma_suresi': '5 dakika',
+            'gorsel': '/static/assets/vitamin-d-test.jpg',
+            'etiketler': ['vitamin d', 'kemik sağlığı', 'güneş vitamini', 'eksiklik'],
+            'meta_description': 'Vitamin D testi sonuçları ve eksiklik belirtileri. Normal vitamin D düzeyleri ve takviye önerileri.',
+            'icerik': '''
+            <h2>Vitamin D ve Önemi</h2>
+            <p>Vitamin D kemik sağlığı, bağışıklık sistemi ve birçok vücut fonksiyonu için kritiktir.</p>
+            
+            <h3>Vitamin D Seviyeleri</h3>
+            <ul>
+                <li>Eksiklik: 20 ng/mL altı</li>
+                <li>Yetersizlik: 20-30 ng/mL</li>
+                <li>Yeterli: 30-100 ng/mL</li>
+                <li>Fazla: 100 ng/mL üzeri</li>
+            </ul>
+            '''
+        },
+        {
+            'id': 6,
+            'baslik': 'Karaciğer Fonksiyon Testleri: ALT, AST, Bilirubin',
+            'slug': 'karaciger-fonksiyon-testleri-alt-ast-bilirubin',
+            'ozet': 'Karaciğer sağlığınızı ALT, AST ve bilirubin testleriyle kontrol edin. Normal değerler ve anlamları.',
+            'kategori': 'Kan Tahlilleri',
+            'yazar': 'Dr. Ahmet Kaya',
+            'tarih': '2024-01-14',
+            'okuma_suresi': '6 dakika',
+            'gorsel': '/static/assets/karaciger-test.jpg',
+            'etiketler': ['karaciğer', 'alt', 'ast', 'bilirubin', 'hepatit'],
+            'meta_description': 'Karaciğer fonksiyon testleri rehberi. ALT, AST, bilirubin normal değerleri ve karaciğer hastalıkları.',
+            'icerik': '''
+            <h2>Karaciğer Fonksiyon Testleri</h2>
+            <p>Karaciğer testleri organ hasarını veya hastalığını erken tespit etmeye yardımcı olur.</p>
+            
+            <h3>ALT (Alanin Aminotransferaz)</h3>
+            <p>Karaciğer hasarının en hassas göstergesi.</p>
+            <ul>
+                <li>Erkekler: 10-40 U/L</li>
+                <li>Kadınlar: 7-35 U/L</li>
+            </ul>
+            '''
+        },
+        {
+            'id': 7,
+            'baslik': 'Böbrek Fonksiyon Testleri: Kreatinin ve Üre Değerleri',
+            'slug': 'bobrek-fonksiyon-testleri-kreatinin-ure-degerleri',
+            'ozet': 'Böbrek sağlığınızı kreatinin ve üre testleriyle takip edin. Normal değerler ve böbrek hastalığı belirtileri.',
+            'kategori': 'Kan Tahlilleri',
+            'yazar': 'Dr. Zeynep Aktaş',
+            'tarih': '2024-01-09',
+            'okuma_suresi': '7 dakika',
+            'gorsel': '/static/assets/bobrek-test.jpg',
+            'etiketler': ['böbrek', 'kreatinin', 'üre', 'gfr', 'böbrek yetmezliği'],
+            'meta_description': 'Böbrek fonksiyon testleri rehberi. Kreatinin, üre, GFR normal değerleri ve böbrek hastalığı tanısı.',
+            'icerik': '''
+            <h2>Böbrek Fonksiyon Testleri</h2>
+            <p>Böbrek testleri organ fonksiyonunu değerlendirmek ve hastalığı erken tespit etmek için kullanılır.</p>
+            
+            <h3>Kreatinin</h3>
+            <p>Böbrek fonksiyonunun en önemli göstergesi.</p>
+            <ul>
+                <li>Erkekler: 0.7-1.2 mg/dL</li>
+                <li>Kadınlar: 0.6-1.1 mg/dL</li>
+            </ul>
+            '''
+        },
+        {
+            'id': 8,
+            'baslik': 'Kalp Sağlığı İçin Önemli Testler: Troponin ve CK-MB',
+            'slug': 'kalp-sagligi-icin-onemli-testler-troponin-ck-mb',
+            'ozet': 'Kalp krizi tanısında kullanılan troponin ve CK-MB testlerini öğrenin. Kalp sağlığınızı koruyun.',
+            'kategori': 'Kalp Sağlığı',
+            'yazar': 'Dr. Murat Özdemir',
+            'tarih': '2024-01-11',
+            'okuma_suresi': '8 dakika',
+            'gorsel': '/static/assets/kalp-test.jpg',
+            'etiketler': ['kalp', 'troponin', 'ck-mb', 'miyokard infarktüsü', 'kalp krizi'],
+            'meta_description': 'Kalp sağlığı testleri rehberi. Troponin, CK-MB değerleri ve kalp krizi tanısında kullanımları.',
+            'icerik': '''
+            <h2>Kalp Sağlığı Testleri</h2>
+            <p>Kalp hasarını tespit etmek için kullanılan özel enzim ve protein testleri.</p>
+            
+            <h3>Troponin</h3>
+            <p>Kalp krizi tanısında altın standart test.</p>
+            <ul>
+                <li>Normal: 0.04 ng/mL altı</li>
+                <li>Yüksek değerler kalp hasarını gösterir</li>
+            </ul>
+            '''
+        }
+    ]
 
 # CSRF hata yönetimi
 @app.errorhandler(CSRFError)

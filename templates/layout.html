@@ -19,6 +19,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             min-height: 100vh;
@@ -43,99 +47,167 @@
             padding: 5rem 0;
         }
         
-        /* Navbar yeni stiller */
+        /* Modern Navbar Stiller */
         .navbar {
-            padding: 15px 0;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            padding: 20px 0;
+            background-color: #ffffff !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        [data-bs-theme="dark"] .navbar {
+            background-color: #1a1d21 !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
         .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            display: flex;
+            font-weight: 800;
+            font-size: 1.75rem;
+            color: #000000 !important;
+            text-decoration: none;
+            letter-spacing: -0.8px;
+            transition: all 0.3s ease;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        [data-bs-theme="dark"] .navbar-brand {
+            color: #ffffff !important;
+        }
+        
+        .navbar-brand:hover {
+            color: #33baf7 !important;
+        }
+        
+        .navbar-nav {
+            margin-left: auto;
             align-items: center;
         }
         
-        .navbar-brand img {
-            height: 40px;
-            margin-right: 10px;
-        }
-        
         .navbar-nav .nav-link {
-            font-weight: 500;
-            padding: 10px 16px;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            margin: 0 3px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #6b7280 !important;
+            padding: 12px 24px !important;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
         
-        .navbar-nav .nav-link:hover,
-        .navbar-nav .nav-link:focus {
-            background-color: rgba(255,255,255,0.1);
-            color: white;
+        [data-bs-theme="dark"] .navbar-nav .nav-link {
+            color: #e5e7eb !important;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: #000000 !important;
+            transform: translateY(-1px);
+        }
+        
+        [data-bs-theme="dark"] .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
         }
         
         .navbar-nav .nav-link.active {
-            background-color: rgba(255,255,255,0.15);
-            color: white;
+            color: #33baf7 !important;
+            font-weight: 700;
+        }
+        
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        
+        .navbar-nav .nav-link:hover::after,
+        .navbar-nav .nav-link.active::after {
+            width: 20px;
+        }
+        
+        .connect-btn {
+            background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%) !important;
+            color: white !important;
+            padding: 12px 28px !important;
+            border-radius: 50px !important;
+            font-weight: 700 !important;
+            font-size: 0.85rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            border: none !important;
+            transition: all 0.3s ease !important;
+            margin-left: 20px !important;
+            text-decoration: none !important;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        .connect-btn:hover {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f1419 100%) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 10px 25px rgba(51, 186, 247, 0.5) !important;
+            color: white !important;
+        }
+        
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        [data-bs-theme="dark"] .theme-toggle:hover {
+            background-color: rgba(255,255,255,0.1);
         }
         
         .navbar-toggler {
             border: none;
             padding: 8px;
+            border-radius: 8px;
         }
         
         .navbar-toggler:focus {
             box-shadow: none;
         }
         
-        .navbar-action-btn {
-            border-radius: 50px;
-            padding: 8px 20px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
         
-        .navbar-user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            overflow: hidden;
-            background-color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-            margin-right: 8px;
-            color:rgb(253, 13, 65);
-            font-size: 16px;
+        [data-bs-theme="dark"] .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
         
+        /* Dropdown */
         .dropdown-menu {
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            padding: 10px;
-            min-width: 200px;
-            border: none;
-            margin-top: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 8px;
+            border: 1px solid rgba(0,0,0,0.05);
+            margin-top: 10px;
         }
         
         .dropdown-item {
-            border-radius: 6px;
-            padding: 8px 15px;
+            border-radius: 8px;
+            padding: 10px 16px;
             transition: all 0.2s ease;
+            font-weight: 500;
         }
         
-        .dropdown-item:hover, 
-        .dropdown-item:focus {
-            background-color: rgba(13,110,253,0.1);
-            color: #0d6efd;
-        }
-        
-        .dropdown-divider {
-            margin: 8px 0;
+        .dropdown-item:hover {
+            background-color: rgba(51, 186, 247, 0.1);
+            color: #33baf7;
         }
         
         /* Tema değiştirme düğme stilleri */
@@ -493,6 +565,379 @@
             }
         }
         
+        /* Modern Footer Styles */
+        .modern-footer {
+            margin-top: 80px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        /* Newsletter Section */
+        .newsletter-section {
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 30%, #33baf7 60%, #1e3a8a 90%, #0f1419 100%);
+            padding: 60px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .newsletter-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(51, 186, 247, 0.15) 0%, transparent 50%);
+        }
+        
+        .newsletter-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .newsletter-content h3 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+        
+        .newsletter-content p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+        
+        .newsletter-form {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .newsletter-input {
+            border: none;
+            border-radius: 50px;
+            padding: 16px 24px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #333;
+        }
+        
+        .newsletter-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+            background: white;
+        }
+        
+        .newsletter-btn {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            color: #33baf7;
+            border: none;
+            border-radius: 50px;
+            padding: 16px 28px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .newsletter-btn:hover {
+            background: white;
+            color: #1e3a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Main Footer */
+        .footer-main {
+            background: #f8f9fa;
+            padding: 60px 0 40px;
+        }
+        
+        [data-bs-theme="dark"] .footer-main {
+            background: #1a1d21;
+        }
+        
+        .footer-brand {
+            margin-bottom: 30px;
+        }
+        
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .brand-logo i {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .brand-logo span {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #333;
+            letter-spacing: -0.5px;
+        }
+        
+        [data-bs-theme="dark"] .brand-logo span {
+            color: white;
+        }
+        
+        .brand-description {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        [data-bs-theme="dark"] .brand-description {
+            color: #cccccc;
+        }
+        
+        /* Social Links */
+        .social-links {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .social-link {
+            width: 45px;
+            height: 45px;
+            background: #fff;
+            border: 2px solid #e1e5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 18px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover {
+            background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+            border-color: #33baf7;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(51, 186, 247, 0.3);
+        }
+        
+        [data-bs-theme="dark"] .social-link {
+            background: #2a2d31;
+            border-color: #495057;
+            color: #cccccc;
+        }
+        
+        /* Footer Columns */
+        .footer-column {
+            margin-bottom: 30px;
+        }
+        
+        .footer-title {
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+        
+        [data-bs-theme="dark"] .footer-title {
+            color: white;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+        
+        .footer-links a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .footer-links a:hover {
+            color: #33baf7;
+            padding-left: 8px;
+        }
+        
+        [data-bs-theme="dark"] .footer-links a {
+            color: #cccccc;
+        }
+        
+        [data-bs-theme="dark"] .footer-links a:hover {
+            color: #33baf7;
+        }
+        
+        /* Footer Bottom */
+        .footer-bottom {
+            background: white;
+            border-top: 1px solid #e1e5e9;
+            padding: 30px 0;
+        }
+        
+        [data-bs-theme="dark"] .footer-bottom {
+            background: #0f1419;
+            border-top-color: #2a2d31;
+        }
+        
+        .copyright p {
+            margin: 0;
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        [data-bs-theme="dark"] .copyright p {
+            color: #cccccc;
+        }
+        
+        .footer-certifications {
+            text-align: right;
+        }
+        
+        .cert-badges {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        
+        .cert-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .cert-badge:hover {
+            background: #33baf7;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        [data-bs-theme="dark"] .cert-badge {
+            background: #2a2d31;
+            color: #cccccc;
+        }
+        
+        /* Medical Disclaimer */
+        .medical-disclaimer {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-top: 3px solid #f59e0b;
+            padding: 20px 0;
+        }
+        
+        [data-bs-theme="dark"] .medical-disclaimer {
+            background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+        }
+        
+        .disclaimer-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .disclaimer-icon {
+            flex-shrink: 0;
+            width: 45px;
+            height: 45px;
+            background: #f59e0b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .disclaimer-text {
+            color: #92400e;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        
+        [data-bs-theme="dark"] .disclaimer-text {
+            color: #fbbf24;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .newsletter-section {
+                padding: 40px 0;
+                text-align: center;
+            }
+            
+            .newsletter-content h3 {
+                font-size: 1.4rem;
+                margin-bottom: 20px;
+            }
+            
+            .newsletter-form {
+                margin-top: 25px;
+            }
+            
+            .newsletter-input,
+            .newsletter-btn {
+                border-radius: 12px;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .footer-main {
+                padding: 40px 0 30px;
+            }
+            
+            .footer-column {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+            
+            .social-links {
+                justify-content: center;
+            }
+            
+            .footer-certifications {
+                text-align: center;
+                margin-top: 20px;
+            }
+            
+            .cert-badges {
+                justify-content: center;
+            }
+            
+            .disclaimer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .disclaimer-icon {
+                margin: 0 auto;
+            }
+        }
+        
         /* Daha büyük ekran optimizasyonları */
         @media (min-width: 992px) {
             .container {
@@ -512,115 +957,82 @@
 </head>
 <body {% if is_new_user %}data-new-user="true"{% endif %}>
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container">
+            <!-- Brand/Logo -->
             <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-flask me-2"></i>MediTahlil
+                MEDIKAL-AI
             </a>
-            <div class="d-flex align-items-center order-lg-3">
-                <!-- Tema Değiştirme Düğmesi -->
-                <button class="theme-toggle ms-2 d-flex align-items-center justify-content-center" id="theme-toggle" aria-label="Temayı değiştir">
-                    <i class="bi bi-sun"></i>
-                </button>
-                
-                <!-- Giriş/Kayıt Butonları (Mobilde collapse içinde olmayacak) -->
-                {% if not session.user_id %}
-                <div class="d-none d-lg-flex ms-3">
-                    <a href="{{ url_for('login') }}" class="btn btn-outline-light navbar-action-btn me-2">
-                        <i class="fas fa-sign-in-alt me-1"></i>Giriş
-                    </a>
-                    <a href="{{ url_for('register') }}" class="btn btn-light navbar-action-btn">
-                        <i class="fas fa-user-plus me-1"></i>Kayıt
-                    </a>
-                </div>
-                {% else %}
-                <!-- Kullanıcı Profil Menüsü (Mobilde collapse içinde olmayacak) -->
-                <div class="dropdown d-none d-lg-block ms-3">
-                    <a class="btn btn-light dropdown-toggle navbar-action-btn" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="navbar-user-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span class="d-none d-xl-inline">{{ session.username }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">
-                            <i class="fas fa-tachometer-alt me-2"></i>Panelim
-                        </a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('analyze') }}">
-                            <i class="fas fa-file-upload me-2"></i>Tahlil Yükle
-                        </a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('subscription_plans') }}">
-                            <i class="fas fa-gem me-2"></i>Üyelik Planım
-                        </a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
-                            <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
-                        </a></li>
-                    </ul>
-                </div>
-                {% endif %}
-                
-                <!-- Hamburger Menü -->
-                <button class="navbar-toggler ms-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </div>
             
+            <!-- Mobile Toggle Button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Navbar Content -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
+                <!-- Main Navigation Links -->
+                <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == url_for('index') %}active{% endif %}" href="{{ url_for('index') }}">
-                            <i class="fas fa-home me-2"></i>Ana Sayfa
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == url_for('about') %}active{% endif %}" href="{{ url_for('about') }}">
-                            <i class="fas fa-info-circle me-2"></i>Hakkımızda
-                        </a>
+                        <a class="nav-link {% if request.path == url_for('index') %}active{% endif %}" href="{{ url_for('index') }}">Ana Sayfa</a>
                     </li>
                     {% if session.user_id %}
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == url_for('dashboard') %}active{% endif %}" href="{{ url_for('dashboard') }}">
-                            <i class="fas fa-tachometer-alt me-2"></i>Panelim
-                        </a>
+                        <a class="nav-link {% if request.path == url_for('analyze') %}active{% endif %}" href="{{ url_for('analyze') }}">Tahlil Yükle</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == url_for('analyze') %}active{% endif %}" href="{{ url_for('analyze') }}">
-                            <i class="fas fa-file-upload me-2"></i>Tahlil Yükle
-                        </a>
+                        <a class="nav-link {% if request.path == url_for('dashboard') %}active{% endif %}" href="{{ url_for('dashboard') }}">Panelim</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == url_for('subscription_plans') %}active{% endif %}" href="{{ url_for('subscription_plans') }}">
-                            <i class="fas fa-gem me-2"></i>Üyelik Planları
-                        </a>
+                        <a class="nav-link {% if request.path == url_for('subscription_plans') %}active{% endif %}" href="{{ url_for('subscription_plans') }}">Üyelik</a>
                     </li>
                     {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path.startswith('/blog') %}active{% endif %}" href="{{ url_for('blog') }}">
+                            <i class="fas fa-notes-medical me-1"></i>Sağlık Rehberi
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == url_for('about') %}active{% endif %}" href="{{ url_for('about') }}">Hakkımızda</a>
+                    </li>
+                    
+                    <!-- Theme Toggle -->
+                    <li class="nav-item">
+                        <button class="theme-toggle" id="theme-toggle" aria-label="Temayı değiştir">
+                            <i class="bi bi-sun"></i>
+                        </button>
+                    </li>
                 </ul>
                 
-                <!-- Mobil Görünümde Giriş/Kayıt Butonları -->
-                {% if not session.user_id %}
-                <div class="d-lg-none d-flex flex-column w-100 mt-3">
-                    <a href="{{ url_for('login') }}" class="btn btn-outline-light navbar-action-btn mb-2">
-                        <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
-                    </a>
-                    <a href="{{ url_for('register') }}" class="btn btn-light navbar-action-btn">
-                        <i class="fas fa-user-plus me-2"></i>Kayıt Ol
-                    </a>
-                </div>
-                {% else %}
-                <!-- Mobil Görünümde Kullanıcı İşlemleri -->
-                <div class="d-lg-none d-flex flex-column w-100 mt-3">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="navbar-user-avatar me-3">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span class="text-white">{{ session.username }}</span>
+                <!-- Right Side Actions -->
+                <div class="d-flex align-items-center ms-auto">
+                    {% if not session.user_id %}
+                    <!-- Login/Register for non-logged users -->
+                    <a href="{{ url_for('register') }}" class="connect-btn">Başla</a>
+                    {% else %}
+                    <!-- User Dropdown for logged users -->
+                    <div class="dropdown">
+                        <a class="connect-btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ session.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-2"></i>Panelim
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('analyze') }}">
+                                <i class="fas fa-file-upload me-2"></i>Tahlil Yükle
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('subscription_plans') }}">
+                                <i class="fas fa-gem me-2"></i>Üyelik Planım
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                            </a></li>
+                        </ul>
                     </div>
-                    <a href="{{ url_for('logout') }}" class="btn btn-light navbar-action-btn text-danger">
-                        <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
-                    </a>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
         </div>
     </nav>
@@ -643,144 +1055,180 @@
     </div>
 
     <!-- Beta Test Uyarısı -->
-    <div class="container mt-2">
-        <div class="alert alert-warning alert-dismissible fade show">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-flask fa-2x me-3"></i>
-                <div>
-                    <h5 class="mb-1">Beta Test Aşaması</h5>
-                    <p class="mb-0">MediTahlil şu anda beta test aşamasındadır. Kullanım sırasında bazı hatalarla karşılaşabilirsiniz; geri bildirimleriniz uygulamamızı geliştirmemizde büyük önem taşımaktadır. Destekleriniz için teşekkür ederiz!</p>
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    </div>
+
 
     <!-- Main Content -->
     <div class="content">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Footer -->
-    <footer class="footer bg-light py-4 mt-5">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4 col-md-6">
-                    <h5><i class="fas fa-flask me-2"></i>MediTahlil</h5>
-                    <p>Kan tahlili sonuçlarınızı yapay zeka desteğiyle anında yorumlayın. Sağlığınızı daha yakından takip edin.</p>
-                    <div class="d-flex mt-3">
-                        <a href="#" class="btn btn-sm btn-outline-primary rounded-circle me-2" aria-label="Facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="btn btn-sm btn-outline-info rounded-circle me-2" aria-label="Twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="#" class="btn btn-sm btn-outline-danger rounded-circle me-2" aria-label="Instagram">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="btn btn-sm btn-outline-primary rounded-circle" aria-label="LinkedIn">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
+    <!-- Modern Footer -->
+    <footer class="modern-footer">
+        <!-- Newsletter Section -->
+        <div class="newsletter-section">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <div class="newsletter-content">
+                            <h3>📧 Sağlık Güncellemelerini Kaçırmayın</h3>
+                            <p>En yeni sağlık bilgileri, tahlil yorumlama ipuçları ve özel içerikleri e-posta kutunuzda alın.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="newsletter-form">
+                            <div class="input-group">
+                                <input type="email" class="form-control newsletter-input" placeholder="E-posta adresinizi girin">
+                                <button class="btn newsletter-btn" type="button">
+                                    <i class="fas fa-paper-plane me-2"></i>Abone Ol
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="col-lg-2 col-md-6">
-                    <h5>Hızlı Erişim</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ url_for('index') }}" class="text-decoration-none">
-                            <i class="fas fa-angle-right me-1"></i>Ana Sayfa
-                        </a></li>
-                        <li class="mb-2"><a href="{{ url_for('about') }}" class="text-decoration-none">
-                            <i class="fas fa-angle-right me-1"></i>Hakkımızda
-                        </a></li>
-                        {% if session.user_id %}
-                        <li class="mb-2"><a href="{{ url_for('dashboard') }}" class="text-decoration-none">
-                            <i class="fas fa-angle-right me-1"></i>Panelim
-                        </a></li>
-                        <li class="mb-2"><a href="{{ url_for('analyze') }}" class="text-decoration-none">
-                            <i class="fas fa-angle-right me-1"></i>Tahlil Yükle
-                        </a></li>
-                        {% else %}
-                        <li class="mb-2"><a href="{{ url_for('login') }}" class="text-decoration-none">
-                            <i class="fas fa-angle-right me-1"></i>Giriş Yap
-                        </a></li>
-                        <li class="mb-2"><a href="{{ url_for('register') }}" class="text-decoration-none">
-                            <i class="fas fa-angle-right me-1"></i>Kayıt Ol
-                        </a></li>
-                        {% endif %}
-                    </ul>
-                </div>
-                
-                <div class="col-lg-3 col-md-6">
-                    <h5>Yasal</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ url_for('kvkk') }}" class="text-decoration-none">
-                            <i class="fas fa-shield-alt me-1"></i>KVKK Aydınlatma Metni
-                        </a></li>
-                        <li class="mb-2"><a href="{{ url_for('gizlilik') }}" class="text-decoration-none">
-                            <i class="fas fa-user-secret me-1"></i>Gizlilik Politikası
-                        </a></li>
-                        <li class="mb-2"><a href="{{ url_for('kullanim_kosullari') }}" class="text-decoration-none">
-                            <i class="fas fa-file-contract me-1"></i>Kullanım Koşulları
-                        </a></li>
-                        <li class="mb-2"><a href="{{ url_for('cerez_politikasi') }}" class="text-decoration-none">
-                            <i class="fas fa-cookie-bite me-1"></i>Çerez Politikası
-                        </a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-lg-3 col-md-6">
-                    <h5>İletişim</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><i class="fas fa-envelope me-2"></i>info@meditahlil.com</li>
-                        <li class="mb-2"><i class="fas fa-phone me-2"></i>+90 539 394 90 35</li>
-                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>Kepez, Antalya</li>
-                        <li class="mb-2">
-                            <a href="https://www.linkedin.com/in/yunusemresalcan/" class="text-decoration-none" tabindex="0" aria-label="Yunus Emre Salcan ile iletişime geç">
-                                <i class="fas fa-user me-2"></i>Yunus Emre Salcan
-                            </a>
-                        </li>
-                    </ul>
-                    <a href="{{ url_for('index') }}#iletisim" class="btn btn-outline-primary btn-sm mt-2">
-                        <i class="fas fa-paper-plane me-1"></i>Bize Ulaşın
-                    </a>
+            </div>
+        </div>
+
+        <!-- Main Footer Content -->
+        <div class="footer-main">
+            <div class="container">
+                <div class="row g-4">
+                    <!-- Brand Section -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-brand">
+                            <div class="brand-logo">
+                                <i class="fas fa-brain"></i>
+                                <span>MedikalAI</span>
+                            </div>
+                            <p class="brand-description">
+                                Yapay zeka destekli kan tahlili yorumlama platformu. Sağlığınızı anlayın, geleceğinizi planlayın.
+                            </p>
+                            <div class="social-links">
+                                <a href="#" class="social-link" aria-label="Facebook">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="social-link" aria-label="Twitter">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="social-link" aria-label="Instagram">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="social-link" aria-label="LinkedIn">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="#" class="social-link" aria-label="YouTube">
+                                    <i class="fab fa-youtube"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Links -->
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-column">
+                            <h5 class="footer-title">Platform</h5>
+                            <ul class="footer-links">
+                                <li><a href="{{ url_for('index') }}">Ana Sayfa</a></li>
+                                <li><a href="{{ url_for('about') }}">Hakkımızda</a></li>
+                                <li><a href="{{ url_for('blog') }}">Sağlık Rehberi</a></li>
+                                {% if session.user_id %}
+                                <li><a href="{{ url_for('dashboard') }}">Panelim</a></li>
+                                <li><a href="{{ url_for('analyze') }}">Tahlil Yükle</a></li>
+                                {% else %}
+                                <li><a href="{{ url_for('register') }}">Ücretsiz Kayıt</a></li>
+                                <li><a href="{{ url_for('login') }}">Giriş Yap</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Services -->
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-column">
+                            <h5 class="footer-title">Hizmetler</h5>
+                            <ul class="footer-links">
+                                <li><a href="#">AI Tahlil Analizi</a></li>
+                                <li><a href="#">Sağlık Raporları</a></li>
+                                <li><a href="#">Trend Takibi</a></li>
+                                <li><a href="#">Uzman Danışmanlık</a></li>
+                                <li><a href="#">Mobil Uygulama</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Legal -->
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-column">
+                            <h5 class="footer-title">Yasal</h5>
+                            <ul class="footer-links">
+                                <li><a href="{{ url_for('kvkk') }}">KVKK Aydınlatma</a></li>
+                                <li><a href="{{ url_for('gizlilik') }}">Gizlilik Politikası</a></li>
+                                <li><a href="{{ url_for('kullanim_kosullari') }}">Kullanım Koşulları</a></li>
+                                <li><a href="{{ url_for('cerez_politikasi') }}">Çerez Politikası</a></li>
+                                <li><a href="#">API Kullanımı</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact & Support -->
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-column">
+                            <h5 class="footer-title">Destek</h5>
+                            <ul class="footer-links">
+                                <li><a href="mailto:info@medikalai.com">E-posta Desteği</a></li>
+                                <li><a href="tel:+905393949035">Telefon Desteği</a></li>
+                                <li><a href="#">Canlı Sohbet</a></li>
+                                <li><a href="#">SSS</a></li>
+                                <li><a href="#">Yardım Merkezi</a></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <hr class="my-4">
-            
-            <div class="row align-items-center">
-                <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
-                    <p class="mb-0">&copy; 2025 MediTahlil. Tüm hakları saklıdır.</p>
-                </div>
-                
-                <div class="col-md-4 text-center mb-3 mb-md-0">
-                    <img src="{{ url_for('static', filename='assets/payment-methods.png') }}" alt="Ödeme Yöntemleri" class="img-fluid" style="max-height: 30px;" onerror="this.style.display='none'">
-                </div>
-                
-                <div class="col-md-4 text-center text-md-end">
-                    <p class="mb-0 small">
-                        <a href="https://etbis.gov.tr" target="_blank" class="text-decoration-none me-3">
-                            <i class="fas fa-check-circle me-1"></i>ETBIS
-                        </a>
-                        <a href="https://www.kvkk.gov.tr" target="_blank" class="text-decoration-none">
-                            <i class="fas fa-lock me-1"></i>KVKK
-                        </a>
-                    </p>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="copyright">
+                            <p>&copy; 2025 MedikalAI. Tüm hakları saklıdır.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="footer-certifications">
+                            <div class="cert-badges">
+                                <span class="cert-badge">
+                                    <i class="fas fa-shield-check"></i>
+                                    SSL Güvenlik
+                                </span>
+                                <span class="cert-badge">
+                                    <i class="fas fa-user-shield"></i>
+                                    KVKK Uyumlu
+                                </span>
+                                <span class="cert-badge">
+                                    <i class="fas fa-certificate"></i>
+                                    ISO 27001
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="mt-4 p-3 bg-light rounded-3 border small">
-                <p class="mb-0 text-muted">
-                    <strong>Yasal Uyarı:</strong> MediTahlil, sağlık uzmanlarının yerini tutmaz. Sunduğumuz tahlil yorumları yalnızca bilgilendirme amaçlıdır ve tıbbi tavsiye niteliği taşımaz. Sağlığınızla ilgili endişeleriniz için her zaman bir sağlık profesyoneline danışmanızı öneririz.
-                </p>
-            </div>
-            
-            <div class="mt-3 text-center">
-                <p class="small text-muted mb-0">
-                    Bu site SSL ile korunmaktadır ve tüm verileriniz KVKK kapsamında güvenle saklanmaktadır.
-                    <span class="ms-2"><i class="fas fa-lock text-success"></i></span>
-                </p>
+        </div>
+
+        <!-- Medical Disclaimer -->
+        <div class="medical-disclaimer">
+            <div class="container">
+                <div class="disclaimer-content">
+                    <div class="disclaimer-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="disclaimer-text">
+                        <strong>Tıbbi Feragatname:</strong> MedikalAI, yalnızca bilgilendirme amaçlıdır ve profesyonel tıbbi tavsiyenin yerini tutmaz. 
+                        Sağlık sorunlarınız için mutlaka bir sağlık profesyoneliyle görüşün. Acil durumlarda 112'yi arayın.
+                    </div>
+                </div>
             </div>
         </div>
     </footer>

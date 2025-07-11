@@ -1,0 +1,529 @@
+{% extends "layout.html" %}
+
+{% block title %}Sağlık Rehberi - Kan Tahlilleri ve Sağlık Bilgileri | MedikalAI{% endblock %}
+
+{% block extra_css %}
+<meta name="description" content="Kan tahlilleri, sağlık testleri ve medical bilgiler hakkında uzman doktorlardan güvenilir rehber. Hemogram, kolesterol, diyabet, tiroid testleri hakkında bilgi alın.">
+<meta name="keywords" content="kan tahlili, hemogram, kolesterol, diyabet, tiroid, sağlık rehberi, medical test">
+<meta property="og:title" content="Sağlık Rehberi - Kan Tahlilleri ve Sağlık Bilgileri">
+<meta property="og:description" content="Kan tahlilleri ve sağlık testleri hakkında uzman doktorlardan güvenilir bilgiler.">
+<meta property="og:type" content="website">
+
+<style>
+    /* Blog Header Section */
+    .blog-header {
+        background: linear-gradient(135deg, #0f1419 0%, #1a2332 30%, #33baf7 60%, #1e3a8a 90%, #0f1419 100%);
+        position: relative;
+        overflow: hidden;
+        padding: 80px 0 60px;
+        color: white;
+    }
+    
+    .blog-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 50%, rgba(51, 186, 247, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(30, 58, 138, 0.12) 0%, transparent 50%);
+        animation: sparkle 20s ease-in-out infinite alternate;
+    }
+    
+    @keyframes sparkle {
+        0% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+        100% { opacity: 0.7; transform: scale(1.1) rotate(5deg); }
+    }
+    
+    .blog-header h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: -1px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .blog-header p {
+        font-size: 1.3rem;
+        font-weight: 500;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Search and Filter Section */
+    .search-section {
+        background: white;
+        padding: 40px 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        position: relative;
+        z-index: 10;
+        margin-top: -30px;
+        border-radius: 20px 20px 0 0;
+    }
+    
+    [data-bs-theme="dark"] .search-section {
+        background: #2a2d31;
+        color: white;
+    }
+    
+    .search-form {
+        max-width: 600px;
+        margin: 0 auto 30px;
+    }
+    
+    .search-input {
+        border-radius: 50px;
+        border: 2px solid #eee;
+        padding: 15px 25px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .search-input:focus {
+        border-color: #33baf7;
+        box-shadow: 0 0 0 0.2rem rgba(51, 186, 247, 0.25);
+    }
+    
+    .search-btn {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 15px 30px;
+        color: white;
+        font-weight: 600;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(51, 186, 247, 0.4);
+    }
+    
+    /* Category Pills */
+    .category-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    
+    .category-pill {
+        background: #f8f9fa;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 20px;
+        color: #666;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: 0.5px;
+    }
+    
+    .category-pill:hover,
+    .category-pill.active {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(51, 186, 247, 0.3);
+    }
+    
+    [data-bs-theme="dark"] .category-pill {
+        background: #3a3d41;
+        color: #e5e7eb;
+    }
+    
+    /* Blog Cards */
+    .blog-grid {
+        padding: 60px 0;
+    }
+    
+    .blog-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        height: 100%;
+        border: none;
+    }
+    
+    .blog-card:hover {
+        transform: translateY(-15px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    [data-bs-theme="dark"] .blog-card {
+        background: #2a2d31;
+        color: white;
+    }
+    
+    .blog-card-image {
+        height: 200px;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .blog-card-image::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+    }
+    
+    .blog-card-content {
+        padding: 25px;
+    }
+    
+    .blog-card-category {
+        background: rgba(51, 186, 247, 0.1);
+        color: #33baf7;
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 15px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: 0.5px;
+    }
+    
+    .blog-card-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        line-height: 1.3;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #333;
+    }
+    
+    [data-bs-theme="dark"] .blog-card-title {
+        color: white;
+    }
+    
+    .blog-card-excerpt {
+        color: #666;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    [data-bs-theme="dark"] .blog-card-excerpt {
+        color: #cccccc;
+    }
+    
+    .blog-card-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: #999;
+        margin-bottom: 15px;
+    }
+    
+    .blog-card-author {
+        font-weight: 600;
+        color: #33baf7;
+    }
+    
+    .blog-card-date {
+        color: #999;
+    }
+    
+    .blog-card-tags {
+        margin-top: 15px;
+    }
+    
+    .blog-tag {
+        background: #f8f9fa;
+        color: #666;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        display: inline-block;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    [data-bs-theme="dark"] .blog-tag {
+        background: #3a3d41;
+        color: #cccccc;
+    }
+    
+    .read-more-btn {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 20px;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: 0.5px;
+    }
+    
+    .read-more-btn:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(51, 186, 247, 0.4);
+    }
+    
+    /* Pagination */
+    .blog-pagination {
+        margin-top: 60px;
+        text-align: center;
+    }
+    
+    .pagination {
+        display: inline-flex;
+        gap: 10px;
+    }
+    
+    .pagination .page-link {
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px;
+        color: #666;
+        background: #f8f9fa;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .pagination .page-link:hover,
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    /* Results Info */
+    .results-info {
+        text-align: center;
+        margin-bottom: 40px;
+        color: #666;
+        font-size: 1.1rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    [data-bs-theme="dark"] .results-info {
+        color: #cccccc;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .blog-header h1 {
+            font-size: 2.5rem;
+        }
+        
+        .blog-header p {
+            font-size: 1.1rem;
+        }
+        
+        .category-pills {
+            justify-content: flex-start;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        
+        .category-pill {
+            white-space: nowrap;
+        }
+        
+        .blog-card {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Blog Header -->
+<section class="blog-header">
+    <div class="container">
+        <div class="text-center">
+            <h1>🩺 Sağlık Rehberi</h1>
+            <p>Kan tahlilleri, sağlık testleri ve medical bilgiler hakkında uzman doktorlardan güvenilir rehber</p>
+        </div>
+    </div>
+</section>
+
+<!-- Search and Filter Section -->
+<section class="search-section">
+    <div class="container">
+        <!-- Search Form -->
+        <form method="GET" class="search-form">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control search-input" placeholder="Makale ara... (ör: hemogram, kolesterol, diyabet)" value="{{ arama }}">
+                <button class="btn search-btn" type="submit">
+                    <i class="fas fa-search me-2"></i>Ara
+                </button>
+            </div>
+        </form>
+        
+        <!-- Category Pills -->
+        <div class="category-pills">
+            <a href="{{ url_for('blog') }}" class="category-pill {{ 'active' if not secili_kategori else '' }}">
+                Tümü
+            </a>
+            {% for kategori in kategoriler %}
+            <a href="{{ url_for('blog', kategori=kategori) }}" class="category-pill {{ 'active' if secili_kategori == kategori else '' }}">
+                {{ kategori }}
+            </a>
+            {% endfor %}
+        </div>
+        
+        <!-- Results Info -->
+        {% if arama or secili_kategori %}
+        <div class="results-info">
+            <strong>{{ total }}</strong> makale bulundu
+            {% if arama %} "<strong>{{ arama }}</strong>" araması için{% endif %}
+            {% if secili_kategori %} <strong>{{ secili_kategori }}</strong> kategorisinde{% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Blog Grid -->
+<section class="blog-grid">
+    <div class="container">
+        {% if not articles %}
+        <div class="text-center py-5">
+            <h3>Makale bulunamadı</h3>
+            <p class="text-muted">Arama kriterlerinizi değiştirip tekrar deneyebilirsiniz.</p>
+            <a href="{{ url_for('blog') }}" class="btn btn-primary">Tüm Makaleleri Görüntüle</a>
+        </div>
+        {% else %}
+        <div class="row g-4">
+            {% for makale in articles %}
+            <div class="col-lg-4 col-md-6">
+                <article class="blog-card">
+                    <div class="blog-card-image">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="blog-card-content">
+                        <span class="blog-card-category">{{ makale.kategori }}</span>
+                        <h3 class="blog-card-title">{{ makale.baslik }}</h3>
+                        <div class="blog-card-meta">
+                            <span class="blog-card-author">{{ makale.yazar }}</span>
+                            <span class="blog-card-date">{{ makale.tarih }}</span>
+                        </div>
+                        <p class="blog-card-excerpt">{{ makale.ozet }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('blog_makale', slug=makale.slug) }}" class="read-more-btn">
+                                Devamını Oku <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                            <small class="text-muted">
+                                <i class="far fa-clock me-1"></i>{{ makale.okuma_suresi }}
+                            </small>
+                        </div>
+                        <div class="blog-card-tags">
+                            {% for etiket in makale.etiketler[:3] %}
+                            <span class="blog-tag"># {{ etiket }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Pagination -->
+        {% if has_next or has_prev %}
+        <nav class="blog-pagination">
+            <ul class="pagination">
+                {% if has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('blog', sayfa=prev_page, kategori=secili_kategori, q=arama) }}">
+                        <i class="fas fa-chevron-left me-1"></i>Önceki
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">{{ sayfa }}</span>
+                </li>
+                
+                {% if has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('blog', sayfa=next_page, kategori=secili_kategori, q=arama) }}">
+                        Sonraki<i class="fas fa-chevron-right ms-1"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search form auto-submit on category change
+    const categoryPills = document.querySelectorAll('.category-pill');
+    categoryPills.forEach(pill => {
+        pill.addEventListener('click', function(e) {
+            const kategori = this.getAttribute('href').includes('kategori=') ? 
+                this.getAttribute('href').split('kategori=')[1] : '';
+            
+            if (kategori) {
+                const currentSearch = new URLSearchParams(window.location.search).get('q') || '';
+                if (currentSearch) {
+                    e.preventDefault();
+                    window.location.href = `{{ url_for('blog') }}?kategori=${kategori}&q=${currentSearch}`;
+                }
+            }
+        });
+    });
+    
+    // Animate cards on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.blog-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %} 

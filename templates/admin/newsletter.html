@@ -1,0 +1,288 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Newsletter Aboneleri - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-envelope text-primary"></i> Newsletter Aboneleri</h2>
+    <a href="{{ url_for('admin_newsletter_export') }}" class="btn btn-success">
+        <i class="fas fa-download"></i> CSV İndir
+    </a>
+</div>
+
+<!-- İstatistik Kartları -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-0">Toplam Abone</h6>
+                        <h3 class="mb-0">{{ total_subscribers }}</h3>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-users fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-0">Bugün Abone</h6>
+                        <h3 class="mb-0">{{ today_subscribers }}</h3>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-user-plus fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-0">Son 30 Gün</h6>
+                        <h3 class="mb-0">{{ month_subscribers }}</h3>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-calendar-month fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-0">Büyüme Oranı</h6>
+                        <h3 class="mb-0">%{{ ((month_subscribers / (total_subscribers or 1)) * 100) | round(1) }}</h3>
+                    </div>
+                    <div class="ms-3">
+                        <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Günlük İstatistik Grafiği -->
+{% if daily_stats %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Son 7 Günün Abone Trendi</h5>
+    </div>
+    <div class="card-body">
+        <canvas id="subscriberChart" width="400" height="100"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<!-- Aboneler Listesi -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Aboneler (Son 50)</h5>
+        <small class="text-muted">Toplam {{ subscribers|length }} abone görüntüleniyor</small>
+    </div>
+    <div class="card-body p-0">
+        {% if subscribers %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>E-posta</th>
+                        <th>Durum</th>
+                        <th>Kaynak</th>
+                        <th>Kayıt Tarihi</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subscriber in subscribers %}
+                    <tr>
+                        <td>
+                            <strong>{{ subscriber.email }}</strong>
+                        </td>
+                        <td>
+                            {% if subscriber.status == 'active' %}
+                                <span class="badge bg-success">Aktif</span>
+                            {% elif subscriber.status == 'unsubscribed' %}
+                                <span class="badge bg-danger">Abonelik İptal</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ subscriber.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ subscriber.source|title }}</span>
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ subscriber.created_at[:16] if subscriber.created_at else 'Bilinmiyor' }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                {% if subscriber.status == 'active' %}
+                                <button class="btn btn-outline-danger btn-sm" 
+                                        onclick="unsubscribeUser('{{ subscriber.email }}')">
+                                    <i class="fas fa-user-times"></i>
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-outline-secondary btn-sm" 
+                                        onclick="copyEmail('{{ subscriber.email }}')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-envelope-open-text fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Henüz abone bulunmuyor</h5>
+            <p class="text-muted">İlk aboneler geldiğinde burada görünecektir.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Grafik oluştur
+{% if daily_stats %}
+const ctx = document.getElementById('subscriberChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [
+            {% for stat in daily_stats %}
+            '{{ stat.date }}'{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Günlük Abone Sayısı',
+            data: [
+                {% for stat in daily_stats %}
+                {{ stat.count }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+{% endif %}
+
+// E-posta kopyalama
+function copyEmail(email) {
+    navigator.clipboard.writeText(email).then(function() {
+        // Toast mesajı göster
+        showToast('E-posta adresi kopyalandı: ' + email);
+    });
+}
+
+// Kullanıcı aboneliğini iptal et
+function unsubscribeUser(email) {
+    if (confirm('Bu kullanıcının aboneliğini iptal etmek istediğinize emin misiniz?\n\nE-posta: ' + email)) {
+        fetch('/newsletter/unsubscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Abonelik başarıyla iptal edildi');
+                location.reload();
+            } else {
+                showToast('Hata: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Bir hata oluştu');
+        });
+    }
+}
+
+// Toast mesajı göster
+function showToast(message) {
+    // Basit alert - daha gelişmiş toast sistemi eklenebilir
+    alert(message);
+}
+</script>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.opacity-75 {
+    opacity: 0.75;
+}
+
+[data-bs-theme="dark"] .card {
+    background-color: #2b3035;
+    border-color: #495057;
+}
+
+[data-bs-theme="dark"] .table {
+    color: #ffffff;
+}
+
+[data-bs-theme="dark"] .table-dark {
+    background-color: #1a1d21;
+}
+</style>
+{% endblock %} 

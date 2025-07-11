@@ -13,7 +13,7 @@ git push
 
 # Uygulamayı yeniden dağıt
 echo "2. Uygulamayı yeniden dağıtıyorum..."
-fly deploy --dockerfile Dockerfile.simple
+fly deploy --dockerfile scripts/deployment/Dockerfile
 
 # Volümleri kontrol et
 echo "3. Volümleri kontrol ediyorum..."

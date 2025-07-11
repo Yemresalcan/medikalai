@@ -7,7 +7,7 @@ kill_timeout = "5s"
   auto_rollback = true
 
 [build]
-  dockerfile = "Dockerfile.simple"
+  dockerfile = "scripts/deployment/Dockerfile"
 
 [http_service]
   internal_port = 8080

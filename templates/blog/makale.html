@@ -1,0 +1,666 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ makale.baslik }} | Sağlık Rehberi - MedikalAI{% endblock %}
+
+{% block extra_css %}
+<meta name="description" content="{{ makale.meta_description }}">
+<meta name="keywords" content="{{ makale.etiketler|join(', ') }}">
+<meta name="author" content="{{ makale.yazar }}">
+<meta property="og:title" content="{{ makale.baslik }}">
+<meta property="og:description" content="{{ makale.ozet }}">
+<meta property="og:type" content="article">
+<meta property="article:author" content="{{ makale.yazar }}">
+<meta property="article:published_time" content="{{ makale.tarih }}">
+<meta property="article:section" content="{{ makale.kategori }}">
+{% for etiket in makale.etiketler %}
+<meta property="article:tag" content="{{ etiket }}">
+{% endfor %}
+
+<!-- Structured Data for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "{{ makale.baslik }}",
+  "description": "{{ makale.ozet }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ makale.yazar }}"
+  },
+  "datePublished": "{{ makale.tarih }}",
+  "articleSection": "{{ makale.kategori }}",
+  "keywords": "{{ makale.etiketler|join(', ') }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "MedikalAI",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ url_for('static', filename='assets/medicalai.webp', _external=True) }}"
+    }
+  }
+}
+</script>
+
+<style>
+    /* Article Header */
+    .article-header {
+        background: linear-gradient(135deg, #0f1419 0%, #1a2332 30%, #33baf7 60%, #1e3a8a 90%, #0f1419 100%);
+        position: relative;
+        overflow: hidden;
+        padding: 60px 0 40px;
+        color: white;
+    }
+    
+    .article-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 40%, rgba(51, 186, 247, 0.15) 0%, transparent 60%);
+    }
+    
+    .breadcrumb-nav {
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .breadcrumb-nav a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+    
+    .breadcrumb-nav a:hover {
+        color: #33baf7;
+    }
+    
+    .article-category {
+        background: rgba(51, 186, 247, 0.2);
+        color: #33baf7;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 20px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .article-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        line-height: 1.2;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: -1px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .article-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(255, 255, 255, 0.9);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+    }
+    
+    .meta-icon {
+        color: #33baf7;
+        font-size: 1.1rem;
+    }
+    
+    /* Article Content */
+    .article-content {
+        background: white;
+        margin-top: -30px;
+        border-radius: 20px 20px 0 0;
+        position: relative;
+        z-index: 10;
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.08);
+    }
+    
+    [data-bs-theme="dark"] .article-content {
+        background: #2a2d31;
+        color: white;
+    }
+    
+    .article-body {
+        padding: 60px 0;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .article-body h2 {
+        color: #333;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        position: relative;
+        padding-left: 20px;
+    }
+    
+    .article-body h2::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 30px;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border-radius: 2px;
+    }
+    
+    [data-bs-theme="dark"] .article-body h2 {
+        color: white;
+    }
+    
+    .article-body h3 {
+        color: #444;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    [data-bs-theme="dark"] .article-body h3 {
+        color: #e5e7eb;
+    }
+    
+    .article-body h4 {
+        color: #33baf7;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-top: 25px;
+        margin-bottom: 12px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .article-body p {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: #555;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 400;
+    }
+    
+    [data-bs-theme="dark"] .article-body p {
+        color: #cccccc;
+    }
+    
+    .article-body ul, .article-body ol {
+        margin-bottom: 25px;
+        padding-left: 30px;
+    }
+    
+    .article-body li {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin-bottom: 8px;
+        color: #555;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    [data-bs-theme="dark"] .article-body li {
+        color: #cccccc;
+    }
+    
+    .article-body strong {
+        color: #33baf7;
+        font-weight: 600;
+    }
+    
+    .article-body table {
+        width: 100%;
+        margin: 30px 0;
+        border-collapse: collapse;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+    
+    .article-body table th {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        color: white;
+        padding: 15px;
+        font-weight: 600;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .article-body table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        color: #555;
+    }
+    
+    [data-bs-theme="dark"] .article-body table td {
+        border-bottom-color: #444;
+        color: #cccccc;
+    }
+    
+    .article-body table tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+    
+    [data-bs-theme="dark"] .article-body table tr:nth-child(even) {
+        background: #343a40;
+    }
+    
+    /* Tags Section */
+    .article-tags {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid #f0f0f0;
+    }
+    
+    [data-bs-theme="dark"] .article-tags {
+        border-top-color: #444;
+    }
+    
+    .article-tags h5 {
+        margin-bottom: 15px;
+        color: #333;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 600;
+    }
+    
+    [data-bs-theme="dark"] .article-tags h5 {
+        color: white;
+    }
+    
+    .tag-item {
+        background: #f8f9fa;
+        color: #666;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        display: inline-block;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .tag-item:hover {
+        background: #33baf7;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    [data-bs-theme="dark"] .tag-item {
+        background: #3a3d41;
+        color: #cccccc;
+    }
+    
+    /* Related Articles */
+    .related-articles {
+        background: #f8f9fa;
+        padding: 60px 0;
+        margin-top: 40px;
+    }
+    
+    [data-bs-theme="dark"] .related-articles {
+        background: #1a1d21;
+    }
+    
+    .related-articles h3 {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #333;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    [data-bs-theme="dark"] .related-articles h3 {
+        color: white;
+    }
+    
+    .related-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        height: 100%;
+    }
+    
+    .related-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+    }
+    
+    [data-bs-theme="dark"] .related-card {
+        background: #2a2d31;
+    }
+    
+    .related-card-image {
+        height: 150px;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+    }
+    
+    .related-card-content {
+        padding: 20px;
+    }
+    
+    .related-card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #333;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        line-height: 1.3;
+    }
+    
+    [data-bs-theme="dark"] .related-card-title {
+        color: white;
+    }
+    
+    .related-card-excerpt {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+    
+    [data-bs-theme="dark"] .related-card-excerpt {
+        color: #cccccc;
+    }
+    
+    .related-card-link {
+        color: #33baf7;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .related-card-link:hover {
+        color: #1e3a8a;
+    }
+    
+    /* Share Buttons */
+    .share-section {
+        background: white;
+        padding: 40px 0;
+        border-top: 2px solid #f0f0f0;
+        margin-top: 40px;
+    }
+    
+    [data-bs-theme="dark"] .share-section {
+        background: #2a2d31;
+        border-top-color: #444;
+    }
+    
+    .share-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .share-btn {
+        padding: 10px 20px;
+        border-radius: 25px;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .share-btn:hover {
+        transform: translateY(-3px);
+        color: white;
+    }
+    
+    .share-facebook { background: #3b5998; }
+    .share-facebook:hover { box-shadow: 0 8px 20px rgba(59, 89, 152, 0.4); }
+    
+    .share-twitter { background: #1da1f2; }
+    .share-twitter:hover { box-shadow: 0 8px 20px rgba(29, 161, 242, 0.4); }
+    
+    .share-linkedin { background: #0077b5; }
+    .share-linkedin:hover { box-shadow: 0 8px 20px rgba(0, 119, 181, 0.4); }
+    
+    .share-whatsapp { background: #25d366; }
+    .share-whatsapp:hover { box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4); }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .article-title {
+            font-size: 2rem;
+        }
+        
+        .article-meta {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .article-body {
+            padding: 40px 20px;
+        }
+        
+        .article-body h2 {
+            font-size: 1.5rem;
+            padding-left: 15px;
+        }
+        
+        .article-body h2::before {
+            height: 20px;
+        }
+        
+        .share-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .share-btn {
+            width: 200px;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Article Header -->
+<section class="article-header">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-nav">
+            <a href="{{ url_for('index') }}">Ana Sayfa</a> &gt; 
+            <a href="{{ url_for('blog') }}">Sağlık Rehberi</a> &gt; 
+            <a href="{{ url_for('blog', kategori=makale.kategori) }}">{{ makale.kategori }}</a> &gt; 
+            <span>{{ makale.baslik }}</span>
+        </nav>
+        
+        <div class="article-category">{{ makale.kategori }}</div>
+        <h1 class="article-title">{{ makale.baslik }}</h1>
+        
+        <div class="article-meta">
+            <div class="meta-item">
+                <i class="fas fa-user-md meta-icon"></i>
+                <span>{{ makale.yazar }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-calendar-alt meta-icon"></i>
+                <span>{{ makale.tarih }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-clock meta-icon"></i>
+                <span>{{ makale.okuma_suresi }}</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Article Content -->
+<section class="article-content">
+    <div class="container">
+        <div class="article-body">
+            {{ makale.icerik|safe }}
+            
+            <!-- Tags -->
+            <div class="article-tags">
+                <h5><i class="fas fa-tags me-2"></i>Etiketler</h5>
+                {% for etiket in makale.etiketler %}
+                <span class="tag-item"># {{ etiket }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Share Section -->
+<section class="share-section">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h4>Bu makaleyi paylaş</h4>
+        </div>
+        <div class="share-buttons">
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" class="share-btn share-facebook">
+                <i class="fab fa-facebook-f me-2"></i>Facebook
+            </a>
+            <a href="https://twitter.com/intent/tweet?text={{ makale.baslik }}&url={{ request.url }}" target="_blank" class="share-btn share-twitter">
+                <i class="fab fa-twitter me-2"></i>Twitter
+            </a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url }}" target="_blank" class="share-btn share-linkedin">
+                <i class="fab fa-linkedin-in me-2"></i>LinkedIn
+            </a>
+            <a href="https://wa.me/?text={{ makale.baslik }} {{ request.url }}" target="_blank" class="share-btn share-whatsapp">
+                <i class="fab fa-whatsapp me-2"></i>WhatsApp
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Related Articles -->
+{% if ilgili_makaleler %}
+<section class="related-articles">
+    <div class="container">
+        <h3>İlgili Makaleler</h3>
+        <div class="row g-4">
+            {% for ilgili in ilgili_makaleler %}
+            <div class="col-md-4">
+                <article class="related-card">
+                    <div class="related-card-image">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="related-card-content">
+                        <h4 class="related-card-title">{{ ilgili.baslik }}</h4>
+                        <p class="related-card-excerpt">{{ ilgili.ozet }}</p>
+                        <a href="{{ url_for('blog_makale', slug=ilgili.slug) }}" class="related-card-link">
+                            Devamını oku <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Back to Blog -->
+<section class="py-4 bg-light">
+    <div class="container text-center">
+        <a href="{{ url_for('blog') }}" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-arrow-left me-2"></i>Sağlık Rehberine Dön
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Reading progress bar
+    const progressBar = document.createElement('div');
+    progressBar.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 3px;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        z-index: 9999;
+        transition: width 0.1s ease;
+    `;
+    document.body.appendChild(progressBar);
+    
+    function updateProgressBar() {
+        const scrolled = window.pageYOffset;
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrolled / maxScroll) * 100;
+        progressBar.style.width = Math.min(progress, 100) + '%';
+    }
+    
+    window.addEventListener('scroll', updateProgressBar);
+    updateProgressBar();
+    
+    // Copy link functionality
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            alert('Link kopyalandı!');
+        });
+    }
+    
+    // Add copy link button
+    const copyBtn = document.createElement('button');
+    copyBtn.innerHTML = '<i class="fas fa-link me-2"></i>Linki Kopyala';
+    copyBtn.className = 'share-btn';
+    copyBtn.style.background = '#6c757d';
+    copyBtn.onclick = () => copyToClipboard(window.location.href);
+    
+    const shareButtons = document.querySelector('.share-buttons');
+    if (shareButtons) {
+        shareButtons.appendChild(copyBtn);
+    }
+});
+</script>
+{% endblock %} 

@@ -27,13 +27,13 @@ clean:
 
 # Fly.io deployment komutları
 fly-launch:
-	fly launch --dockerfile Dockerfile.simple --no-deploy
+	fly launch --dockerfile Dockerfile --no-deploy
 
 fly-volume:
 	fly volumes create data --size 1 || echo "Volume already exists"
 
 fly-deploy:
-	fly deploy --dockerfile Dockerfile.simple
+	fly deploy --dockerfile Dockerfile
 
 fly-open:
 	fly open

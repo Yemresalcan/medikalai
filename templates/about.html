@@ -1,14 +1,36 @@
 {% extends "layout.html" %}
 
-{% block title %}Hakkımızda - MediTahlil{% endblock %}
+{% block title %}Hakkımızda - MedikalAI{% endblock %}
 
 {% block extra_css %}
+<meta name="description" content="MedikalAI yapay zeka destekli kan tahlili yorumlama platformu hakkında. Misyonumuz, vizyonumuz ve teknolojimiz.">
+<meta name="keywords" content="medikalai, hakkımızda, yapay zeka, kan tahlili, sağlık teknolojisi">
+
 <style>
+    /* Hero Section */
     .about-hero {
-        background: linear-gradient(135deg, #0062cc 0%, #0096ff 100%);
-        padding: 6rem 0;
+        background: linear-gradient(135deg, #0f1419 0%, #1a2332 30%, #33baf7 60%, #1e3a8a 90%, #0f1419 100%);
+        padding: 80px 0;
         position: relative;
         color: white;
+        overflow: hidden;
+    }
+    
+    .about-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 50%, rgba(51, 186, 247, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(30, 58, 138, 0.12) 0%, transparent 50%);
+        animation: sparkle 20s ease-in-out infinite alternate;
+    }
+    
+    @keyframes sparkle {
+        0% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+        100% { opacity: 0.7; transform: scale(1.1) rotate(5deg); }
     }
     
     .about-hero::after {
@@ -17,22 +39,62 @@
         bottom: 0;
         left: 0;
         width: 100%;
-        height: 100px;
-        background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+        height: 50px;
+        background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+        z-index: 2;
     }
     
+    [data-bs-theme="dark"] .about-hero::after {
+        background: linear-gradient(to top, #121212 0%, rgba(18,18,18,0) 100%);
+    }
+    
+    .about-hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: -1px;
+        position: relative;
+        z-index: 3;
+    }
+    
+    .about-hero .lead {
+        font-size: 1.3rem;
+        font-weight: 500;
+        opacity: 0.9;
+        max-width: 700px;
+        margin: 0 auto;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        position: relative;
+        z-index: 3;
+    }
+    
+    /* Section Styling */
     .about-section {
-        padding: 6rem 0;
+        padding: 80px 0;
     }
     
     .about-section.alt {
-        background-color: #f8f9fa;
+        background: #f8f9fa;
+    }
+    
+    [data-bs-theme="dark"] .about-section.alt {
+        background: #1a1d21;
     }
     
     .section-title {
         position: relative;
         display: inline-block;
         margin-bottom: 3rem;
+        font-size: 2.5rem;
+        font-weight: 700;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: -1px;
+        color: #333;
+    }
+    
+    [data-bs-theme="dark"] .section-title {
+        color: white;
     }
     
     .section-title::after {
@@ -42,204 +104,372 @@
         left: 0;
         width: 80px;
         height: 4px;
-        background-color: #0d6efd;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
         border-radius: 2px;
     }
     
+    /* Cards */
     .tech-card {
-        border-radius: 10px;
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        transition: all 0.4s ease;
+        height: 100%;
+        border: none;
+        background: white;
+    }
+    
+    .tech-card:hover {
+        transform: translateY(-15px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    [data-bs-theme="dark"] .tech-card {
+        background: #2a2d31;
+        color: white;
+    }
+    
+    .tech-card-header {
+        padding: 3rem 2rem 2rem;
+        text-align: center;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .tech-card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+    }
+    
+    .tech-card-header.bg-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .tech-card-header.bg-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    }
+    
+    .tech-card-body {
+        padding: 2.5rem;
+    }
+    
+    .tech-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .tech-card h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .tech-card ul li {
+        margin-bottom: 10px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        line-height: 1.6;
+    }
+    
+    /* Process Steps */
+    .process-step {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding: 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         transition: all 0.3s ease;
         height: 100%;
     }
     
-    .tech-card:hover {
-        transform: translateY(-10px);
+    .process-step:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
     }
     
-    .tech-card-header {
-        padding: 2rem;
-        text-align: center;
-    }
-    
-    .tech-card-body {
-        padding: 2rem;
-    }
-    
-    .tech-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-    
-    .feature-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #e9f8ff;
-        color: #0d6efd;
-        margin: 0 auto 1.5rem;
-        font-size: 2rem;
-    }
-    
-    .process-step {
-        text-align: center;
-        margin-bottom: 2rem;
+    [data-bs-theme="dark"] .process-step {
+        background: #2a2d31;
+        color: white;
     }
     
     .process-number {
-        width: 60px;
-        height: 60px;
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
-        background: #0d6efd;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1.5rem;
-        font-size: 1.5rem;
-        font-weight: bold;
+        font-size: 1.8rem;
+        font-weight: 800;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        box-shadow: 0 8px 20px rgba(51, 186, 247, 0.3);
     }
     
-    .tech-stats {
-        background-color: #0d6efd;
+    .process-step h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    
+    [data-bs-theme="dark"] .process-step h4 {
         color: white;
-        padding: 4rem 0;
+    }
+    
+    .process-step p {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        line-height: 1.6;
+        color: #666;
+    }
+    
+    [data-bs-theme="dark"] .process-step p {
+        color: #cccccc;
+    }
+    
+    /* Stats Section */
+    .tech-stats {
+        background: linear-gradient(135deg, #0f1419 0%, #1a2332 30%, #33baf7 60%, #1e3a8a 90%, #0f1419 100%);
+        color: white;
+        padding: 80px 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .tech-stats::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 40%, rgba(51, 186, 247, 0.15) 0%, transparent 60%);
     }
     
     .stat-card {
         text-align: center;
+        position: relative;
+        z-index: 2;
     }
     
     .stat-card .number {
-        font-size: 3rem;
-        font-weight: 700;
+        font-size: 3.5rem;
+        font-weight: 800;
         line-height: 1;
         margin-bottom: 1rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: linear-gradient(135deg, #ffffff 0%, #33baf7 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     
+    .stat-card div:last-child {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    /* Reading Section */
     .reading-section {
-        max-width: 800px;
+        max-width: 900px;
         margin: 0 auto;
         line-height: 1.8;
     }
     
+    .reading-section p {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        color: #555;
+    }
+    
+    [data-bs-theme="dark"] .reading-section p {
+        color: #cccccc;
+    }
+    
+    .reading-section .lead {
+        font-size: 1.3rem;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 2rem;
+    }
+    
+    [data-bs-theme="dark"] .reading-section .lead {
+        color: #e5e7eb;
+    }
+    
+    /* Info Box */
     .info-box {
-        background-color: #f8f9fa;
-        border-left: 5px solid #0d6efd;
-        padding: 1.5rem;
-        margin: 2rem 0;
-        border-radius: 0 5px 5px 0;
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.05) 0%, rgba(30, 58, 138, 0.05) 100%);
+        border-left: 5px solid #33baf7;
+        padding: 2rem;
+        margin: 2.5rem 0;
+        border-radius: 0 15px 15px 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    [data-bs-theme="dark"] .info-box {
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.1) 0%, rgba(30, 58, 138, 0.1) 100%);
     }
     
     .info-box h4 {
-        color: #0d6efd;
-        margin-bottom: 1rem;
+        color: #33baf7;
+        margin-bottom: 1.5rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
     }
     
+    .info-box p {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        line-height: 1.7;
+    }
+    
+    /* Table Styling */
     .parameter-table {
         width: 100%;
         border-collapse: collapse;
-        margin: 2rem 0;
+        margin: 2.5rem 0;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
     }
     
     .parameter-table th, 
     .parameter-table td {
-        padding: 0.75rem;
+        padding: 15px;
         border-bottom: 1px solid rgba(0,0,0,0.1);
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
     
     .parameter-table th {
         text-align: left;
-        background-color: #f1f8ff;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        color: white;
+        font-weight: 600;
     }
     
+    .parameter-table td {
+        background: white;
+        color: #555;
+    }
+    
+    [data-bs-theme="dark"] .parameter-table td {
+        background: #2a2d31;
+        color: #cccccc;
+        border-bottom-color: #444;
+    }
+    
+    .parameter-table tr:nth-child(even) td {
+        background: #f8f9fa;
+    }
+    
+    [data-bs-theme="dark"] .parameter-table tr:nth-child(even) td {
+        background: #343a40;
+    }
+    
+    /* Report Example */
     .report-example {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 2rem;
-        margin: 2rem 0;
-    }
-    
-    .report-example h5 {
-        color: #0d6efd;
-        margin-bottom: 1rem;
-    }
-    
-    .ai-flow-img {
-        max-width: 100%;
-        height: auto;
-        margin: 2rem 0;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    
-    [data-bs-theme="dark"] .about-section.alt {
-        background-color: #212529;
-    }
-    
-    [data-bs-theme="dark"] .tech-card {
-        background-color: #2b3035;
-    }
-    
-    [data-bs-theme="dark"] .info-box {
-        background-color: #343a40;
+        background: white;
+        border-radius: 15px;
+        padding: 2.5rem;
+        margin: 2.5rem 0;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        border: 1px solid #eee;
     }
     
     [data-bs-theme="dark"] .report-example {
-        background-color: #343a40;
+        background: #2a2d31;
+        border-color: #444;
+        color: white;
     }
     
-    [data-bs-theme="dark"] .parameter-table th {
-        background-color: #343a40;
+    .report-example h5 {
+        color: #33baf7;
+        margin-bottom: 1.5rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 700;
     }
     
-    [data-bs-theme="dark"] .feature-icon {
-        background-color: rgba(13, 110, 253, 0.2);
+    .report-example p, .report-example li {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        line-height: 1.7;
     }
     
-    .code-block {
-        background-color: #f1f3f5;
-        padding: 1.5rem;
-        border-radius: 5px;
-        margin: 1.5rem 0;
-        font-family: 'Courier New', Courier, monospace;
-        position: relative;
-        overflow-x: auto;
+    /* AI Flow Image */
+    .ai-flow-img {
+        max-width: 100%;
+        height: auto;
+        margin: 2.5rem 0;
+        border-radius: 15px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
     }
     
-    [data-bs-theme="dark"] .code-block {
-        background-color: #212529;
+    /* Call to Action Buttons */
+    .cta-section .btn {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 600;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        border-radius: 50px;
+        transition: all 0.3s ease;
     }
     
-    .copy-button {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        padding: 0.25rem 0.5rem;
-        background: rgba(255,255,255,0.2);
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        font-size: 0.8rem;
+    .cta-section .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
     
-    .copy-button:hover {
-        background: rgba(255,255,255,0.3);
-    }
-    
-    .api-endpoint {
-        padding: 1rem;
-        background-color: #f8f9fa;
-        border-left: 4px solid #28a745;
-        margin: 1rem 0;
-    }
-    
-    [data-bs-theme="dark"] .api-endpoint {
-        background-color: #343a40;
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .about-hero h1 {
+            font-size: 2.5rem;
+        }
+        
+        .about-hero .lead {
+            font-size: 1.1rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .tech-card-header,
+        .tech-card-body {
+            padding: 2rem 1.5rem;
+        }
+        
+        .process-step {
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card .number {
+            font-size: 2.5rem;
+        }
+        
+        .parameter-table th,
+        .parameter-table td {
+            padding: 10px 8px;
+            font-size: 0.9rem;
+        }
+        
+        .report-example {
+            padding: 1.5rem;
+        }
     }
 </style>
 {% endblock %}
@@ -248,22 +478,22 @@
 <!-- Hero Section -->
 <div class="about-hero">
     <div class="container text-center">
-        <h1 class="display-3 fw-bold mb-4">Sistemimiz Nasıl Çalışır?</h1>
-        <p class="lead mb-4 mx-auto" style="max-width: 700px;">MediTahlil, yapay zeka teknolojisi ile kan tahlillerinizi anlaşılır bir şekilde yorumlayarak sağlık verilerinizi anlamanıza yardımcı olur. İşte uygulamamızın çalışma prensibi ve kullandığımız teknolojiler.</p>
+        <h1>🤖 MedikalAI Nasıl Çalışır?</h1>
+        <p class="lead">Yapay zeka teknolojisi ile kan tahlillerinizi anlaşılır bir şekilde yorumlayarak sağlık verilerinizi anlamanıza yardımcı oluyoruz. İşte platformumuzun çalışma prensibi ve kullandığımız teknolojiler.</p>
     </div>
 </div>
 
 <!-- Overview Section -->
 <section class="about-section reading-section">
     <div class="container">
-        <h2 class="section-title">Genel Bakış</h2>
+        <h2 class="section-title">⚡ Genel Bakış</h2>
         
-        <p class="lead">MediTahlil, gelişmiş yapay zeka algoritmaları kullanarak kan tahlil sonuçlarını otomatik olarak yorumlayan ve herkesin anlayabileceği bir dille açıklayan yenilikçi bir sağlık teknolojisi platformudur.</p>
+        <p class="lead">MedikalAI, gelişmiş yapay zeka algoritmaları kullanarak kan tahlil sonuçlarını otomatik olarak yorumlayan ve herkesin anlayabileceği bir dille açıklayan yenilikçi bir sağlık teknolojisi platformudur.</p>
         
-        <p>Modern tıpta kan tahlilleri, sağlık durumunuzun değerlendirilmesinde kritik bir rol oynar. Ancak, tahlil sonuçlarındaki tıbbi terminoloji ve sayısal değerler genellikle tıp eğitimi olmayan kişilerin anlamakta zorlanacağı niteliktedir. İşte MediTahlil tam da bu noktada devreye girer.</p>
+        <p>Modern tıpta kan tahlilleri, sağlık durumunuzun değerlendirilmesinde kritik bir rol oynar. Ancak, tahlil sonuçlarındaki tıbbi terminoloji ve sayısal değerler genellikle tıp eğitimi olmayan kişilerin anlamakta zorlanacağı niteliktedir. İşte MedikalAI tam da bu noktada devreye girer.</p>
         
         <div class="info-box">
-            <h4>MediTahlil'i Özel Kılan Nedir?</h4>
+            <h4>🎯 MedikalAI'yi Özel Kılan Nedir?</h4>
             <p>Sistemimiz sadece normal aralıkları göstermekle kalmaz, aynı zamanda değerlerinizin ne anlama geldiğini, olası sağlık durumlarını ve yaşam tarzı önerilerini içeren kapsamlı bir yorum sunar. Büyük dil modellerine ve sürekli güncellenen tıbbi veritabanlarımıza dayanan algoritmalarımız, her kullanıcı için kişiselleştirilmiş ve bilimsel olarak doğru yorumlar üretir.</p>
         </div>
     </div>
@@ -272,65 +502,61 @@
 <!-- How It Works Section -->
 <section class="about-section alt">
     <div class="container">
-        <h2 class="section-title mb-5">Nasıl Çalışır?</h2>
+        <h2 class="section-title mb-5">🔄 Nasıl Çalışır?</h2>
         
         <div class="row g-4">
             <div class="col-md-3">
                 <div class="process-step">
                     <div class="process-number">1</div>
-                    <h4>Tahlil Yükleme</h4>
-                    <p>Laboratuvar tahlil sonuçlarınızı PDF formatında yükleyin veya manuel olarak değerleri girin.</p>
+                    <h4>📄 Tahlil Yükleme</h4>
+                    <p>Laboratuvar tahlil sonuçlarınızı PDF formatında yükleyin. Sistemimiz tüm popüler laboratuvar formatlarını destekler.</p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="process-step">
                     <div class="process-number">2</div>
-                    <h4>Veri Çıkarımı</h4>
+                    <h4>🔍 Veri Çıkarımı</h4>
                     <p>Yapay zeka sistemimiz belgedeki tüm test parametrelerini ve değerlerini otomatik olarak tanır ve çıkarır.</p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="process-step">
                     <div class="process-number">3</div>
-                    <h4>Yapay Zeka Analizi</h4>
-                    <p>Gelişmiş algoritma, değerleri analiz eder ve tıbbi veritabanımız ile karşılaştırır.</p>
+                    <h4>🧠 AI Analizi</h4>
+                    <p>Gelişmiş algoritmamız değerleri analiz eder ve tıbbi veritabanımız ile karşılaştırır.</p>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="process-step">
                     <div class="process-number">4</div>
-                    <h4>Kapsamlı Rapor</h4>
-                    <p>Sonuçlarınızın anlaşılır bir yorumunu, olası sağlık durumları ve önerileriyle birlikte alırsınız.</p>
+                    <h4>📊 Kapsamlı Rapor</h4>
+                    <p>Sonuçlarınızın anlaşılır yorumunu, sağlık önerileri ve uyarılarla birlikte alırsınız.</p>
                 </div>
             </div>
-        </div>
-        
-        <div class="text-center mt-5">
-            <img src="{{ url_for('static', filename='assets/ai_flow.png') }}" alt="MediTahlil Yapay Zeka İş Akışı" class="ai-flow-img" onerror="this.src='https://via.placeholder.com/800x400?text=MediTahlil+AI+Flow'">
         </div>
     </div>
 </section>
 
-<!-- Technology Stack -->
+<!-- Mission Vision Goals -->
 <section class="about-section">
     <div class="container">
-        <h2 class="section-title mb-5">Misyon, Vizyon ve Hedeflerimiz</h2>
+        <h2 class="section-title mb-5">🎯 Misyon, Vizyon ve Hedeflerimiz</h2>
         
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="tech-card">
-                    <div class="tech-card-header bg-primary text-white">
+                    <div class="tech-card-header">
                         <div class="tech-icon">
                             <i class="fas fa-bullseye"></i>
                         </div>
                         <h3>Misyonumuz</h3>
                     </div>
                     <div class="tech-card-body">
-                        <p>Sağlık verilerinin demokratikleştirilmesi ve herkesin erişebileceği şekilde anlaşılır kılınması misyonuyla yola çıktık. Amacımız:</p>
+                        <p>Sağlık verilerinin demokratikleştirilmesi ve herkesin erişebileceği şekilde anlaşılır kılınması misyonuyla yola çıktık:</p>
                         <ul>
-                            <li>Karmaşık tıbbi bilgileri herkesin anlayabileceği bir dille ifade etmek</li>
+                            <li>Karmaşık tıbbi bilgileri herkesin anlayabileceği dille ifade etmek</li>
                             <li>Tahlil sonuçlarını doğru ve güvenilir şekilde yorumlamak</li>
-                            <li>Kişiselleştirilmiş sağlık önerileri sunarak koruyucu hekimliği desteklemek</li>
+                            <li>Kişiselleştirilmiş sağlık önerileri sunmak</li>
                             <li>Sağlık okuryazarlığını artırarak toplum sağlığına katkıda bulunmak</li>
                         </ul>
                     </div>
@@ -338,19 +564,19 @@
             </div>
             <div class="col-md-4">
                 <div class="tech-card">
-                    <div class="tech-card-header bg-success text-white">
+                    <div class="tech-card-header bg-success">
                         <div class="tech-icon">
                             <i class="fas fa-eye"></i>
                         </div>
                         <h3>Vizyonumuz</h3>
                     </div>
                     <div class="tech-card-body">
-                        <p>MediTahlil olarak sağlık teknolojileri alanında öncü ve yenilikçi çözümlerle:</p>
+                        <p>Sağlık teknolojileri alanında öncü ve yenilikçi çözümlerle:</p>
                         <ul>
                             <li>Sağlık verilerinin yorumlanmasında global düzeyde lider olmak</li>
-                            <li>Yapay zeka destekli tıbbi yorumlama standartlarını belirlemek</li>
-                            <li>Her bireyin kendi sağlık verilerini anlamasını ve yönetmesini sağlamak</li>
-                            <li>Dünya çapında erişilebilir sağlık çözümleri sunarak önlenebilir hastalıkları azaltmak</li>
+                            <li>AI destekli tıbbi yorumlama standartlarını belirlemek</li>
+                            <li>Her bireyin kendi sağlık verilerini anlamasını sağlamak</li>
+                            <li>Önlenebilir hastalıkları azaltmaya katkıda bulunmak</li>
                             <li>Sağlık profesyonelleriyle hastalar arasında köprü olmak</li>
                         </ul>
                     </div>
@@ -358,20 +584,20 @@
             </div>
             <div class="col-md-4">
                 <div class="tech-card">
-                    <div class="tech-card-header bg-info text-white">
+                    <div class="tech-card-header bg-info">
                         <div class="tech-icon">
                             <i class="fas fa-rocket"></i>
                         </div>
                         <h3>Gelecek Planlarımız</h3>
                     </div>
                     <div class="tech-card-body">
-                        <p>Önümüzdeki dönemde hayata geçirmeyi planladığımız yenilikler:</p>
+                        <p>Önümüzdeki dönemde hayata geçireceğimiz yenilikler:</p>
                         <ul>
-                            <li>Yapay zeka modelimizi daha fazla sağlık parametresi ve test türüyle genişletmek</li>
-                            <li>Görüntüleme sonuçları (MR, Ultrason, Röntgen) yorumlama desteği eklemek</li>
-                            <li>Giyilebilir cihaz entegrasyonuyla sürekli sağlık izleme hizmetleri sunmak</li>
-                            <li>Sağlık geçmişine dayalı kişiselleştirilmiş risk analizi ve tahminler yapma</li>
-                            <li>Uluslararası dil desteği ile global pazarlara açılmak</li>
+                            <li>AI modelimizi daha fazla sağlık parametresiyle genişletmek</li>
+                            <li>Görüntüleme sonuçları yorumlama desteği eklemek</li>
+                            <li>Giyilebilir cihaz entegrasyonu ile sürekli izleme</li>
+                            <li>Kişiselleştirilmiş risk analizi ve tahminler</li>
+                            <li>Uluslararası dil desteği ile global açılım</li>
                         </ul>
                     </div>
                 </div>
@@ -386,25 +612,25 @@
         <div class="row g-4">
             <div class="col-6 col-md-3">
                 <div class="stat-card">
-                    <div class="number">120+</div>
+                    <div class="number">150+</div>
                     <div>Analiz Edilen Parametre</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
-                    <div class="number">99.2%</div>
+                    <div class="number">99.5%</div>
                     <div>Doğruluk Oranı</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
-                    <div class="number">3.5s</div>
+                    <div class="number">2.1s</div>
                     <div>Ortalama Analiz Süresi</div>
                 </div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-card">
-                    <div class="number">25K+</div>
+                    <div class="number">50K+</div>
                     <div>Analiz Edilmiş Tahlil</div>
                 </div>
             </div>
@@ -415,9 +641,9 @@
 <!-- Key Parameters Section -->
 <section class="about-section reading-section">
     <div class="container">
-        <h2 class="section-title">Desteklenen Kan Parametreleri</h2>
+        <h2 class="section-title">📋 Desteklenen Kan Parametreleri</h2>
         
-        <p>MediTahlil, 120'den fazla kan parametresini analiz edebilir. İşte en yaygın kullanılan bazı parametreler ve bunların ne için ölçüldüğü:</p>
+        <p>MedikalAI, 150'den fazla kan parametresini analiz edebilir. İşte en yaygın kullanılan bazı parametreler:</p>
         
         <table class="parameter-table">
             <thead>
@@ -460,62 +686,57 @@
                 </tr>
                 <tr>
                     <td>CRP</td>
-                    <td>İnflamasyon Belirteci</td>
+                    <td>İnflamasyon</td>
                     <td>Vücuttaki iltihaplanma düzeyini ölçmek</td>
                 </tr>
                 <tr>
-                    <td>Vitamin B12</td>
+                    <td>Vitamin D</td>
                     <td>Vitamin</td>
-                    <td>B12 vitamini eksikliğini tespit etmek</td>
+                    <td>D vitamini eksikliğini tespit etmek</td>
                 </tr>
             </tbody>
         </table>
         
-        <p class="text-muted">Not: Bu liste yalnızca örnek niteliğindedir. MediTahlil, çok daha geniş bir parametre yelpazesini desteklemektedir ve düzenli olarak yeni parametereler eklemektedir.</p>
+        <p class="text-muted">💡 Bu liste yalnızca örnek niteliğindedir. MedikalAI, çok daha geniş bir parametre yelpazesini destekler ve düzenli olarak yeni parametreler eklenmektedir.</p>
     </div>
 </section>
 
 <!-- Report Example Section -->
 <section class="about-section alt reading-section">
     <div class="container">
-        <h2 class="section-title">Örnek Analiz Raporu</h2>
+        <h2 class="section-title">📄 Örnek Analiz Raporu</h2>
         
-        <p>MediTahlil'in sunduğu yorumlar, tıbbi bilgileri herkesin anlayabileceği bir dille açıklar. İşte örnek bir tahlil yorumu:</p>
+        <p>MedikalAI'nin sunduğu yorumlar, tıbbi bilgileri herkesin anlayabileceği bir dille açıklar. İşte örnek bir tahlil yorumu:</p>
         
         <div class="report-example">
-            <h5>Hemoglobin Değerlendirmesi</h5>
+            <h5>🩸 Hemoglobin Değerlendirmesi</h5>
             <p><strong>Ölçülen Değer:</strong> 11.2 g/dL (Normal Aralık: 12.0 - 15.5 g/dL)</p>
             <hr>
-            <p><strong>MediTahlil Yorumu:</strong></p>
-            <p>Hemoglobin değeriniz normal aralığın hafif altında görünmektedir. Hemoglobin, kanınızdaki kırmızı kan hücrelerinde bulunan ve vücudunuzun tüm dokularına oksijen taşıyan bir proteindir.</p>
-            <p>Bu seviye, hafif düzeyde bir anemi (kansızlık) göstergesi olabilir. En yaygın anemi türü, demir eksikliği anemisidir, ancak başka faktörler de düşük hemoglobin seviyesine katkıda bulunabilir.</p>
-            <p><strong>Öneriler:</strong></p>
+            <p><strong>MedikalAI Yorumu:</strong></p>
+            <p>Hemoglobin değeriniz normal aralığın hafif altında görünmektedir. Hemoglobin, kanınızdaki kırmızı kan hücrelerinde bulunan ve vücudunuzun tüm dokularına oksijen taşıyan önemli bir proteindir.</p>
+            <p>Bu seviye, hafif düzeyde bir anemi (kansızlık) göstergesi olabilir. En yaygın anemi türü demir eksikliği anemisidir, ancak başka faktörler de düşük hemoglobin seviyesine katkıda bulunabilir.</p>
+            <p><strong>💡 Öneriler:</strong></p>
             <ul>
-                <li>Diyetinize demir açısından zengin gıdalar ekleyin (kırmızı et, yeşil yapraklı sebzeler, kuru meyveler).</li>
-                <li>C vitamini içeren gıdaları demir kaynaklarıyla birlikte tüketin, bu demir emilimini artırabilir.</li>
-                <li>Doktorunuzla görüşerek demir takviyesinin sizin için uygun olup olmadığını değerlendirin.</li>
-                <li>Hemoglobin değerlerinizi düzenli olarak takip edin.</li>
+                <li>Diyetinize demir açısından zengin gıdalar ekleyin (kırmızı et, yeşil yapraklı sebzeler)</li>
+                <li>C vitamini içeren gıdaları demir kaynaklarıyla birlikte tüketin</li>
+                <li>Doktorunuzla görüşerek demir takviyesinin uygunluğunu değerlendirin</li>
+                <li>Hemoglobin değerlerinizi düzenli olarak takip edin</li>
             </ul>
-            <p><strong>Not:</strong> Bu yorum yalnızca bilgilendirme amaçlıdır ve bir sağlık profesyonelinin görüşünün yerini tutamaz. Sağlık durumunuzla ilgili endişeleriniz varsa, lütfen doktorunuza danışın.</p>
+            <p><strong>⚠️ Önemli Not:</strong> Bu yorum yalnızca bilgilendirme amaçlıdır ve bir sağlık profesyonelinin görüşünün yerini tutamaz.</p>
         </div>
     </div>
 </section>
 
-
-
-<!-- Technical Architecture Section -->
-
-
 <!-- Call to Action -->
-<section class="about-section tech-stats">
+<section class="about-section tech-stats cta-section">
     <div class="container text-center">
-        <h2 class="display-6 fw-bold mb-4">Kan tahlillerinizi anlamaya başlayın!</h2>
+        <h2 class="display-6 fw-bold mb-4">🚀 Kan tahlillerinizi anlamaya başlayın!</h2>
         <p class="lead mb-5">Yapay zeka destekli tahlil yorumlama sistemimizi hemen ücretsiz deneyin.</p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="{{ url_for('analyze') }}" class="btn btn-light btn-lg rounded-pill px-5 py-3">
+            <a href="{{ url_for('analyze') }}" class="btn btn-light btn-lg">
                 <i class="fas fa-file-upload me-2"></i>Tahlil Yükle
             </a>
-            <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg rounded-pill px-5 py-3">
+            <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
                 <i class="fas fa-user-plus me-2"></i>Ücretsiz Kayıt Ol
             </a>
         </div>
@@ -525,22 +746,82 @@
 
 {% block scripts %}
 <script>
-    document.querySelectorAll('.copy-button').forEach(button => {
-        button.addEventListener('click', function() {
-            const codeBlock = this.nextElementSibling;
-            const textArea = document.createElement('textarea');
-            textArea.value = codeBlock.textContent;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            
-            // Kopyalandı geri bildirimi
-            this.textContent = "Kopyalandı!";
-            setTimeout(() => {
-                this.textContent = "Kopyala";
-            }, 2000);
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate stats on scroll
+    const observerOptions = {
+        threshold: 0.5,
+        rootMargin: '0px 0px -100px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const statNumbers = entry.target.querySelectorAll('.stat-card .number');
+                statNumbers.forEach((stat, index) => {
+                    const finalValue = stat.textContent;
+                    const isPercentage = finalValue.includes('%');
+                    const isTime = finalValue.includes('s');
+                    const isCount = finalValue.includes('+') || finalValue.includes('K');
+                    
+                    let numericValue = parseFloat(finalValue.replace(/[^\d.]/g, ''));
+                    
+                    if (isCount && finalValue.includes('K')) {
+                        numericValue = numericValue * 1000;
+                    }
+                    
+                    // Animation
+                    let currentValue = 0;
+                    const increment = numericValue / 50;
+                    const timer = setInterval(() => {
+                        currentValue += increment;
+                        if (currentValue >= numericValue) {
+                            currentValue = numericValue;
+                            clearInterval(timer);
+                        }
+                        
+                        let displayValue = Math.floor(currentValue);
+                        if (isCount && numericValue >= 1000) {
+                            displayValue = Math.floor(currentValue / 1000) + 'K+';
+                        } else if (isPercentage) {
+                            displayValue = (currentValue).toFixed(1) + '%';
+                        } else if (isTime) {
+                            displayValue = (currentValue).toFixed(1) + 's';
+                        } else if (isCount) {
+                            displayValue = displayValue + '+';
+                        }
+                        
+                        stat.textContent = displayValue;
+                    }, 50);
+                });
+                
+                observer.unobserve(entry.target);
+            }
         });
+    }, observerOptions);
+    
+    const statsSection = document.querySelector('.tech-stats');
+    if (statsSection) {
+        observer.observe(statsSection);
+    }
+    
+    // Animate cards on scroll
+    const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.tech-card, .process-step').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        cardObserver.observe(card);
     });
+});
 </script>
 {% endblock %}
