@@ -12,7 +12,7 @@ from flask_wtf import CSRFProtect
 from flask_wtf.csrf import CSRFError
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from functools import wraps
-import stripe
+
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -32,11 +32,7 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB limit
 app.secret_key = secrets.token_hex(16)  # Güvenli rastgele anahtar
 
-# Stripe yapılandırması
-STRIPE_API_KEY = "sk_test_51XXXXXXXXXXXXXXXXXXXXXX"  # Test API anahtarı - gerçek anahtarla değiştirin
-STRIPE_PUBLIC_KEY = "pk_test_51XXXXXXXXXXXXXXXXXXXXXX"  # Test Public API anahtarı
-stripe.api_key = STRIPE_API_KEY
-app.config['STRIPE_PUBLIC_KEY'] = STRIPE_PUBLIC_KEY
+
 
 # CSRF koruması
 csrf = CSRFProtect(app)
@@ -50,8 +46,1080 @@ jwt = JWTManager(app)
 GEMINI_API_KEY = "AIzaSyBQLZ2W8mHu3IOoTl1pxdeetUC_bzu-j58"  # Gerçek API anahtarınızla değiştirin
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
 
+# Kan tahlili parametreleri ve normal aralıkları
+BLOOD_TEST_PARAMETERS = {
+    "kanser_gostergeleri": {
+        "name": "🧬 Kanser Göstergeleri (Tümör Belirteçleri)",
+        "description": "Kanser taraması için kullanılan özel belirteçler",
+        "parameters": {
+            "CEA": {
+                "name": "CEA (Kanser Belirteci)", 
+                "min": 0, "max": 5, "unit": "µg/L", 
+                "description": "Vücuttaki kanser belirtilerini ölçen test",
+                "what_is_it": "Kolon, akciğer ve mide kanserlerinde yükselen özel protein",
+                "high_explanation": "Bu değer yüksek çıkmış, bazı kanser türlerinin belirtisi olabilir",
+                "high_conditions": [
+                    "Kolon kanseri riski",
+                    "Akciğer kanseri şüphesi", 
+                    "Mide kanseri olasılığı",
+                    "Pankreas kanseri riski",
+                    "Sigara kullanımına bağlı yükselme"
+                ],
+                "low_explanation": "Bu değer düşük, kanser açısından iyi bir işaret",
+                "low_conditions": ["Normal, endişe yok"]
+            },
+            "CA 15-3": {
+                "name": "CA 15-3 (Meme Kanseri Belirteci)", 
+                "min": 0, "max": 31.3, "unit": "U/mL", 
+                "description": "Özellikle meme kanseri için kontrol edilen test",
+                "what_is_it": "Meme kanserinde yükselen özel bir protein belirteci",
+                "high_explanation": "Bu değer normal üstü, meme kanseri riski artmış olabilir",
+                "high_conditions": [
+                    "Meme kanseri riski",
+                    "Meme kanserinin yayılması olasılığı",
+                    "Over kanseri şüphesi",
+                    "Karaciğer kanseri riski"
+                ],
+                "low_explanation": "Bu değer düşük, meme kanseri açısından iyi",
+                "low_conditions": ["Normal, endişe yok"]
+            },
+            "CA 19-9": {
+                "name": "CA 19-9 (Pankreas Kanseri Belirteci)", 
+                "min": 0, "max": 37, "unit": "U/mL", 
+                "description": "Pankreas ve safra yolu kanserlerini kontrol eder",
+                "what_is_it": "Pankreas kanserinde yükselen özel protein belirteci",
+                "high_explanation": "Bu değer yüksek, pankreas veya safra kanseri riski var",
+                "high_conditions": [
+                    "Pankreas kanseri riski",
+                    "Safra yolu kanseri şüphesi",
+                    "Kolon kanseri olasılığı",
+                    "Safra taşı nedeniyle yükselme"
+                ],
+                "low_explanation": "Bu değer düşük, pankreas kanseri açısından iyi",
+                "low_conditions": ["Normal, endişe yok"]
+            },
+            "CA 125": {
+                "name": "CA 125 (Over Kanseri Belirteci)", 
+                "min": 0, "max": 35, "unit": "U/mL", 
+                "description": "Kadınlarda over kanseri taraması için kullanılır",
+                "what_is_it": "Over kanserinde yükselen özel protein belirteci",
+                "high_explanation": "Bu değer yüksek, over kanseri riski artmış olabilir",
+                "high_conditions": [
+                    "Over kanseri riski",
+                    "Endometriozis olasılığı",
+                    "Over kisti şüphesi",
+                    "Rahim kanseri riski",
+                    "Miyom nedeniyle yükselme"
+                ],
+                "low_explanation": "Bu değer düşük, over kanseri açısından iyi",
+                "low_conditions": ["Normal, endişe yok"]
+            },
+            "PSA": {
+                "name": "PSA (Prostat Kanseri Belirteci)", 
+                "min": 0, "max": 4, "unit": "ng/mL", 
+                "description": "Erkeklerde prostat kanseri taraması",
+                "what_is_it": "Prostat bezinden salgılanan, kanser durumunda yükselen protein",
+                "high_explanation": "Bu değer yüksek, prostat sorunu veya kanser riski var",
+                "high_conditions": [
+                    "Prostat kanseri riski",
+                    "Prostat büyümesi (BPH)",
+                    "Prostat iltihabı",
+                    "İdrar yolu enfeksiyonu"
+                ],
+                "low_explanation": "Bu değer düşük, prostat kanseri açısından iyi",
+                "low_conditions": ["Normal, endişe yok"]
+            },
+            "AFP": {
+                "name": "AFP (Karaciğer/Testis Kanseri Belirteci)", 
+                "min": 0, "max": 20, "unit": "ng/mL", 
+                "description": "Karaciğer ve testis kanserlerini kontrol eder",
+                "what_is_it": "Karaciğer ve testis kanserlerinde yükselen özel protein",
+                "high_explanation": "Bu değer yüksek, karaciğer veya testis kanseri riski var",
+                "high_conditions": [
+                    "Karaciğer kanseri riski",
+                    "Testis kanseri şüphesi",
+                    "Karaciğer sirozu olasılığı",
+                    "Hepatit B/C komplikasyonu"
+                ],
+                "low_explanation": "Bu değer düşük, kanser açısından iyi",
+                "low_conditions": ["Normal, endişe yok"]
+            },
+            "CA 72-4": {
+                "name": "CA 72-4 (Mide Kanseri Belirteci)", 
+                "min": 0, "max": 6.9, "unit": "U/mL", 
+                "description": "Mide ve kolorektal kanserleri için belirteç",
+                "what_is_it": "Mide kanserinde yükselen özel protein belirteci",
+                "high_explanation": "Bu değer yüksek, mide kanseri riski var",
+                "high_conditions": [
+                    "Mide kanseri riski",
+                    "Kolorektal kanser şüphesi",
+                    "Pankreas kanseri olasılığı"
+                ],
+                "low_explanation": "Bu değer düşük, mide kanseri açısından iyi",
+                "low_conditions": ["Normal, endişe yok"]
+            },
+            "CA 27-29": {
+                "name": "CA 27-29 (Meme Kanseri İzlem Belirteci)", 
+                "min": 0, "max": 38, "unit": "U/mL", 
+                "description": "Meme kanseri takibi için kullanılan belirteç",
+                "what_is_it": "Meme kanserinin seyrini takip etmek için kullanılan protein",
+                "high_explanation": "Bu değer yüksek, meme kanseri takibi gerekli",
+                "high_conditions": [
+                    "Meme kanseri nüksü riski",
+                    "Metastaz olasılığı",
+                    "Tedavi yanıtı değerlendirmesi gerekli"
+                ],
+                "low_explanation": "Bu değer düşük, meme kanseri takibi açısından iyi",
+                "low_conditions": ["Normal, endişe yok"]
+            },
+            "CYFRA 21-1": {
+                "name": "CYFRA 21-1 (Akciğer Kanseri Belirteci)", 
+                "min": 0, "max": 3.3, "unit": "ng/mL", 
+                "description": "Akciğer kanseri için özel belirteç",
+                "what_is_it": "Akciğer kanserinde yükselen sitokeratin fragmanı",
+                "high_explanation": "Bu değer yüksek, akciğer kanseri riski var",
+                "high_conditions": [
+                    "Akciğer kanseri riski",
+                    "KOAH ile ilişkili kanser riski",
+                    "Sigara kaynaklı kanser şüphesi"
+                ],
+                "low_explanation": "Bu değer düşük, akciğer kanseri açısından iyi",
+                "low_conditions": ["Normal, endişe yok"]
+            },
+            "NSE": {
+                "name": "NSE (Nöroendokrin Tümör Belirteci)", 
+                "min": 0, "max": 16.3, "unit": "ng/mL", 
+                "description": "Nöroendokrin tümörler için belirteç",
+                "what_is_it": "Sinir sistemi kaynaklı tümörlerde yükselen enzim",
+                "high_explanation": "Bu değer yüksek, nöroendokrin tümör riski var",
+                "high_conditions": [
+                    "Küçük hücreli akciğer kanseri riski",
+                    "Nöroendokrin tümör şüphesi",
+                    "Pankreas adacık hücresi tümörü olasılığı"
+                ],
+                "low_explanation": "Bu değer düşük, nöroendokrin tümör açısından iyi",
+                "low_conditions": ["Normal, endişe yok"]
+            }
+        }
+    },
+    "hemogram": {
+        "name": "🩸 Tam Kan Sayımı (Hemogram)",
+        "description": "Kan hücrelerinin sayısı ve özellikleri",
+        "parameters": {
+            "WBC": {
+                "name": "WBC (Akyuvar - Savunma Hücreleri)", 
+                "min": 4, "max": 10.5, "unit": "x10³/µL", 
+                "description": "Vücudun enfeksiyonlara karşı savunma hücreleri",
+                "what_is_it": "Hastalıklara karşı savaşan beyaz kan hücreleri",
+                "high_explanation": "Akyuvar sayınız yüksek, vücudunuzda enfeksiyon/iltihap olabilir",
+                "high_conditions": [
+                    "Bakteriyel enfeksiyon riski",
+                    "Viral enfeksiyon olasılığı",
+                    "Kan kanseri (lösemi) şüphesi",
+                    "Stres/sigara nedeniyle yükselme",
+                    "İlaç yan etkisi"
+                ],
+                "low_explanation": "Akyuvar sayınız düşük, bağışıklığınız zayıflamış olabilir",
+                "low_conditions": [
+                    "Bağışıklık sistemi zayıflığı",
+                    "Viral enfeksiyon sonrası düşme",
+                    "İlaç yan etkisi (kemoterapi vb.)",
+                    "Kemik iliği problemi",
+                    "Otoimmün hastalık riski"
+                ]
+            },
+            "HGB": {
+                "name": "HGB (Hemoglobin - Oksijen Taşıyıcısı)", 
+                "min": 12.5, "max": 16, "unit": "g/dL", 
+                "description": "Kanda oksijen taşıyan kırmızı protein",
+                "what_is_it": "Kandaki oksijen taşıyan ana madde, kansızlık göstergesi",
+                "high_explanation": "Hemoglobin değeriniz yüksek, kan kalınlaşmış olabilir",
+                "high_conditions": [
+                    "Kan kalınlaşması (polisitemi)",
+                    "Kalp hastalığı riski",
+                    "Akciğer hastalığı olasılığı",
+                    "Yüksek rakım etkisi",
+                    "Dehidrasyon (susuzluk)"
+                ],
+                "low_explanation": "Hemoglobin değeriniz düşük, kansızlık (anemi) var",
+                "low_conditions": [
+                    "Demir eksikliği anemisi",
+                    "Vitamin B12 eksikliği",
+                    "Kronik hastalık anemisi",
+                    "Kan kaybı (adet, mide kanaması)",
+                    "Beslenme bozukluğu"
+                ]
+            },
+            "HCT": {
+                "name": "HCT (Hematokrit - Kan Yoğunluğu)", 
+                "min": 37, "max": 47, "unit": "%", 
+                "description": "Kandaki kırmızı kan hücresi yüzdesi",
+                "what_is_it": "Kanınızın ne kadarının kırmızı hücrelerden oluştuğunu gösterir",
+                "high_explanation": "Kan yoğunluğunuz artmış, kan kalınlaşmış olabilir",
+                "high_conditions": [
+                    "Kan kalınlaşması riski",
+                    "Kalp krizi riski artışı",
+                    "İnme riski",
+                    "Dehidrasyon (susuzluk)",
+                    "Akciğer hastalığı"
+                ],
+                "low_explanation": "Kan yoğunluğunuz azalmış, kansızlık belirtisi",
+                "low_conditions": [
+                    "Anemi (kansızlık)",
+                    "Demir eksikliği",
+                    "Vitamin eksiklikleri",
+                    "Kronik hastalık",
+                    "Kan kaybı"
+                ]
+            },
+            "RBC": {
+                "name": "RBC (Alyuvar - Kırmızı Kan Hücreleri)", 
+                "min": 4.2, "max": 5.4, "unit": "x10⁶/µL", 
+                "description": "Oksijen taşıyan kırmızı kan hücrelerinin sayısı",
+                "what_is_it": "Vücudunuza oksijen taşıyan kırmızı kan hücreleri",
+                "high_explanation": "Kırmızı kan hücresi sayınız fazla, kan kalınlaşabilir",
+                "high_conditions": [
+                    "Polisitemi (kan kalınlaşması)",
+                    "Kalp hastalığı riski",
+                    "Tromboz riski",
+                    "Akciğer hastalığı",
+                    "Böbrek hastalığı"
+                ],
+                "low_explanation": "Kırmızı kan hücresi sayınız az, anemi var",
+                "low_conditions": [
+                    "Anemi (kansızlık)",
+                    "Demir eksikliği",
+                    "B12/Folik asit eksikliği",
+                    "Kemik iliği problemi",
+                    "Kronik böbrek hastalığı"
+                ]
+            },
+            "PLT": {
+                "name": "PLT (Trombosit - Pıhtılaşma Hücreleri)", 
+                "min": 150, "max": 450, "unit": "x10³/µL", 
+                "description": "Kan pıhtılaşmasını sağlayan hücreler",
+                "what_is_it": "Kanamayı durduran, yara iyileştiren kan hücreleri",
+                "high_explanation": "Trombosit sayınız yüksek, kan pıhtısı riski artabilir",
+                "high_conditions": [
+                    "Tromboz (damar tıkanıklığı) riski",
+                    "Kalp krizi riski",
+                    "İnme riski",
+                    "Kan kanseri olasılığı",
+                    "İltihaplı hastalık"
+                ],
+                "low_explanation": "Trombosit sayınız düşük, kanama riski var",
+                "low_conditions": [
+                    "Kolay kanama eğilimi",
+                    "Morarma (ekimoz) artışı",
+                    "İlaç yan etkisi",
+                    "Viral enfeksiyon sonrası",
+                    "Kemik iliği problemi"
+                ]
+            },
+            "MCV": {"name": "MCV (Ortalama Eritrosit Hacmi)", "min": 80, "max": 100, "unit": "fL", "description": "Kırmızı kan hücrelerinin ortalama boyutu"},
+            "MCH": {"name": "MCH (Ortalama Eritrosit Hemoglobini)", "min": 27, "max": 32, "unit": "pg", "description": "Her kırmızı kan hücresindeki hemoglobin miktarı"},
+            "MCHC": {"name": "MCHC (Ortalama Eritrosit Hemoglobin Konsantrasyonu)", "min": 32, "max": 36, "unit": "g/dL", "description": "Kırmızı kan hücrelerindeki hemoglobin konsantrasyonu"},
+            "RDW": {"name": "RDW (Eritrosit Dağılım Genişliği)", "min": 11.5, "max": 14.5, "unit": "%", "description": "Kırmızı kan hücrelerinin boyut farklılığı"},
+            "NEU": {"name": "NEU (Nötrofil)", "min": 50, "max": 70, "unit": "%", "description": "Bakteriyel enfeksiyonlara karşı savaşan hücreler"},
+            "LYM": {"name": "LYM (Lenfosit)", "min": 20, "max": 40, "unit": "%", "description": "Viral enfeksiyonlara karşı savaşan hücreler"},
+            "MON": {"name": "MON (Monosit)", "min": 2, "max": 8, "unit": "%", "description": "Büyük yabancı maddeleri yok eden hücreler"},
+            "EOS": {"name": "EOS (Eozinofil)", "min": 1, "max": 4, "unit": "%", "description": "Alerjik reaksiyonlarda rol oynayan hücreler"},
+            "BAS": {"name": "BAS (Bazofil)", "min": 0, "max": 0.7, "unit": "%", "description": "Alerjik reaksiyonlarda rol oynayan nadir hücreler"},
+            "PDW": {"name": "PDW (Trombosit Dağılım Genişliği)", "min": 9.9, "max": 15.4, "unit": "%", "description": "Trombositlerin boyut farklılığı"}
+        }
+    },
+    "elektrolitler": {
+        "name": "⚖️ Elektrolitler ve Mineraller",
+        "description": "Vücut sıvılarındaki elektrolit dengesi",
+        "parameters": {
+            "Na": {"name": "Sodyum", "min": 136, "max": 146, "unit": "mmol/L", "description": "Sıvı dengesi ve sinir iletimi için kritik"},
+            "K": {"name": "Potasyum", "min": 3.5, "max": 5.1, "unit": "mmol/L", "description": "Kalp ritmi ve kas fonksiyonu için önemli"},
+            "Cl": {"name": "Klorür", "min": 101, "max": 109, "unit": "mmol/L", "description": "Asit-baz dengesi için gerekli"},
+            "Ca": {"name": "Kalsiyum", "min": 8.8, "max": 10.6, "unit": "mg/dL", "description": "Kemik sağlığı ve kas kasılması için gerekli"},
+            "P": {"name": "Fosfor", "min": 2.5, "max": 4.5, "unit": "mg/dL", "description": "Kemik sağlığı ve enerji metabolizması"},
+            "Mg": {"name": "Magnezyum", "min": 1.9, "max": 2.5, "unit": "mg/dL", "description": "Kas fonksiyonu ve sinir iletimi için önemli"},
+            "Fe": {"name": "Demir", "min": 65, "max": 175, "unit": "µg/dL", "description": "Hemoglobin üretimi için gerekli"},
+            "Zn": {"name": "Çinko", "min": 70, "max": 120, "unit": "µg/dL", "description": "Bağışıklık sistemi ve yara iyileşmesi"}
+        }
+    },
+    "bobrek_fonksiyonlari": {
+        "name": "🫘 Böbrek Fonksiyonları",
+        "description": "Böbreklerin çalışma durumu",
+        "parameters": {
+            "BUN": {"name": "Üre", "min": 8, "max": 20, "unit": "mg/dL", "description": "Böbrek fonksiyonunun temel göstergesi"},
+            "Creatinine": {"name": "Kreatinin", "min": 0.66, "max": 1.09, "unit": "mg/dL", "description": "Böbrek filtrasyon hızının göstergesi"},
+            "eGFR": {"name": "eGFR (Filtrasyon Hızı)", "min": 90, "max": 999, "unit": "mL/min/1.73m²", "description": "Böbrek fonksiyonunun en doğru ölçümü"},
+            "Uric_Acid": {"name": "Ürik Asit", "min": 2.6, "max": 6, "unit": "mg/dL", "description": "Gut hastalığı ve böbrek taşı riski göstergesi"}
+        }
+    },
+    "karaciger_fonksiyonlari": {
+        "name": "🍃 Karaciğer Fonksiyonları",
+        "description": "Karaciğerin çalışma durumu",
+        "parameters": {
+            "ALT": {"name": "ALT (Alanin Aminotransferaz)", "min": 0, "max": 35, "unit": "U/L", "description": "Karaciğer hasarının önemli göstergesi"},
+            "AST": {"name": "AST (Aspartat Aminotransferaz)", "min": 10, "max": 50, "unit": "U/L", "description": "Karaciğer ve kalp kasında bulunan enzim"},
+            "GGT": {"name": "GGT (Gama Glutamil Transferaz)", "min": 0, "max": 38, "unit": "U/L", "description": "Karaciğer ve safra yolu hastalıkları göstergesi"},
+            "ALP": {"name": "Alkalen Fosfataz", "min": 0, "max": 130, "unit": "U/L", "description": "Karaciğer, kemik ve safra yolu göstergesi"},
+            "Albumin": {"name": "Albümin", "min": 35, "max": 52, "unit": "g/L", "description": "Karaciğerin protein üretim kapasitesi"},
+            "Total_Bilirubin": {"name": "Total Bilirubin", "min": 0.3, "max": 1.2, "unit": "mg/dL", "description": "Karaciğer ve sarılık göstergesi"},
+            "Direct_Bilirubin": {"name": "Direkt Bilirubin", "min": 0, "max": 0.2, "unit": "mg/dL", "description": "Karaciğer ve safra yolu tıkanıklığı göstergesi"},
+            "Indirect_Bilirubin": {"name": "İndirekt Bilirubin", "min": 0.1, "max": 1, "unit": "mg/dL", "description": "Kan hücresi yıkımı göstergesi"}
+        }
+    },
+    "pankreas_enzimler": {
+        "name": "🍬 Pankreas ve Diğer Enzimler",
+        "description": "Pankreas fonksiyonu ve sindirim enzimleri",
+        "parameters": {
+            "Amylase": {"name": "Amilaz", "min": 22, "max": 80, "unit": "U/L", "description": "Pankreas iltihabı ve hastalıkları göstergesi"},
+            "Lipase": {"name": "Lipaz", "min": 0, "max": 67, "unit": "U/L", "description": "Pankreas hastalıkları için hassas gösterge"},
+            "LDH": {"name": "LDH (Laktat Dehidrogenaz)", "min": 0, "max": 248, "unit": "U/L", "description": "Hücre hasarı ve organ fonksiyonu göstergesi"},
+            "CK": {"name": "CK (Kreatin Kinaz)", "min": 30, "max": 200, "unit": "U/L", "description": "Kas hasarı ve kalp krizi göstergesi"}
+        }
+    },
+    "seker_metabolizma": {
+        "name": "🍭 Şeker ve Metabolizma",
+        "description": "Kan şekeri ve metabolik göstergeler",
+        "parameters": {
+            "Glucose": {
+                "name": "Glukoz (Kan Şekeri)", 
+                "min": 74, "max": 106, "unit": "mg/dL", 
+                "description": "Açlık kan şekeri seviyesi",
+                "what_is_it": "Vücudunuzun enerji kaynağı olan kan şekeri",
+                "high_explanation": "Kan şekeriniz yüksek, diyabet riski var",
+                "high_conditions": [
+                    "Tip 2 Diyabet riski",
+                    "Prediyabet (diyabet öncesi)",
+                    "İnsülin direnci",
+                    "Metabolik sendrom",
+                    "Stres/hastalık nedeniyle yükselme"
+                ],
+                "low_explanation": "Kan şekeriniz düşük, hipoglisemi var",
+                "low_conditions": [
+                    "Açlık hipoglisemisi",
+                    "İnsülin fazlalığı",
+                    "Karaciğer hastalığı",
+                    "Aşırı egzersiz sonrası",
+                    "İlaç yan etkisi"
+                ]
+            },
+            "HbA1c": {
+                "name": "HbA1c (Şeker Hafızası)", 
+                "min": 4, "max": 5.6, "unit": "%", 
+                "description": "Son 2-3 ayın ortalama kan şekeri",
+                "what_is_it": "Son 3 ayın kan şekeri ortalamasını gösteren özel test",
+                "high_explanation": "Şeker hafızanız yüksek, diyabet kontrolü gerekli",
+                "high_conditions": [
+                    "Diyabet tanısı (>6.5%)",
+                    "Prediyabet (5.7-6.4%)",
+                    "Şeker kontrolsüzlüğü",
+                    "Komplikasyon riski",
+                    "İlaç ayarı gerekiyor"
+                ],
+                "low_explanation": "Şeker hafızanız çok düşük, kontrol gerekli",
+                "low_conditions": [
+                    "Çok sıkı şeker kontrolü",
+                    "Hipoglisemi riski",
+                    "Beslenme bozukluğu",
+                    "İlaç dozu fazla olabilir"
+                ]
+            },
+            "Insulin": {
+                "name": "İnsülin (Şeker Hormonu)", 
+                "min": 2.6, "max": 24.9, "unit": "µIU/mL", 
+                "description": "Pankreastan salgılanan şeker düzenleyici hormon",
+                "what_is_it": "Kan şekerinizi düşüren vücut hormonu",
+                "high_explanation": "İnsülin seviyeniz yüksek, direnç gelişmiş olabilir",
+                "high_conditions": [
+                    "İnsülin direnci",
+                    "Metabolik sendrom",
+                    "Tip 2 diyabet gelişme riski",
+                    "Obezite",
+                    "Polikistik over sendromu"
+                ],
+                "low_explanation": "İnsülin seviyeniz düşük, pankreas yorgun olabilir",
+                "low_conditions": [
+                    "Pankreas yetmezliği",
+                    "Tip 1 diyabet riski",
+                    "Beslenme bozukluğu",
+                    "Kronik hastalık"
+                ]
+            }
+        }
+    },
+    "lipid_profili": {
+        "name": "🫀 Lipid Profili (Kolesterol)",
+        "description": "Kalp-damar sağlığı göstergeleri",
+        "parameters": {
+            "Total_Cholesterol": {
+                "name": "Total Kolesterol (Genel)", 
+                "min": 0, "max": 200, "unit": "mg/dL", 
+                "description": "Kandaki toplam kolesterol miktarı",
+                "what_is_it": "Vücudunuzdaki toplam yağ maddesi (iyi + kötü kolesterol)",
+                "high_explanation": "Kolesterolünüz yüksek, kalp krizi riski artıyor",
+                "high_conditions": [
+                    "Kalp krizi riski",
+                    "Damar tıkanıklığı riski",
+                    "İnme riski",
+                    "Ateroskleroz (damar sertliği)",
+                    "Beslenme bozukluğu"
+                ],
+                "low_explanation": "Kolesterolünüz çok düşük, hormon problemleri olabilir",
+                "low_conditions": [
+                    "Hormon eksikliği",
+                    "Beslenme yetersizliği",
+                    "Karaciğer problemi",
+                    "Hipertiroidi riski"
+                ]
+            },
+            "LDL": {
+                "name": "LDL (Kötü Kolesterol)", 
+                "min": 0, "max": 100, "unit": "mg/dL", 
+                "description": "Damarları tıkayan zararlı kolesterol",
+                "what_is_it": "Damarlarınızı tıkayan, kalp krizine yol açan kötü kolesterol",
+                "high_explanation": "Kötü kolesterolünüz yüksek, acil diyet gerekli",
+                "high_conditions": [
+                    "Kalp krizi riski (yüksek)",
+                    "Koroner arter hastalığı",
+                    "Damar tıkanıklığı",
+                    "İnme riski",
+                    "Ailevi yüksek kolesterol"
+                ],
+                "low_explanation": "Kötü kolesterolünüz düşük, harika!",
+                "low_conditions": ["Mükemmel kalp sağlığı", "İyi beslenme alışkanlığı"]
+            },
+            "HDL": {
+                "name": "HDL (İyi Kolesterol)", 
+                "min": 40, "max": 999, "unit": "mg/dL", 
+                "description": "Damarları temizleyen koruyucu kolesterol",
+                "what_is_it": "Damarlarınızı temizleyen, kalbi koruyan iyi kolesterol",
+                "high_explanation": "İyi kolesterolünüz yüksek, kalp sağlığınız çok iyi!",
+                "high_conditions": ["Mükemmel kalp koruması", "Uzun yaşam beklentisi"],
+                "low_explanation": "İyi kolesterolünüz düşük, kalp riski artıyor",
+                "low_conditions": [
+                    "Kalp krizi riski artışı",
+                    "Egzersiz eksikliği",
+                    "Sigara kullanımı etkisi",
+                    "Obezite",
+                    "Diyabet riski"
+                ]
+            },
+            "Triglycerides": {
+                "name": "Trigliserit (Kan Yağı)", 
+                "min": 0, "max": 150, "unit": "mg/dL", 
+                "description": "Kandaki yağ parçacıkları",
+                "what_is_it": "Vücudunuzda depolanan fazla yağlar",
+                "high_explanation": "Kan yağınız yüksek, kalp ve pankreas riski var",
+                "high_conditions": [
+                    "Kalp hastalığı riski",
+                    "Pankreatit (pankreas iltihabı)",
+                    "Diyabet riski",
+                    "Metabolik sendrom",
+                    "Aşırı alkol/şeker tüketimi"
+                ],
+                "low_explanation": "Kan yağınız düşük, çok iyi!",
+                "low_conditions": ["Sağlıklı beslenme", "İyi metabolizma"]
+            }
+        }
+    },
+    "hormonlar": {
+        "name": "🧪 Hormonlar",
+        "description": "Endokrin sistem hormonları",
+        "parameters": {
+            "TSH": {"name": "TSH (Tiroid Uyarıcı Hormon)", "min": 0.27, "max": 4.2, "unit": "µIU/mL", "description": "Tiroid fonksiyonunun ana göstergesi"},
+            "Free_T4": {"name": "Serbest T4", "min": 0.93, "max": 1.7, "unit": "ng/dL", "description": "Aktif serbest T4 hormonu"},
+            "Free_T3": {"name": "Serbest T3", "min": 2.0, "max": 4.4, "unit": "pg/mL", "description": "Aktif serbest T3 hormonu"},
+            "Vitamin_D": {"name": "Vitamin D", "min": 30, "max": 100, "unit": "ng/mL", "description": "Kemik sağlığı ve bağışıklık sistemi"},
+            "Vitamin_B12": {"name": "Vitamin B12", "min": 300, "max": 900, "unit": "pg/mL", "description": "Sinir sistemi ve kan üretimi"},
+            "Folate": {"name": "Folik Asit", "min": 2.7, "max": 17, "unit": "ng/mL", "description": "DNA sentezi ve hücre bölünmesi"},
+            "Ferritin": {"name": "Ferritin", "min": 15, "max": 150, "unit": "ng/mL", "description": "Vücut demir depoları göstergesi"}
+        }
+    },
+    "inflamasyon": {
+        "name": "🔥 İnflamasyon Göstergeleri",
+        "description": "Vücuttaki iltihap ve enfeksiyon göstergeleri",
+        "parameters": {
+            "CRP": {"name": "CRP (C-Reaktif Protein)", "min": 0, "max": 3, "unit": "mg/L", "description": "Genel iltihap göstergesi"},
+            "ESR": {"name": "ESR (Sedimentasyon Hızı)", "min": 0, "max": 20, "unit": "mm/saat", "description": "İltihap ve kronik hastalık göstergesi"},
+            "Procalcitonin": {"name": "Prokalsitonin", "min": 0, "max": 0.05, "unit": "ng/mL", "description": "Bakteriyel enfeksiyon göstergesi"}
+        }
+    }
+}
+
+# Hastalık risk algoritmaları
+DISEASE_RISK_ALGORITHMS = {
+    "anemi": {
+        "name": "Anemi (Kansızlık)",
+        "description": "Kandaki hemoglobin veya kırmızı kan hücresi eksikliği",
+        "parameters": ["HGB", "HCT", "RBC", "Ferritin", "Vitamin_B12", "Folate"],
+        "conditions": [
+            {"param": "HGB", "operator": "<", "value": 12, "weight": 40},
+            {"param": "HCT", "operator": "<", "value": 36, "weight": 30},
+            {"param": "RBC", "operator": "<", "value": 4.0, "weight": 20},
+            {"param": "Ferritin", "operator": "<", "value": 15, "weight": 30},
+            {"param": "Vitamin_B12", "operator": "<", "value": 300, "weight": 25},
+            {"param": "Folate", "operator": "<", "value": 2.7, "weight": 25}
+        ]
+    },
+    "diyabet": {
+        "name": "Tip 2 Diyabet",
+        "description": "Kan şekeri yüksekliği ve insulin direnci",
+        "parameters": ["Glucose", "HbA1c", "Insulin"],
+        "conditions": [
+            {"param": "Glucose", "operator": ">", "value": 126, "weight": 50},
+            {"param": "HbA1c", "operator": ">", "value": 6.5, "weight": 60},
+            {"param": "Insulin", "operator": ">", "value": 25, "weight": 30}
+        ]
+    },
+    "hipotiroidi": {
+        "name": "Hipotiroidi (Tiroid Yetersizliği)",
+        "description": "Tiroid bezinin yetersiz hormon üretimi",
+        "parameters": ["TSH", "Free_T4", "Free_T3"],
+        "conditions": [
+            {"param": "TSH", "operator": ">", "value": 4.5, "weight": 60},
+            {"param": "Free_T4", "operator": "<", "value": 0.8, "weight": 40},
+            {"param": "Free_T3", "operator": "<", "value": 1.8, "weight": 30}
+        ]
+    },
+    "karaciger_hastaligi": {
+        "name": "Karaciğer Fonksiyon Bozukluğu",
+        "description": "Karaciğer enzimlerinin yüksek olması",
+        "parameters": ["ALT", "AST", "GGT", "Total_Bilirubin", "Albumin"],
+        "conditions": [
+            {"param": "ALT", "operator": ">", "value": 40, "weight": 35},
+            {"param": "AST", "operator": ">", "value": 40, "weight": 35},
+            {"param": "GGT", "operator": ">", "value": 50, "weight": 30},
+            {"param": "Total_Bilirubin", "operator": ">", "value": 1.5, "weight": 40},
+            {"param": "Albumin", "operator": "<", "value": 30, "weight": 30}
+        ]
+    },
+    "bobrek_hastaligi": {
+        "name": "Böbrek Fonksiyon Bozukluğu", 
+        "description": "Böbrek filtrasyon kapasitesinin azalması",
+        "parameters": ["Creatinine", "BUN", "eGFR", "Uric_Acid"],
+        "conditions": [
+            {"param": "Creatinine", "operator": ">", "value": 1.2, "weight": 50},
+            {"param": "BUN", "operator": ">", "value": 25, "weight": 30},
+            {"param": "eGFR", "operator": "<", "value": 60, "weight": 60},
+            {"param": "Uric_Acid", "operator": ">", "value": 7, "weight": 20}
+        ]
+    },
+    "kalp_hastaliği_riski": {
+        "name": "Kardiyovasküler Hastalık Riski",
+        "description": "Kalp ve damar hastalığı gelişme riski",
+        "parameters": ["Total_Cholesterol", "LDL", "HDL", "Triglycerides", "CRP"],
+        "conditions": [
+            {"param": "Total_Cholesterol", "operator": ">", "value": 240, "weight": 30},
+            {"param": "LDL", "operator": ">", "value": 130, "weight": 40},
+            {"param": "HDL", "operator": "<", "value": 35, "weight": 35},
+            {"param": "Triglycerides", "operator": ">", "value": 200, "weight": 30},
+            {"param": "CRP", "operator": ">", "value": 3, "weight": 25}
+        ]
+    },
+    "infeksiyon": {
+        "name": "Enfeksiyon/İltihap",
+        "description": "Vücutta aktif enfeksiyon veya iltihap varlığı",
+        "parameters": ["WBC", "NEU", "CRP", "ESR", "Procalcitonin"],
+        "conditions": [
+            {"param": "WBC", "operator": ">", "value": 11, "weight": 30},
+            {"param": "NEU", "operator": ">", "value": 75, "weight": 25},
+            {"param": "CRP", "operator": ">", "value": 10, "weight": 40},
+            {"param": "ESR", "operator": ">", "value": 30, "weight": 25},
+            {"param": "Procalcitonin", "operator": ">", "value": 0.25, "weight": 50}
+        ]
+        },
+    "demir_eksikligi": {
+        "name": "Demir Eksikliği",
+        "description": "Vücutta demir depolarının azalması",
+        "parameters": ["Fe", "Ferritin", "HGB", "MCV"],
+        "conditions": [
+            {"param": "Fe", "operator": "<", "value": 60, "weight": 30},
+            {"param": "Ferritin", "operator": "<", "value": 12, "weight": 50},
+            {"param": "HGB", "operator": "<", "value": 12, "weight": 30},
+            {"param": "MCV", "operator": "<", "value": 80, "weight": 35}
+        ]
+    },
+    "pankreatit": {
+        "name": "Pankreatit (Pankreas İltihabı)",
+        "description": "Pankreas enzimlerinin yüksekliği pankreas iltihabını gösterebilir",
+        "parameters": ["Amylase", "Lipase"],
+        "conditions": [
+            {"param": "Amylase", "operator": ">", "value": 100, "weight": 60},
+            {"param": "Lipase", "operator": ">", "value": 80, "weight": 70}
+        ]
+    },
+    "prediabetes": {
+        "name": "Prediyabet (Diyabet Öncesi)",
+        "description": "Normal ve diyabet arasında kan şekeri seviyesi",
+        "parameters": ["Glucose", "HbA1c"],
+        "conditions": [
+            {"param": "Glucose", "operator": ">", "value": 100, "weight": 50},
+            {"param": "HbA1c", "operator": ">", "value": 5.7, "weight": 60}
+        ]
+    },
+    "hipertiroidi": {
+        "name": "Hipertiroidi (Tiroid Aşırı Çalışması)",
+        "description": "Tiroid bezinin aşırı hormon üretimi",
+        "parameters": ["TSH", "Free_T4", "Free_T3"],
+        "conditions": [
+            {"param": "TSH", "operator": "<", "value": 0.1, "weight": 60},
+            {"param": "Free_T4", "operator": ">", "value": 1.8, "weight": 40},
+            {"param": "Free_T3", "operator": ">", "value": 4.5, "weight": 30}
+        ]
+    },
+    "vitamin_d_eksikligi": {
+        "name": "Vitamin D Eksikliği",
+        "description": "Kemik sağlığı ve bağışıklık sistemi için kritik vitamin eksikliği",
+        "parameters": ["Vitamin_D", "Ca", "P"],
+        "conditions": [
+            {"param": "Vitamin_D", "operator": "<", "value": 20, "weight": 70},
+            {"param": "Ca", "operator": "<", "value": 8.5, "weight": 20},
+            {"param": "P", "operator": "<", "value": 2.5, "weight": 10}
+        ]
+    },
+    "b12_eksikligi": {
+        "name": "Vitamin B12 Eksikliği",
+        "description": "Sinir sistemi ve kan üretimi için gerekli vitamin eksikliği",
+        "parameters": ["Vitamin_B12", "HGB", "MCV"],
+        "conditions": [
+            {"param": "Vitamin_B12", "operator": "<", "value": 200, "weight": 70},
+            {"param": "HGB", "operator": "<", "value": 12, "weight": 20},
+            {"param": "MCV", "operator": ">", "value": 100, "weight": 30}
+        ]
+    }
+}
+
+
+def parse_blood_test_from_text(text):
+    """PDF metninden kan tahlili parametrelerini çıkarır"""
+    import re
+    
+    extracted_params = {}
+    lines = text.split('\n')
+    
+    # Yaygın parametre eşleştirmeleri
+    parameter_patterns = {
+        'WBC': r'(?:WBC|white blood cell|akyuvar|beyaz kan).*?([0-9]+\.?[0-9]*)',
+        'HGB': r'(?:HGB|hemoglobin|hgb).*?([0-9]+\.?[0-9]*)',
+        'HCT': r'(?:HCT|hematokrit|hct).*?([0-9]+\.?[0-9]*)',
+        'RBC': r'(?:RBC|red blood cell|alyuvar|kırmızı kan).*?([0-9]+\.?[0-9]*)',
+        'PLT': r'(?:PLT|platelet|trombosit).*?([0-9]+\.?[0-9]*)',
+        'MCV': r'(?:MCV|mcv).*?([0-9]+\.?[0-9]*)',
+        'MCH': r'(?:MCH|mch).*?([0-9]+\.?[0-9]*)',
+        'MCHC': r'(?:MCHC|mchc).*?([0-9]+\.?[0-9]*)',
+        'NEU': r'(?:NEU|nötrofil|neutrophil).*?([0-9]+\.?[0-9]*)',
+        'LYM': r'(?:LYM|lenfosit|lymphocyte).*?([0-9]+\.?[0-9]*)',
+        'MON': r'(?:MON|monosit|monocyte).*?([0-9]+\.?[0-9]*)',
+        'EOS': r'(?:EOS|eozinofil|eosinophil).*?([0-9]+\.?[0-9]*)',
+        'BAS': r'(?:BAS|bazofil|basophil).*?([0-9]+\.?[0-9]*)',
+        'Glucose': r'(?:glucose|glukoz|şeker).*?([0-9]+\.?[0-9]*)',
+        'BUN': r'(?:BUN|üre|urea).*?([0-9]+\.?[0-9]*)',
+        'Creatinine': r'(?:creatinine|kreatinin).*?([0-9]+\.?[0-9]*)',
+        'ALT': r'(?:ALT|SGPT|alanin).*?([0-9]+\.?[0-9]*)',
+        'AST': r'(?:AST|SGOT|aspartat).*?([0-9]+\.?[0-9]*)',
+        'GGT': r'(?:GGT|ggt|gama glutamil).*?([0-9]+\.?[0-9]*)',
+        'ALP': r'(?:ALP|alkalen fosfataz|alkaline phosphatase).*?([0-9]+\.?[0-9]*)',
+        'Albumin': r'(?:albumin|albümin).*?([0-9]+\.?[0-9]*)',
+        'Amylase': r'(?:amilaz|amylase).*?([0-9]+\.?[0-9]*)',
+        'Lipase': r'(?:lipaz|lipase).*?([0-9]+\.?[0-9]*)',
+        'LDH': r'(?:LDH|ldh|laktat dehidrogenaz).*?([0-9]+\.?[0-9]*)',
+        'HbA1c': r'(?:HbA1c|hba1c|hemoglobin a1c|glikozillenmiş).*?([0-9]+\.?[0-9]*)',
+        'Insulin': r'(?:insulin|insülin).*?([0-9]+\.?[0-9]*)',
+        'Total_Bilirubin': r'(?:total bilirubin|toplam bilirubin).*?([0-9]+\.?[0-9]*)',
+        'Direct_Bilirubin': r'(?:direct bilirubin|direkt bilirubin).*?([0-9]+\.?[0-9]*)',
+        'Indirect_Bilirubin': r'(?:indirect bilirubin|indirekt bilirubin).*?([0-9]+\.?[0-9]*)',
+        'Total_Cholesterol': r'(?:total cholesterol|toplam kolesterol).*?([0-9]+\.?[0-9]*)',
+        'LDL': r'(?:LDL|ldl).*?([0-9]+\.?[0-9]*)',
+        'HDL': r'(?:HDL|hdl).*?([0-9]+\.?[0-9]*)',
+        'Triglycerides': r'(?:triglyceride|trigliserit).*?([0-9]+\.?[0-9]*)',
+        'TSH': r'(?:TSH|tsh).*?([0-9]+\.?[0-9]*)',
+        'Free_T4': r'(?:free t4|serbest t4|ft4).*?([0-9]+\.?[0-9]*)',
+        'Vitamin_D': r'(?:vitamin d|d vitamini).*?([0-9]+\.?[0-9]*)',
+        'Vitamin_B12': r'(?:vitamin b12|b12 vitamini).*?([0-9]+\.?[0-9]*)',
+        'Ferritin': r'(?:ferritin|ferritin).*?([0-9]+\.?[0-9]*)',
+        'CRP': r'(?:CRP|c.?reaktif protein).*?([0-9]+\.?[0-9]*)',
+        # Kanser belirteçleri için gelişmiş regex'ler - çok daha kapsamlı
+        'CEA': r'(?:CEA|cea|C\.?E\.?A\.?|karsinoembriyonik|carcinoembryonic|Karsinoembriyonik|antijen.*?CEA|CEA.*?antijen).*?([0-9]+\.?[0-9]*)',
+        'CA 15-3': r'(?:CA\s?15\-3|ca\s?15\-3|CA\s?15\.3|ca\s?15\.3|CA15\-3|ca15\-3|CA153|ca153|meme.*?belir).*?([0-9]+\.?[0-9]*)',
+        'CA 19-9': r'(?:CA\s?19\-9|ca\s?19\-9|CA\s?19\.9|ca\s?19\.9|CA19\-9|ca19\-9|CA199|ca199|pankreas.*?belir).*?([0-9]+\.?[0-9]*)',
+        'CA 125': r'(?:CA\s?125|ca\s?125|CA\s?12\.5|ca\s?12\.5|CA125|ca125|over.*?belir|ovarian).*?([0-9]+\.?[0-9]*)',
+        'PSA': r'(?:PSA|psa|P\.?S\.?A\.?|prostat.*?spesifik|prostate.*?specific|Prostat.*?Spesifik).*?([0-9]+\.?[0-9]*)',
+        'AFP': r'(?:AFP|afp|A\.?F\.?P\.?|alfa.*?fetoprotein|alpha.*?fetoprotein|Alfa.*?Fetoprotein).*?([0-9]+\.?[0-9]*)',
+        # Ek kanser belirteçleri
+        'CA 72-4': r'(?:CA\s?72\-4|ca\s?72\-4|CA724|ca724)[\s\:]*([0-9]+\.?[0-9]*)',
+        'CA 27-29': r'(?:CA\s?27\-29|ca\s?27\-29|CA2729|ca2729)[\s\:]*([0-9]+\.?[0-9]*)',
+        'CYFRA 21-1': r'(?:CYFRA\s?21\-1|cyfra\s?21\-1|cytokeratin)[\s\:]*([0-9]+\.?[0-9]*)',
+        'NSE': r'(?:NSE|nse|neuron.*?specific|nöron.*?spesifik)[\s\:]*([0-9]+\.?[0-9]*)'
+    }
+    
+    # Her satırı kontrol et
+    for line in lines:
+        line_lower = line.lower()
+        for param_name, pattern in parameter_patterns.items():
+            match = re.search(pattern, line_lower, re.IGNORECASE)
+            if match:
+                try:
+                    value = float(match.group(1))
+                    extracted_params[param_name] = value
+                except (ValueError, IndexError):
+                    continue
+    
+    return extracted_params
+
+def categorize_parameters(extracted_params):
+    """Parametreleri kategorilere ayırır ve hasta dostu açıklamalar ekler"""
+    categorized = {}
+    
+    for category_key, category_data in BLOOD_TEST_PARAMETERS.items():
+        category_name = category_data['name']
+        category_params = {}
+        
+        for param_key, param_info in category_data['parameters'].items():
+            if param_key in extracted_params:
+                value = extracted_params[param_key]
+                is_normal = param_info['min'] <= value <= param_info['max']
+                
+                # Durumu belirle
+                if value < param_info['min']:
+                    status = "düşük"
+                    status_emoji = "⬇️"
+                    # Düşük değer açıklaması
+                    simple_explanation = param_info.get('low_explanation', 'Bu değer normal aralığın altında')
+                    possible_conditions = param_info.get('low_conditions', ['Doktor kontrolü önerilir'])
+                elif value > param_info['max']:
+                    status = "yüksek" 
+                    status_emoji = "⬆️"
+                    # Yüksek değer açıklaması
+                    simple_explanation = param_info.get('high_explanation', 'Bu değer normal aralığın üstünde')
+                    possible_conditions = param_info.get('high_conditions', ['Doktor kontrolü önerilir'])
+                else:
+                    status = "normal"
+                    status_emoji = "✅"
+                    simple_explanation = "Bu değer normal aralıkta, harika!"
+                    possible_conditions = ["Değer normal, endişe yok"]
+                
+                category_params[param_key] = {
+                    'name': param_info['name'],
+                    'value': value,
+                    'unit': param_info['unit'],
+                    'min': param_info['min'],
+                    'max': param_info['max'],
+                    'is_normal': is_normal,
+                    'status': status,
+                    'status_emoji': status_emoji,
+                    'description': param_info['description'],
+                    'simple_explanation': simple_explanation,
+                    'possible_conditions': possible_conditions,
+                    'what_is_it': param_info.get('what_is_it', 'Sağlık göstergesi')
+                }
+        
+        if category_params:  # Sadece parametre varsa kategoriyi ekle
+            categorized[category_key] = {
+                'name': category_name,
+                'description': category_data['description'],
+                'parameters': category_params
+            }
+    
+    return categorized
+
+def calculate_disease_risks(extracted_params):
+    """Hastalık risklerini hesaplar"""
+    disease_risks = []
+    
+    for disease_key, disease_info in DISEASE_RISK_ALGORITHMS.items():
+        total_weight = 0
+        matching_weight = 0
+        
+        for condition in disease_info['conditions']:
+            param_name = condition['param']
+            operator = condition['operator']
+            threshold_value = condition['value']
+            weight = condition['weight']
+            
+            if param_name in extracted_params:
+                actual_value = extracted_params[param_name]
+                total_weight += weight
+                
+                # Koşulu kontrol et
+                condition_met = False
+                if operator == '>' and actual_value > threshold_value:
+                    condition_met = True
+                elif operator == '<' and actual_value < threshold_value:
+                    condition_met = True
+                elif operator == '>=' and actual_value >= threshold_value:
+                    condition_met = True
+                elif operator == '<=' and actual_value <= threshold_value:
+                    condition_met = True
+                
+                if condition_met:
+                    matching_weight += weight
+        
+        # Risk yüzdesini hesapla
+        if total_weight > 0:
+            risk_percentage = int((matching_weight / total_weight) * 100)
+            
+            # Sadece %15'in üzerindeki riskleri ekle
+            if risk_percentage >= 15:
+                # Risk seviyesini belirle
+                if risk_percentage >= 70:
+                    severity = "Yüksek Risk"
+                    severity_emoji = "🔴"
+                elif risk_percentage >= 40:
+                    severity = "Orta Risk"
+                    severity_emoji = "🟡"
+                else:
+                    severity = "Düşük Risk"
+                    severity_emoji = "🟢"
+                
+                disease_risks.append({
+                    'name': disease_info['name'],
+                    'description': disease_info['description'],
+                    'risk_percentage': risk_percentage,
+                    'severity': severity,
+                    'severity_emoji': severity_emoji,
+                    'related_parameters': disease_info['parameters']
+                })
+    
+    # Risk yüzdesine göre sırala
+    disease_risks.sort(key=lambda x: x['risk_percentage'], reverse=True)
+    
+    return disease_risks
+
+# LemonSqueezy API Helper Fonksiyonları
+def lemonsqueezy_api_request(endpoint, method='GET', data=None):
+    """LemonSqueezy API isteği gönderir"""
+    import requests
+    
+    url = f"https://api.lemonsqueezy.com/v1/{endpoint}"
+    headers = {
+        'Authorization': f'Bearer {LEMONSQUEEZY_API_KEY}',
+        'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json'
+    }
+    
+    try:
+        if method == 'POST':
+            response = requests.post(url, json=data, headers=headers, timeout=30)
+        elif method == 'GET':
+            response = requests.get(url, headers=headers, timeout=30)
+        
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        app.logger.error(f"LemonSqueezy API hatası: {str(e)}")
+        return None
+
+def create_lemonsqueezy_checkout(plan_id, user_email, user_id):
+    """LemonSqueezy checkout URL'i oluşturur"""
+    if plan_id not in SUBSCRIPTION_PLANS:
+        return None
+    
+    plan = SUBSCRIPTION_PLANS[plan_id]
+    variant_id = plan['lemonsqueezy_variant_id']
+    
+    if not variant_id:
+        return None
+    
+    checkout_data = {
+        "data": {
+            "type": "checkouts",
+            "attributes": {
+                "checkout_options": {
+                    "embed": False,
+                    "media": False,
+                    "logo": True
+                },
+                "checkout_data": {
+                    "email": user_email,
+                    "name": "",
+                    "billing_address": {
+                        "country": "TR"
+                    },
+                    "tax_number": "",
+                    "discount_code": "",
+                    "custom": {
+                        "user_id": str(user_id),
+                        "plan_id": plan_id
+                    }
+                },
+                "product_options": {
+                    "enabled_variants": [int(variant_id)],
+                    "redirect_url": f"{request.url_root}subscription/lemonsqueezy/success/{plan_id}",
+                    "receipt_button_text": "Analize Başla",
+                    "receipt_thank_you_note": "MedikalAI'ye hoş geldiniz! Artık gelişmiş tahlil analizlerine erişebilirsiniz."
+                },
+                "preview": {
+                    "enabled": False
+                }
+            },
+            "relationships": {
+                "store": {
+                    "data": {
+                        "type": "stores",
+                        "id": LEMONSQUEEZY_STORE_ID
+                    }
+                },
+                "variant": {
+                    "data": {
+                        "type": "variants",
+                        "id": variant_id
+                    }
+                }
+            }
+        }
+    }
+    
+    response = lemonsqueezy_api_request('checkouts', 'POST', checkout_data)
+    
+    if response and 'data' in response:
+        return response['data']['attributes']['url']
+    
+    return None
+
+def verify_lemonsqueezy_webhook(payload, signature):
+    """LemonSqueezy webhook imzasını doğrular"""
+    import hmac
+    import hashlib
+    
+    if not LEMONSQUEEZY_WEBHOOK_SECRET:
+        return False
+    
+    computed_signature = hmac.new(
+        LEMONSQUEEZY_WEBHOOK_SECRET.encode('utf-8'),
+        payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    
+    return hmac.compare_digest(f"sha256={computed_signature}", signature)
+
+def generate_detailed_analysis_report(categorized_params, disease_risks, extracted_params):
+    """Detaylı analiz raporu oluşturur"""
+    report_sections = []
+    
+    # 1. Genel Değerlendirme
+    total_params = sum(len(cat['parameters']) for cat in categorized_params.values())
+    abnormal_params = sum(
+        len([p for p in cat['parameters'].values() if not p['is_normal']]) 
+        for cat in categorized_params.values()
+    )
+    normal_percentage = int(((total_params - abnormal_params) / total_params) * 100) if total_params > 0 else 0
+    
+    general_summary = f"""
+## 📊 GENEL DEĞERLENDİRME
+
+**Tahlil Özeti:**
+- Toplam analiz edilen parametre: {total_params}
+- Normal aralıkta olan: {total_params - abnormal_params} ({normal_percentage}%)
+- Normal dışı olan: {abnormal_params} ({100 - normal_percentage}%)
+
+**Genel Sağlık Durumu:** """
+    
+    if normal_percentage >= 90:
+        general_summary += "🟢 Mükemmel - Tüm değerleriniz normal aralıkta"
+    elif normal_percentage >= 80:
+        general_summary += "🟡 İyi - Çoğu değeriniz normal aralıkta, küçük sapmaları takip edin"
+    elif normal_percentage >= 60:
+        general_summary += "🟠 Orta - Bazı değerler dikkat gerektiriyor, doktor takibi öneriliyor"
+    else:
+        general_summary += "🔴 Dikkat - Birden fazla değer normal dışı, doktor kontrolü gerekli"
+    
+    report_sections.append(general_summary)
+    
+    # 2. Kategori bazında detaylı analiz
+    for category_key, category_data in categorized_params.items():
+        section = f"\n## {category_data['name']}\n"
+        section += f"_{category_data['description']}_\n\n"
+        
+        section += "| Test | Sonuç | Normal Aralık | Durum | Yorum |\n"
+        section += "|------|-------|---------------|-------|-------|\n"
+        
+        for param_key, param_data in category_data['parameters'].items():
+            ref_range = f"{param_data['min']} - {param_data['max']} {param_data['unit']}"
+            value_with_unit = f"{param_data['value']} {param_data['unit']}"
+            status_text = f"{param_data['status_emoji']} {param_data['status'].title()}"
+            
+            # Yorum oluştur
+            if param_data['is_normal']:
+                comment = "Normal değer"
+            else:
+                if param_data['status'] == "yüksek":
+                    comment = f"Normal üstü - {param_data['description']}"
+                else:
+                    comment = f"Normal altı - {param_data['description']}"
+            
+            section += f"| {param_data['name']} | {value_with_unit} | {ref_range} | {status_text} | {comment} |\n"
+        
+        # Kategori yorumu
+        abnormal_in_category = [p for p in category_data['parameters'].values() if not p['is_normal']]
+        if abnormal_in_category:
+            section += f"\n**🔸 {category_data['name']} Yorumu:**\n"
+            for param in abnormal_in_category:
+                if param['status'] == "yüksek":
+                    section += f"- **{param['name']}** yüksek: Bu değer {param['description'].lower()}\n"
+                else:
+                    section += f"- **{param['name']}** düşük: Bu değer {param['description'].lower()}\n"
+        else:
+            section += f"\n✅ **{category_data['name']}** tüm değerleri normal aralıkta.\n"
+        
+        report_sections.append(section)
+    
+    # 3. Hastalık Risk Analizi
+    if disease_risks:
+        risk_section = "\n## 🎯 OLASI HASTALIK RİSKLERİ\n\n"
+        risk_section += "| Hastalık | Risk Oranı | Seviye | İlgili Değerler |\n"
+        risk_section += "|----------|------------|--------|------------------|\n"
+        
+        for risk in disease_risks:
+            related_params = ", ".join(risk['related_parameters'])
+            risk_section += f"| {risk['name']} | %{risk['risk_percentage']} | {risk['severity_emoji']} {risk['severity']} | {related_params} |\n"
+        
+        risk_section += "\n**🔸 Risk Açıklamaları:**\n"
+        for risk in disease_risks:
+            risk_section += f"- **{risk['name']} (%{risk['risk_percentage']}):** {risk['description']}\n"
+        
+        report_sections.append(risk_section)
+    
+    # 4. Öneriler
+    recommendations = "\n## 💡 ÖNERİLER\n\n"
+    
+    # Genel öneriler
+    if abnormal_params > 0:
+        recommendations += "**Genel Öneriler:**\n"
+        recommendations += "- Anormal bulunan değerler için doktor kontrolü yaptırın\n"
+        recommendations += "- Düzenli takip ile değerlerin değişimini izleyin\n"
+        recommendations += "- Yaşam tarzı değişiklikleri ile iyileştirme sağlanabilir\n\n"
+    
+    # Spesifik öneriler
+    lifestyle_recommendations = []
+    if any('Glucose' in cat['parameters'] and not cat['parameters']['Glucose']['is_normal'] 
+           for cat in categorized_params.values() if 'Glucose' in cat['parameters']):
+        lifestyle_recommendations.append("🍎 **Beslenme:** Şeker alımını azaltın, kompleks karbonhidrat tercih edin")
+    
+    if any('Total_Cholesterol' in cat['parameters'] and not cat['parameters']['Total_Cholesterol']['is_normal'] 
+           for cat in categorized_params.values() if 'Total_Cholesterol' in cat['parameters']):
+        lifestyle_recommendations.append("🫀 **Kalp Sağlığı:** Doymuş yağları azaltın, omega-3 alımını artırın")
+    
+    if any('HGB' in cat['parameters'] and not cat['parameters']['HGB']['is_normal'] 
+           for cat in categorized_params.values() if 'HGB' in cat['parameters']):
+        lifestyle_recommendations.append("🥩 **Demir:** Demir açısından zengin besinler tüketin (kırmızı et, ıspanak)")
+    
+    if lifestyle_recommendations:
+        recommendations += "**Yaşam Tarzı Önerileri:**\n"
+        for rec in lifestyle_recommendations:
+            recommendations += f"- {rec}\n"
+    
+    recommendations += "\n**⚠️ Önemli Uyarı:** Bu analiz sadece bilgilendirme amaçlıdır. Kesin tanı ve tedavi için mutlaka bir sağlık profesyoneliyle görüşün."
+    
+    report_sections.append(recommendations)
+    
+    return "\n".join(report_sections)
+
 # Veritabanı ayarları
 DB_PATH = os.environ.get('DB_PATH', 'kan_tahlil_app.db')
+
+# LemonSqueezy API Konfigürasyonu
+LEMONSQUEEZY_API_KEY = os.environ.get('LEMONSQUEEZY_API_KEY', '')
+LEMONSQUEEZY_STORE_ID = os.environ.get('LEMONSQUEEZY_STORE_ID', '')
+LEMONSQUEEZY_WEBHOOK_SECRET = os.environ.get('LEMONSQUEEZY_WEBHOOK_SECRET', '')
 
 # Abonelik planları
 SUBSCRIPTION_PLANS = {
@@ -60,7 +1128,7 @@ SUBSCRIPTION_PLANS = {
         'price': 0,
         'description': 'Aylık 3 tahlil analizi',
         'analysis_limit': 3,
-        'stripe_price_id': None,
+        'lemonsqueezy_variant_id': None,
         'features': ['Temel analiz', 'Sınırlı tahlil sayısı', 'Tahlil geçmişi']
     },
     'basic': {
@@ -68,7 +1136,7 @@ SUBSCRIPTION_PLANS = {
         'price': 49.90,
         'description': 'Aylık 10 tahlil analizi',
         'analysis_limit': 10,
-        'stripe_price_id': 'price_1XxXxXxXxXxXxXxXxXxXxXx',
+        'lemonsqueezy_variant_id': 'BASIC_VARIANT_ID',  # Temel plan variant ID'nizi buraya koyun
         'features': ['Detaylı analiz', '10 tahlil/ay', 'Tahlil geçmişi', 'PDF rapor indirme']
     },
     'premium': {
@@ -76,7 +1144,7 @@ SUBSCRIPTION_PLANS = {
         'price': 89.90,
         'description': 'Sınırsız tahlil analizi',
         'analysis_limit': float('inf'),
-        'stripe_price_id': 'price_1YyYyYyYyYyYyYyYyYyYyYy',
+        'lemonsqueezy_variant_id': 'PREMIUM_VARIANT_ID',  # Premium plan variant ID'nizi buraya koyun
         'features': ['Kapsamlı analiz', 'Sınırsız tahlil', 'Tahlil geçmişi', 'PDF rapor indirme', 'E-posta bildirim', 'Öncelikli destek']
     },
     'family': {
@@ -84,7 +1152,7 @@ SUBSCRIPTION_PLANS = {
         'price': 129.90,
         'description': '5 aile üyesi için sınırsız tahlil analizi',
         'analysis_limit': float('inf'),
-        'stripe_price_id': 'price_1ZzZzZzZzZzZzZzZzZzZzZz',
+        'lemonsqueezy_variant_id': 'FAMILY_VARIANT_ID',  # Aile plan variant ID'nizi buraya koyun
         'features': ['Kapsamlı analiz', 'Sınırsız tahlil', '5 aile üyesi', 'Tahlil geçmişi', 'PDF rapor indirme', 'E-posta bildirim', 'Öncelikli destek']
     }
 }
@@ -226,6 +1294,9 @@ def init_db():
         
         if 'subscription_end_date' not in columns:
             c.execute("ALTER TABLE users ADD COLUMN subscription_end_date TIMESTAMP")
+        
+        if 'lemonsqueezy_subscription_id' not in columns:
+            c.execute("ALTER TABLE users ADD COLUMN lemonsqueezy_subscription_id TEXT")
         
         # Abonelikler tablosunu kontrol et ve oluştur
         c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='subscriptions'")
@@ -763,30 +1834,38 @@ def analyze():
     
     try:
         # Kullanıcı bilgilerini al
-        c.execute("SELECT subscription_plan FROM users WHERE id = ?", (session['user_id'],))
+        c.execute("SELECT subscription_plan, role FROM users WHERE id = ?", (session['user_id'],))
         user = c.fetchone()
         current_plan = user['subscription_plan'] if user else 'free'
+        user_role = user['role'] if user else 'user'
         
-        # Plan bilgilerini al
-        plan_name = SUBSCRIPTION_PLANS[current_plan]['name']
-        analysis_limit = SUBSCRIPTION_PLANS[current_plan]['analysis_limit']
-        
-        if analysis_limit == float('inf'):
+        # Admin kullanıcıları için sınırsız yetki
+        if user_role == 'admin':
+            plan_name = "Admin (Sınırsız)"
+            analysis_limit = float('inf')
             remaining_analyses = 999
         else:
-            current_month = datetime.now().month
-            current_year = datetime.now().year
-            c.execute("""
-                SELECT COUNT(*) as count FROM analyses 
-                WHERE user_id = ? 
-                AND strftime('%m', created_at) = ? 
-                AND strftime('%Y', created_at) = ?
-            """, (session['user_id'], f"{current_month:02d}", str(current_year)))
-            monthly_count = c.fetchone()['count']
-            remaining_analyses = max(0, analysis_limit - monthly_count)
+            # Plan bilgilerini al
+            plan_name = SUBSCRIPTION_PLANS[current_plan]['name']
+            analysis_limit = SUBSCRIPTION_PLANS[current_plan]['analysis_limit']
+            
+            if analysis_limit == float('inf'):
+                remaining_analyses = 999
+            else:
+                current_month = datetime.now().month
+                current_year = datetime.now().year
+                c.execute("""
+                    SELECT COUNT(*) as count FROM analyses 
+                    WHERE user_id = ? 
+                    AND strftime('%m', created_at) = ? 
+                    AND strftime('%Y', created_at) = ?
+                """, (session['user_id'], f"{current_month:02d}", str(current_year)))
+                monthly_count = c.fetchone()['count']
+                remaining_analyses = max(0, analysis_limit - monthly_count)
         
         if request.method == 'POST':
-            if remaining_analyses <= 0 and current_plan not in ['premium', 'family']:
+            # Admin kontrolü - adminler için limit yok
+            if user_role != 'admin' and remaining_analyses <= 0 and current_plan not in ['premium', 'family']:
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return jsonify({"error": "Bu ay için tahlil hakkınız dolmuştur."}), 400
                 flash('Bu ay için tahlil hakkınız dolmuştur.', 'warning')
@@ -838,9 +1917,90 @@ def analyze():
                 flash(f'PDF okunamadı: {e}', 'danger')
                 return redirect(url_for('analyze'))
             
-            # Prompt'u yapılandırılmış veri alacak şekilde iyileştiriyoruz
-            prompt = f"""Bir doktor gibi aşağıdaki kan tahlili raporunu hastanın anlaması için sade bir Türkçe dille tıbbi terimleri açıklayarak yorumla.
-            
+            # Yeni gelişmiş analiz sistemi
+            try:
+                # 1. PDF'den parametreleri çıkar
+                extracted_params = parse_blood_test_from_text(text)
+                print(f"[Analiz] Çıkarılan parametreler: {list(extracted_params.keys())}")
+                
+                # 2. Parametreleri kategorilere ayır
+                categorized_params = categorize_parameters(extracted_params)
+                print(f"[Analiz] Kategoriler: {list(categorized_params.keys())}")
+                
+                # 3. Hastalık risklerini hesapla
+                disease_risks = calculate_disease_risks(extracted_params)
+                print(f"[Analiz] Tespit edilen risk sayısı: {len(disease_risks)}")
+                
+                # 4. Detaylı rapor oluştur
+                detailed_report = generate_detailed_analysis_report(categorized_params, disease_risks, extracted_params)
+                
+                # Eğer parametreler bulunamadıysa veya çok az ise, Gemini ile analiz yap
+                if len(extracted_params) < 3:
+                    print("[Analiz] Yeterli parametre bulunamadı, Gemini analizi yapılıyor...")
+                    
+                    # Fallback: Gemini analizi
+                    prompt = f"""Bir doktor gibi aşağıdaki kan tahlili raporunu kategorilere ayırarak analiz et:
+
+🧬 1. Kanser Göstergeleri (Tümör Belirteçleri) - CEA, CA 15-3, PSA vb.
+🩸 2. Tam Kan Sayımı (Hemogram) - WBC, HGB, HCT, PLT vb.
+⚖️ 3. Elektrolitler ve Mineraller - Na, K, Ca, Mg vb.
+🫘 4. Böbrek Fonksiyonları - Üre, Kreatinin, eGFR vb.
+🍃 5. Karaciğer Fonksiyonları - ALT, AST, GGT vb.
+🍬 6. Pankreas ve Enzimler - Amilaz, Lipaz vb.
+🍭 7. Şeker ve Metabolizma - Glukoz, HbA1c vb.
+🫀 8. Lipid Profili - Kolesterol, LDL, HDL vb.
+🧪 9. Hormonlar - TSH, T3, T4 vb.
+🔥 10. İnflamasyon - CRP, ESR vb.
+
+Her kategori için:
+- Parametre adı, sonuç, normal aralık
+- ✅ Normal, ⚠️ Hafif anormal, 🔴 Ciddi anormal
+- Açıklayıcı yorum
+
+Sonunda:
+📋 SONUÇ ÖZETİ tablosu
+🎯 OLASI HASTALIKLAR (%risk oranı ile)
+
+Hasta dostu Türkçe kullan, tıbbi terimler için açıklama ekle.
+
+KAN TAHLİLİ:
+{text[:4000]}"""
+                    
+                    # Gemini API'yi çağır
+                    data = {
+                        "contents": [{"parts": [{"text": prompt}]}],
+                        "generationConfig": {
+                            "temperature": 0.8,
+                            "maxOutputTokens": 8000,
+                            "topP": 0.95,
+                            "topK": 40
+                        }
+                    }
+                    
+                    headers = {"Content-Type": "application/json"}
+                    response = requests.post(GEMINI_API_URL, headers=headers, json=data, timeout=30)
+                    
+                    if response.status_code == 200:
+                        response_data = response.json()
+                        if "candidates" in response_data and response_data["candidates"]:
+                            gemini_result = response_data["candidates"][0]["content"]["parts"][0]["text"]
+                            result_text = gemini_result
+                        else:
+                            result_text = detailed_report
+                    else:
+                        result_text = detailed_report
+                else:
+                    # Yeterli parametre varsa, detaylı raporu kullan
+                    result_text = detailed_report
+                
+                print(f"[Analiz] Rapor oluşturuldu, uzunluk: {len(result_text)} karakter")
+                
+            except Exception as e:
+                print(f"[Analiz] Gelişmiş analiz hatası: {str(e)}, Gemini fallback kullanılıyor...")
+                
+                # Hata durumunda Gemini'ye geri dön
+                prompt = f"""Bir doktor gibi aşağıdaki kan tahlili raporunu hastanın anlaması için sade bir Türkçe dille tıbbi terimleri açıklayarak yorumla.
+                
 Lütfen şunları yap:
 1. Tüm önemli değerleri ve referans aralıklarını analiz et
 2. Normal dışı değerleri belirle ve hastanın anlayacağı tıbbi terimleri açıkla
@@ -868,27 +2028,26 @@ Cevabının şu bölümleri içermesini istiyorum:
 
 KAN TAHLİLİ RAPORU:
 {text[:4000]}"""
-            
-            # Gemini API isteği için veri yapısı
-            data = {
-                "contents": [
-                    {
-                        "parts": [
-                            {
-                                "text": prompt
-                            }
-                        ]
+                
+                # Gemini API isteği için veri yapısı
+                data = {
+                    "contents": [
+                        {
+                            "parts": [
+                                {
+                                    "text": prompt
+                                }
+                            ]
+                        }
+                    ],
+                    "generationConfig": {
+                        "temperature": 0.8,
+                        "maxOutputTokens": 8000,
+                        "topP": 0.95,
+                        "topK": 40
                     }
-                ],
-                "generationConfig": {
-                    "temperature": 0.8,
-                    "maxOutputTokens": 8000,
-                    "topP": 0.95,
-                    "topK": 40
                 }
-            }
-            
-            try:
+                
                 # Gemini API isteği
                 headers = {
                     "Content-Type": "application/json",
@@ -896,7 +2055,7 @@ KAN TAHLİLİ RAPORU:
                 }
                 
                 # API isteği gönderiliyor
-                print(f"Gemini API'ye istek gönderiliyor: {GEMINI_API_URL}")    
+                print(f"[Fallback] Gemini API'ye istek gönderiliyor: {GEMINI_API_URL}")    
                 response = requests.post(
                     GEMINI_API_URL,
                     headers=headers,
@@ -904,31 +2063,29 @@ KAN TAHLİLİ RAPORU:
                     timeout=30  # Zaman aşımını 30 saniyeye ayarlıyoruz
                 )
                 
-                # HTTP hatası kontrol et
-                if response.status_code != 200:
-                    print(f"API Hata Kodu: {response.status_code}")
-                    print(f"API Yanıtı: {response.text[:500]}")
+                if response.status_code == 200:
+                    response_data = response.json()
+                    if "candidates" in response_data and response_data["candidates"]:
+                        result_text = response_data["candidates"][0]["content"]["parts"][0]["text"]
+                    else:
+                        result_text = "Analiz başarısız oldu. Lütfen tekrar deneyin."
+                else:
+                    result_text = f"API hatası: HTTP {response.status_code}"
+            
+            try:
+                # Ana analiz işlemi tamamlandı, şimdi veritabanına kaydet
+                    
+                # Yanıt boş mu kontrol et
+                if not result_text or not result_text.strip():
+                    print("Analiz sonucu boş")
                     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                        return jsonify({"error": f"API hatası: HTTP {response.status_code}"}), 500
-                    flash(f'API hatası: HTTP {response.status_code}', 'danger')
+                        return jsonify({"error": "Analiz sonucu boş. Lütfen tekrar deneyin."}), 500
+                    flash('Analiz sonucu boş. Lütfen tekrar deneyin.', 'danger')
                     return redirect(url_for('analyze'))
-                
-                # Yanıtı işle
-                response_data = response.json()
-                
-                if "candidates" in response_data and response_data["candidates"]:
-                    result_text = response_data["candidates"][0]["content"]["parts"][0]["text"]
                     
-                    # Yanıt boş mu kontrol et
-                    if not result_text or not result_text.strip():
-                        print("API yanıtı boş")
-                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                            return jsonify({"error": "API yanıtı boş. Lütfen tekrar deneyin."}), 500
-                        flash('API yanıtı boş. Lütfen tekrar deneyin.', 'danger')
-                        return redirect(url_for('analyze'))
-                    
+                # Veritabanına kaydetme işlemi
+                try:
                     # Metni paragraf ve bölümlere ayır
-                    # Başlıklar ve alt başlıkları bulmak için
                     sections = {}
                     current_section = "Genel Değerlendirme"
                     section_text = []
@@ -952,7 +2109,6 @@ KAN TAHLİLİ RAPORU:
                     
                     # Normal ve anormal değerleri belirlemek için metin analizi
                     abnormal_values = []
-                    normal_values = []
                     
                     if "ANORMAL DEĞERLERİ" in sections or "NORMAL DIŞI DEĞERLER" in sections:
                         abnormal_section = sections.get("ANORMAL DEĞERLERİ", sections.get("NORMAL DIŞI DEĞERLER", ""))
@@ -961,133 +2117,129 @@ KAN TAHLİLİ RAPORU:
                                 param_name = line.split(":")[0].strip()
                                 abnormal_values.append({"parameter_name": param_name, "description": line})
                     
-                    try:
-                        # Veritabanına kaydet
-                        conn = sqlite3.connect(DB_PATH)
-                        c = conn.cursor()
-                        
-                        # Ana analizi kaydet
-                        c.execute(
-                            """INSERT INTO analyses 
-                            (user_id, file_name, analysis_text, analysis_result, analysis_type) 
-                            VALUES (?, ?, ?, ?, ?)""",
-                            (session['user_id'], file.filename, text[:1000], result_text, 'kan')
-                        )
-                        conn.commit()
-                        analysis_id = c.lastrowid
-                        
-                        # Bölümleri JSON olarak kaydet (şablon uyumluluğu için)
-                        analysis_json = {
-                            "summary": sections.get("Genel Değerlendirme", ""),
-                            "abnormal_count": len(abnormal_values),
-                            "test_groups": [],
-                            "recommendations": sections.get("ÖNERİLER", "").split('\n') if "ÖNERİLER" in sections else [],
-                            "lifestyle_advice": sections.get("YAŞAM TARZI ÖNERİLERİ", "").split('\n') if "YAŞAM TARZI ÖNERİLERİ" in sections else [],
-                            "health_conditions": [],
-                            "general_analysis": result_text
-                        }
-                        
-                        # Olası sağlık durumlarını metinden çıkarmaya çalış
-                        health_conditions_section = sections.get("OLASI SAĞLIK DURUMLARI", "")
-                        if health_conditions_section:
-                            # Bölümü satırlara ayır
-                            lines = health_conditions_section.split('\n')
-                            current_condition = None
-                            
-                            for line in lines:
-                                line = line.strip()
-                                if not line:
-                                    continue
-                                    
-                                # Yeni bir sağlık durumu başlığı
-                                if line.endswith(':') or (len(line.split()) <= 5 and not line.startswith('-')):
-                                    # Önceki durumu kaydet
-                                    if current_condition:
-                                        analysis_json["health_conditions"].append(current_condition)
-                                    
-                                    # Yeni durum oluştur
-                                    name = line.rstrip(':')
-                                    
-                                    # Durumun ciddiyetini belirle - artık hepsi "Öneri" olarak işaretlenecek
-                                    severity = "Öneri"
-                                    
-                                    current_condition = {
-                                        "name": name,
-                                        "description": "",
-                                        "severity": severity,
-                                        "related_values": ""
-                                    }
-                                # Mevcut duruma açıklama ya da ilgili değerler ekleniyor
-                                elif current_condition:
-                                    if "değer" in line.lower() or "parametre" in line.lower():
-                                        # Bu ilgili değerler
-                                        values = line.split(":")[-1].strip() if ":" in line else line
-                                        current_condition["related_values"] = values
-                                    else:
-                                        # Bu açıklama
-                                        if current_condition["description"]:
-                                            current_condition["description"] += " " + line
-                                        else:
-                                            current_condition["description"] = line
-                        
-                            # Son durumu da ekle
-                            if current_condition:
-                                analysis_json["health_conditions"].append(current_condition)
-                        
-                        # Eğer olası sağlık durumları tespit edilemediyse, anormal değerlerden genel öneriler oluştur
-                        if not analysis_json["health_conditions"] and abnormal_values:
-                            for abnormal in abnormal_values:
-                                param_name = abnormal["parameter_name"]
-                                description = abnormal["description"]
-                                
-                                # Genel bir öneri oluştur
-                                condition_name = "Genel Sağlık Önerisi"
-                                
-                                # İlgili değerleri belirle
-                                related_values = param_name
-                                
-                                analysis_json["health_conditions"].append({
-                                    "name": condition_name,
-                                    "description": f"Bu değerle ilgili genel sağlık önerisi: {description}",
-                                    "severity": "Öneri",
-                                    "related_values": related_values
-                                })
-                        
-                        # JSON'ı veritabanına kaydet
-                        c.execute(
-                            """UPDATE analyses 
-                            SET analysis_json = ? 
-                            WHERE id = ?""",
-                            (json.dumps(analysis_json), analysis_id)
-                        )
-                        conn.commit()
-                        conn.close()
-                        
-                        # Ajax isteği ise JSON yanıt döndür
-                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                            return jsonify({
-                                "success": True,
-                                "message": "Tahlil başarıyla analiz edildi!",
-                                "analysis_id": analysis_id,
-                                "redirect": url_for('analysis_result', analysis_id=analysis_id)
-                            })
-                        
-                        # Başarı mesajı göster
-                        flash('Tahlil başarıyla analiz edildi!', 'success')
-                        return redirect(url_for('analysis_result', analysis_id=analysis_id))
+                    # Veritabanına kaydet
+                    conn = sqlite3.connect(DB_PATH)
+                    c = conn.cursor()
                     
-                    except Exception as e:
-                        # Veritabanı hatası durumunda
-                        print(f"Veritabanı hatası: {str(e)}")
-                        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                            return jsonify({"error": f"Veritabanı hatası: {str(e)}"}), 500
-                        flash(f'Veritabanı hatası: {str(e)}', 'danger')
-                        return redirect(url_for('analyze'))
-                else:
-                    print(f"API yanıtı candidates içermiyor: {response_data}")
+                    # Ana analizi kaydet
+                    c.execute(
+                        """INSERT INTO analyses 
+                        (user_id, file_name, analysis_text, analysis_result, analysis_type) 
+                        VALUES (?, ?, ?, ?, ?)""",
+                        (session['user_id'], file.filename, text[:1000], result_text, 'kan')
+                    )
+                    conn.commit()
+                    analysis_id = c.lastrowid
+                    
+                    # Gelişmiş analiz JSON'ı oluştur
+                    analysis_json = {
+                        "summary": sections.get("Genel Değerlendirme", result_text[:500]),
+                        "abnormal_count": len(abnormal_values),
+                        "test_groups": [],
+                        "recommendations": sections.get("ÖNERİLER", "").split('\n') if "ÖNERİLER" in sections else [],
+                        "lifestyle_advice": sections.get("YAŞAM TARZI ÖNERİLERİ", "").split('\n') if "YAŞAM TARZI ÖNERİLERİ" in sections else [],
+                        "health_conditions": [],
+                        "general_analysis": result_text,
+                        "extracted_parameters": extracted_params if 'extracted_params' in locals() else {},
+                        "categorized_data": categorized_params if 'categorized_params' in locals() else {},
+                        "disease_risks": disease_risks if 'disease_risks' in locals() else []
+                    }
+                        
+                    # Olası sağlık durumlarını metinden çıkarmaya çalış
+                    health_conditions_section = sections.get("OLASI SAĞLIK DURUMLARI", "")
+                    if health_conditions_section:
+                        # Bölümü satırlara ayır
+                        lines = health_conditions_section.split('\n')
+                        current_condition = None
+                        
+                        for line in lines:
+                            line = line.strip()
+                            if not line:
+                                continue
+                                
+                            # Yeni bir sağlık durumu başlığı
+                            if line.endswith(':') or (len(line.split()) <= 5 and not line.startswith('-')):
+                                # Önceki durumu kaydet
+                                if current_condition:
+                                    analysis_json["health_conditions"].append(current_condition)
+                                
+                                # Yeni durum oluştur
+                                name = line.rstrip(':')
+                                
+                                # Durumun ciddiyetini belirle - artık hepsi "Öneri" olarak işaretlenecek
+                                severity = "Öneri"
+                                
+                                current_condition = {
+                                    "name": name,
+                                    "description": "",
+                                    "severity": severity,
+                                    "related_values": ""
+                                }
+                            # Mevcut duruma açıklama ya da ilgili değerler ekleniyor
+                            elif current_condition:
+                                if "değer" in line.lower() or "parametre" in line.lower():
+                                    # Bu ilgili değerler
+                                    values = line.split(":")[-1].strip() if ":" in line else line
+                                    current_condition["related_values"] = values
+                                else:
+                                    # Bu açıklama
+                                    if current_condition["description"]:
+                                        current_condition["description"] += " " + line
+                                    else:
+                                        current_condition["description"] = line
+                    
+                        # Son durumu da ekle
+                        if current_condition:
+                            analysis_json["health_conditions"].append(current_condition)
+                    
+                    # Eğer olası sağlık durumları tespit edilemediyse, anormal değerlerden genel öneriler oluştur
+                    if not analysis_json["health_conditions"] and abnormal_values:
+                        for abnormal in abnormal_values:
+                            param_name = abnormal["parameter_name"]
+                            description = abnormal["description"]
+                            
+                            # Genel bir öneri oluştur
+                            condition_name = "Genel Sağlık Önerisi"
+                            
+                            # İlgili değerleri belirle
+                            related_values = param_name
+                            
+                            analysis_json["health_conditions"].append({
+                                "name": condition_name,
+                                "description": f"Bu değerle ilgili genel sağlık önerisi: {description}",
+                                "severity": "Öneri",
+                                "related_values": related_values
+                            })
+                    
+                    # JSON'ı veritabanına kaydet
+                    c.execute(
+                        """UPDATE analyses 
+                        SET analysis_json = ? 
+                        WHERE id = ?""",
+                        (json.dumps(analysis_json), analysis_id)
+                    )
+                    conn.commit()
+                    conn.close()
+                    
+                    # Ajax isteği ise JSON yanıt döndür
                     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                        return jsonify({"error": "API yanıtı beklenen formatta değil."}), 500
-                    flash('API yanıtı beklenen formatta değil.', 'danger')
+                        return jsonify({
+                            "success": True,
+                            "message": "Tahlil başarıyla analiz edildi!",
+                            "analysis_id": analysis_id,
+                            "redirect": url_for('analysis_result', analysis_id=analysis_id)
+                        })
+                    
+                    # Başarı mesajı göster
+                    flash('Tahlil başarıyla analiz edildi!', 'success')
+                    return redirect(url_for('analysis_result', analysis_id=analysis_id))
+                
+                except Exception as e:
+                    # Veritabanı hatası durumunda
+                    print(f"Veritabanı hatası: {str(e)}")
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify({"error": f"Veritabanı hatası: {str(e)}"}), 500
+                    flash(f'Veritabanı hatası: {str(e)}', 'danger')
                     return redirect(url_for('analyze'))
                 
             except requests.exceptions.Timeout:
@@ -1218,18 +2370,29 @@ def analysis_result(analysis_id):
             except Exception as e:
                 app.logger.error(f"Analiz JSON güncellemesinde hata: {str(e)}")
                 conn.rollback()
-    else:
-        # Zaten AI analizi varsa, onu kullan
-        health_conditions = analysis_json.get('health_conditions', [])
+            else:
+            # Zaten AI analizi varsa, onu kullan
+                health_conditions = analysis_json.get('health_conditions', [])
+    
+    # Kullanıcı adını getir (veritabanı kapatılmadan önce)
+    c.execute("SELECT username FROM users WHERE id = ?", (session['user_id'],))
+    user = c.fetchone()
+    username = user['username'] if user else 'Kullanıcı'
     
     conn.close()
+    
+    # Kategorize edilmiş verileri ve hastalık risklerini çıkar
+    categorized_data = analysis_json.get('categorized_data', {})
+    disease_risks = analysis_json.get('disease_risks', [])
+    extracted_parameters = analysis_json.get('extracted_parameters', {})
     
     # Şablona bilgileri aktar
     return render_template('result.html', 
                           analysis=analysis,
                           abnormal_values=abnormal_values,
                           analysis_json=analysis_json,
-                          test_values=[])  # Test değerlerini şu an boş liste olarak gönder
+                          test_values=list(extracted_parameters.values()) if extracted_parameters else [],
+                          username=username)
 
 # Anormal değerlere göre hastalık tahminleri yapmak için Gemini API fonksiyonu
 def analyze_test_results_with_ai(abnormal_values):
@@ -1712,170 +2875,11 @@ def subscription_plans():
     
     return render_template('subscription/plans.html', plans=SUBSCRIPTION_PLANS, user_plan=user_plan)
 
-@app.route('/subscription/checkout/<plan_id>')
-def subscription_checkout(plan_id):
-    """Ödeme sayfasını görüntüle"""
-    if 'user_id' not in session:
-        flash('Abonelik satın almak için giriş yapmalısınız!', 'warning')
-        return redirect(url_for('login'))
-    
-    if plan_id not in SUBSCRIPTION_PLANS:
-        flash('Geçersiz abonelik planı!', 'danger')
-        return redirect(url_for('subscription_plans'))
-    
-    # Ücretsiz plan için ödeme sayfası gösterme
-    if plan_id == 'free':
-        return redirect(url_for('subscription_plans'))
-    
-    # Kullanıcının mevcut planı seçili plandan daha yüksekse uyarı göster
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT subscription_plan FROM users WHERE id = ?", (session['user_id'],))
-    user = c.fetchone()
-    current_plan = user['subscription_plan'] if user else 'free'
-    conn.close()
-    
-    # Planların değerini karşılaştır
-    # Eğer kullanıcı zaten daha yüksek bir plana sahipse ve daha düşük bir plana geçmek istiyorsa uyarı göster
-    current_plan_value = SUBSCRIPTION_PLANS[current_plan]['price']
-    new_plan_value = SUBSCRIPTION_PLANS[plan_id]['price']
-    
-    if current_plan != 'free' and new_plan_value < current_plan_value:
-        flash("""
-            Daha düşük bir plana geçmek istediğinizi fark ettik. 
-            Mevcut planınızın süresi dolana kadar mevcut özellikleri kullanmaya devam edeceksiniz. 
-            Yeni plan sonraki ödeme döneminde aktif olacaktır.
-        """, 'warning')
-    
-    # Seçilen planı ve ödeme bilgilerini görüntüle
-    plan = SUBSCRIPTION_PLANS[plan_id]
-    
-    return render_template(
-        'subscription/checkout.html', 
-        plan=plan, 
-        plan_id=plan_id, 
-        stripe_public_key=app.config['STRIPE_PUBLIC_KEY']
-    )
 
-@app.route('/subscription/create_payment_intent/<plan_id>', methods=['POST'])
-def create_payment_intent(plan_id):
-    """Stripe ödeme niyeti oluştur"""
-    if 'user_id' not in session:
-        return jsonify({'error': 'Oturum süresi doldu, lütfen tekrar giriş yapın.'}), 401
-    
-    if plan_id not in SUBSCRIPTION_PLANS:
-        return jsonify({'error': 'Geçersiz abonelik planı!'}), 400
-    
-    plan = SUBSCRIPTION_PLANS[plan_id]
-    
-    # Kullanıcı bilgilerini getir
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT email, stripe_customer_id FROM users WHERE id = ?", (session['user_id'],))
-    user = c.fetchone()
-    conn.close()
-    
-    try:
-        # Stripe müşteri ID'si yoksa yeni müşteri oluştur
-        customer_id = user['stripe_customer_id']
-        if not customer_id:
-            customer = stripe.Customer.create(
-                email=user['email'],
-                description=f"Kullanıcı ID: {session['user_id']}"
-            )
-            customer_id = customer.id
-            
-            # Kullanıcı tablosunda Stripe müşteri ID'sini güncelle
-            conn = sqlite3.connect(DB_PATH)
-            c = conn.cursor()
-            c.execute("UPDATE users SET stripe_customer_id = ? WHERE id = ?", 
-                     (customer_id, session['user_id']))
-            conn.commit()
-            conn.close()
-        
-        # Kuruş cinsinden fiyat hesapla (KDV dahil)
-        amount = int(plan['price'] * 118)  # %18 KDV ekle ve kuruş cinsine çevir
-        
-        # Ödeme niyeti oluştur
-        intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency='try',
-            customer=customer_id,
-            metadata={
-                'user_id': session['user_id'],
-                'plan_id': plan_id,
-                'plan_name': plan['name']
-            },
-            description=f"{plan['name']} Abonelik Planı"
-        )
-        
-        return jsonify({
-            'clientSecret': intent.client_secret
-        })
-    except Exception as e:
-        app.logger.error(f"Stripe ödeme hatası: {str(e)}")
-        return jsonify({'error': 'Ödeme işlemi sırasında bir hata oluştu. Lütfen daha sonra tekrar deneyin.'}), 500
 
-@app.route('/subscription/success/<plan_id>')
-def subscription_success(plan_id):
-    """Ödeme başarılı sayfası"""
-    if 'user_id' not in session:
-        flash('Oturum süresi doldu, lütfen tekrar giriş yapın.', 'warning')
-        return redirect(url_for('login'))
-    
-    if plan_id not in SUBSCRIPTION_PLANS:
-        flash('Geçersiz abonelik planı!', 'danger')
-        return redirect(url_for('subscription_plans'))
-    
-    plan = SUBSCRIPTION_PLANS[plan_id]
-    
-    # Kullanıcının abonelik planını güncelle
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    
-    # Abonelik bitiş tarihini belirle (1 ay sonrası)
-    end_date = datetime.now() + timedelta(days=30)
-    
-    # Kullanıcıyı güncelle
-    c.execute("""
-        UPDATE users 
-        SET subscription_plan = ?, subscription_status = 'active', subscription_end_date = ? 
-        WHERE id = ?
-    """, (plan_id, end_date, session['user_id']))
-    
-    # Örnek işlem kaydı oluştur
-    transaction = {
-        'id': f"TRANS-{secrets.token_hex(6).upper()}",
-        'date': datetime.now().strftime('%d.%m.%Y %H:%M'),
-        'start_date': datetime.now().strftime('%d.%m.%Y'),
-        'end_date': end_date.strftime('%d.%m.%Y'),
-        'last4': '4242'  # Gerçek Stripe entegrasyonunda bu değer kart bilgisinden gelir
-    }
-    
-    # Abonelik kaydı oluştur
-    c.execute("""
-        INSERT INTO subscriptions 
-        (user_id, plan_type, status, current_period_start, current_period_end) 
-        VALUES (?, ?, 'active', ?, ?)
-    """, (session['user_id'], plan_id, datetime.now(), end_date))
-    
-    subscription_id = c.lastrowid
-    
-    # Fatura kaydı oluştur
-    c.execute("""
-        INSERT INTO invoices 
-        (user_id, subscription_id, amount, currency, status, invoice_date) 
-        VALUES (?, ?, ?, 'TRY', 'paid', ?)
-    """, (session['user_id'], subscription_id, plan['price'] * 1.18, datetime.now()))
-    
-    conn.commit()
-    conn.close()
-    
-    flash(f'{plan["name"]} aboneliğiniz başarıyla oluşturuldu!', 'success')
-    
-    return render_template('subscription/success.html', plan=plan, transaction=transaction)
+
+
+
 
 @app.route('/subscription/cancel')
 def subscription_cancel():
@@ -1906,6 +2910,255 @@ def subscription_cancel():
     
     flash('Aboneliğiniz iptal edildi. Bu dönem sonuna kadar özelliklerden yararlanmaya devam edebilirsiniz.', 'success')
     return redirect(url_for('subscription_plans'))
+
+# LemonSqueezy Ödeme Route'ları
+@app.route('/subscription/lemonsqueezy/checkout/<plan_id>')
+def lemonsqueezy_checkout(plan_id):
+    """LemonSqueezy ile ödeme başlat"""
+    if 'user_id' not in session:
+        flash('Abonelik satın almak için giriş yapmalısınız!', 'warning')
+        return redirect(url_for('login'))
+    
+    if plan_id not in SUBSCRIPTION_PLANS:
+        flash('Geçersiz abonelik planı!', 'danger')
+        return redirect(url_for('subscription_plans'))
+    
+    if plan_id == 'free':
+        return redirect(url_for('subscription_plans'))
+    
+    # Kullanıcı bilgilerini getir
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT email FROM users WHERE id = ?", (session['user_id'],))
+    user = c.fetchone()
+    conn.close()
+    
+    if not user:
+        flash('Kullanıcı bilgileri bulunamadı!', 'danger')
+        return redirect(url_for('login'))
+    
+    # LemonSqueezy checkout URL'i oluştur
+    checkout_url = create_lemonsqueezy_checkout(plan_id, user['email'], session['user_id'])
+    
+    if not checkout_url:
+        flash('Ödeme sayfası oluşturulamadı. Lütfen daha sonra tekrar deneyin.', 'danger')
+        return redirect(url_for('subscription_plans'))
+    
+    # Kullanıcıyı LemonSqueezy checkout sayfasına yönlendir
+    return redirect(checkout_url)
+
+@app.route('/subscription/lemonsqueezy/success/<plan_id>')
+def lemonsqueezy_success(plan_id):
+    """LemonSqueezy ödeme başarılı sayfası"""
+    if 'user_id' not in session:
+        flash('Oturum süresi doldu, lütfen tekrar giriş yapın.', 'warning')
+        return redirect(url_for('login'))
+    
+    if plan_id not in SUBSCRIPTION_PLANS:
+        flash('Geçersiz abonelik planı!', 'danger')
+        return redirect(url_for('subscription_plans'))
+    
+    plan = SUBSCRIPTION_PLANS[plan_id]
+    
+    # Not: Gerçek abonelik aktivasyonu webhook'ta yapılacak
+    # Bu sayfa sadece "ödeme alındı, işlem devam ediyor" mesajı verir
+    
+    return render_template('subscription/lemonsqueezy_success.html', plan=plan)
+
+@app.route('/webhook/lemonsqueezy', methods=['POST'])
+@csrf.exempt
+def lemonsqueezy_webhook():
+    """LemonSqueezy webhook handler"""
+    try:
+        # Webhook verilerini al
+        payload = request.get_data(as_text=True)
+        signature = request.headers.get('X-Signature', '')
+        
+        # İmzayı doğrula
+        if not verify_lemonsqueezy_webhook(payload, signature):
+            app.logger.warning("LemonSqueezy webhook: Geçersiz imza")
+            return jsonify({'error': 'Geçersiz imza'}), 401
+        
+        # JSON verisini parse et
+        event_data = request.get_json()
+        
+        if not event_data:
+            return jsonify({'error': 'Geçersiz JSON'}), 400
+        
+        event_name = event_data.get('meta', {}).get('event_name', '')
+        
+        app.logger.info(f"LemonSqueezy webhook alındı: {event_name}")
+        
+        # Order completed eventi (ödeme başarılı)
+        if event_name == 'order_created':
+            handle_lemonsqueezy_order_created(event_data)
+        
+        # Subscription created eventi  
+        elif event_name == 'subscription_created':
+            handle_lemonsqueezy_subscription_created(event_data)
+        
+        # Subscription updated eventi
+        elif event_name == 'subscription_updated':
+            handle_lemonsqueezy_subscription_updated(event_data)
+        
+        # Subscription cancelled eventi
+        elif event_name == 'subscription_cancelled':
+            handle_lemonsqueezy_subscription_cancelled(event_data)
+        
+        return jsonify({'status': 'success'}), 200
+        
+    except Exception as e:
+        app.logger.error(f"LemonSqueezy webhook hatası: {str(e)}")
+        return jsonify({'error': 'Webhook işlenemedi'}), 500
+
+def handle_lemonsqueezy_order_created(event_data):
+    """LemonSqueezy order created webhook'unu işler"""
+    try:
+        attributes = event_data.get('data', {}).get('attributes', {})
+        custom_data = attributes.get('custom', {})
+        
+        user_id = custom_data.get('user_id')
+        plan_id = custom_data.get('plan_id')
+        
+        if not user_id or not plan_id:
+            app.logger.warning("LemonSqueezy webhook: user_id veya plan_id bulunamadı")
+            return
+        
+        # Order bilgileri
+        order_id = event_data.get('data', {}).get('id')
+        total = attributes.get('total')
+        status = attributes.get('status')
+        
+        app.logger.info(f"LemonSqueezy order oluşturuldu: User {user_id}, Plan {plan_id}, Order {order_id}")
+        
+        # Eğer ödeme tamamlanmışsa aboneliği aktifleştir
+        if status == 'paid':
+            activate_subscription(user_id, plan_id, 'lemonsqueezy', order_id, total)
+        
+    except Exception as e:
+        app.logger.error(f"LemonSqueezy order webhook işleme hatası: {str(e)}")
+
+def handle_lemonsqueezy_subscription_created(event_data):
+    """LemonSqueezy subscription created webhook'unu işler"""
+    try:
+        attributes = event_data.get('data', {}).get('attributes', {})
+        custom_data = attributes.get('custom', {})
+        
+        user_id = custom_data.get('user_id')
+        plan_id = custom_data.get('plan_id')
+        
+        if user_id and plan_id:
+            subscription_id = event_data.get('data', {}).get('id')
+            app.logger.info(f"LemonSqueezy abonelik oluşturuldu: User {user_id}, Plan {plan_id}, Sub {subscription_id}")
+            
+            # Abonelik bilgilerini veritabanına kaydet
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            
+            # LemonSqueezy subscription ID'sini kaydet
+            c.execute("""
+                UPDATE users 
+                SET lemonsqueezy_subscription_id = ? 
+                WHERE id = ?
+            """, (subscription_id, user_id))
+            
+            conn.commit()
+            conn.close()
+        
+    except Exception as e:
+        app.logger.error(f"LemonSqueezy subscription webhook işleme hatası: {str(e)}")
+
+def handle_lemonsqueezy_subscription_updated(event_data):
+    """LemonSqueezy subscription updated webhook'unu işler"""
+    try:
+        attributes = event_data.get('data', {}).get('attributes', {})
+        subscription_id = event_data.get('data', {}).get('id')
+        status = attributes.get('status')
+        
+        app.logger.info(f"LemonSqueezy abonelik güncellendi: Sub {subscription_id}, Status {status}")
+        
+        # Abonelik durumunu güncelle
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        
+        c.execute("""
+            UPDATE users 
+            SET subscription_status = ? 
+            WHERE lemonsqueezy_subscription_id = ?
+        """, (status, subscription_id))
+        
+        conn.commit()
+        conn.close()
+        
+    except Exception as e:
+        app.logger.error(f"LemonSqueezy subscription update webhook işleme hatası: {str(e)}")
+
+def handle_lemonsqueezy_subscription_cancelled(event_data):
+    """LemonSqueezy subscription cancelled webhook'unu işler"""
+    try:
+        subscription_id = event_data.get('data', {}).get('id')
+        
+        app.logger.info(f"LemonSqueezy abonelik iptal edildi: Sub {subscription_id}")
+        
+        # Aboneliği iptal et
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        
+        c.execute("""
+            UPDATE users 
+            SET subscription_plan = 'free', subscription_status = 'cancelled' 
+            WHERE lemonsqueezy_subscription_id = ?
+        """, (subscription_id,))
+        
+        conn.commit()
+        conn.close()
+        
+    except Exception as e:
+        app.logger.error(f"LemonSqueezy subscription cancel webhook işleme hatası: {str(e)}")
+
+def activate_subscription(user_id, plan_id, payment_provider, transaction_id, amount):
+    """Aboneliği aktifleştirir (hem Stripe hem LemonSqueezy için ortak)"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        
+        # Abonelik bitiş tarihini belirle (1 ay sonrası)
+        end_date = datetime.now() + timedelta(days=30)
+        
+        # Kullanıcıyı güncelle
+        c.execute("""
+            UPDATE users 
+            SET subscription_plan = ?, 
+                subscription_status = 'active', 
+                subscription_end_date = ?
+            WHERE id = ?
+        """, (plan_id, end_date, user_id))
+        
+        # Abonelik kaydı oluştur
+        c.execute("""
+            INSERT INTO subscriptions 
+            (user_id, plan_type, status, current_period_start, current_period_end) 
+            VALUES (?, ?, 'active', ?, ?)
+        """, (user_id, plan_id, datetime.now(), end_date))
+        
+        subscription_id = c.lastrowid
+        
+        # Fatura kaydı oluştur
+        c.execute("""
+            INSERT INTO invoices 
+            (user_id, subscription_id, amount, currency, status, invoice_date) 
+            VALUES (?, ?, ?, 'TRY', 'paid', ?)
+        """, (user_id, subscription_id, amount, datetime.now()))
+        
+        conn.commit()
+        conn.close()
+        
+        app.logger.info(f"Abonelik aktifleştirildi: User {user_id}, Plan {plan_id}, Provider {payment_provider}")
+        
+    except Exception as e:
+        app.logger.error(f"Abonelik aktifleştirme hatası: {str(e)}")
+        raise
 
 @app.route('/about')
 def about():

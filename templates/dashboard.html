@@ -1,98 +1,600 @@
 {% extends "layout.html" %}
 
-{% block title %}Kullanıcı Paneli - MediTahlil{% endblock %}
+{% block title %}Kullanıcı Paneli - MEDIKAL-AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Modern Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, #0f1419 0%, #1a2332 30%, #33baf7 60%, #1e3a8a 90%, #0f1419 100%);
+        color: white;
+        padding: 4rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 40%, rgba(51, 186, 247, 0.15) 0%, transparent 50%);
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .hero-section h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        letter-spacing: -0.5px;
+    }
+    
+    .hero-section p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #33baf7;
+        margin-bottom: 1rem;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Stats Cards */
+    .stats-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+    
+    [data-bs-theme="dark"] .stats-card {
+        background: rgba(43, 48, 53, 0.95);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        opacity: 0.1;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover::before {
+        transform: scale(1.2);
+        opacity: 0.2;
+    }
+    
+    .stats-card.card-primary::before {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+    }
+    
+    .stats-card.card-success::before {
+        background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+    }
+    
+    .stats-card.card-info::before {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    }
+    
+    .stats-card.card-warning::before {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover .stats-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .stats-icon.icon-primary {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+    }
+    
+    .stats-icon.icon-success {
+        background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+    }
+    
+    .stats-icon.icon-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    }
+    
+    .stats-icon.icon-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1e3a8a;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    [data-bs-theme="dark"] .stats-number {
+        color: #60a5fa;
+    }
+    
+    .stats-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 1rem;
+    }
+    
+    [data-bs-theme="dark"] .stats-label {
+        color: #9ca3af;
+    }
+    
+    .stats-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: rgba(51, 186, 247, 0.1);
+        border: 1px solid rgba(51, 186, 247, 0.2);
+        border-radius: 50px;
+        color: #1e3a8a;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-link:hover {
+        background: rgba(51, 186, 247, 0.2);
+        color: #1e3a8a;
+        transform: translateY(-2px);
+    }
+    
+    [data-bs-theme="dark"] .stats-link {
+        color: #60a5fa;
+        background: rgba(51, 186, 247, 0.15);
+        border-color: rgba(51, 186, 247, 0.3);
+    }
+    
+    [data-bs-theme="dark"] .stats-link:hover {
+        color: #60a5fa;
+        background: rgba(51, 186, 247, 0.25);
+    }
+    
+    /* History Section */
+    .history-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    [data-bs-theme="dark"] .history-card {
+        background: rgba(43, 48, 53, 0.95);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .history-header {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+    
+    .history-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.3rem;
+        letter-spacing: -0.3px;
+    }
+    
+    /* Modern Table */
+    .modern-table {
+        margin: 0;
+    }
+    
+    .modern-table thead th {
+        background: rgba(51, 186, 247, 0.05);
+        border: none;
+        padding: 1rem 1.5rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    [data-bs-theme="dark"] .modern-table thead th {
+        background: rgba(43, 48, 53, 0.8);
+        color: #60a5fa;
+    }
+    
+    .modern-table tbody tr {
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .modern-table tbody tr:hover {
+        background: rgba(51, 186, 247, 0.05);
+        transform: translateX(5px);
+    }
+    
+    [data-bs-theme="dark"] .modern-table tbody tr:hover {
+        background: rgba(51, 186, 247, 0.1);
+    }
+    
+    .modern-table tbody td {
+        padding: 1rem 1.5rem;
+        border: none;
+        border-bottom: 1px solid rgba(51, 186, 247, 0.1);
+        vertical-align: middle;
+    }
+    
+    .file-info-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .file-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+    }
+    
+    .file-details h6 {
+        margin: 0;
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.95rem;
+    }
+    
+    .file-details small {
+        color: #6b7280;
+        font-size: 0.8rem;
+    }
+    
+    [data-bs-theme="dark"] .file-details h6 {
+        color: #e5e7eb;
+    }
+    
+    [data-bs-theme="dark"] .file-details small {
+        color: #9ca3af;
+    }
+    
+    .action-btn {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        color: white;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .action-btn:hover {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0f1419 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(51, 186, 247, 0.4);
+        color: white;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+    
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.1) 0%, rgba(30, 58, 138, 0.05) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 2rem;
+        color: #33baf7;
+        font-size: 2.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .empty-state h5 {
+        color: #374151;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        color: #6b7280;
+        margin-bottom: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    [data-bs-theme="dark"] .empty-state h5 {
+        color: #e5e7eb;
+    }
+    
+    [data-bs-theme="dark"] .empty-state p {
+        color: #9ca3af;
+    }
+    
+    .cta-btn {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 1rem 2rem;
+        color: white;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .cta-btn:hover {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0f1419 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(51, 186, 247, 0.4);
+        color: white;
+    }
+    
+    /* Animations */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease forwards;
+    }
+    
+    .fade-in.delay-1 { animation-delay: 0.1s; }
+    .fade-in.delay-2 { animation-delay: 0.2s; }
+    .fade-in.delay-3 { animation-delay: 0.3s; }
+    .fade-in.delay-4 { animation-delay: 0.4s; }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Counter Animation */
+    .counter {
+        animation: countUp 2s ease-out forwards;
+    }
+    
+    @keyframes countUp {
+        from { opacity: 0; transform: scale(0.5); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 3rem 0;
+        }
+        
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .stats-card {
+            padding: 1.5rem;
+            border-radius: 16px;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+        }
+        
+        .history-card {
+            border-radius: 16px;
+        }
+        
+        .history-header {
+            padding: 1.2rem;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .modern-table thead th,
+        .modern-table tbody td {
+            padding: 0.8rem 1rem;
+        }
+        
+        .file-info-cell {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .empty-state {
+            padding: 3rem 1rem;
+        }
+        
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h2><i class="fas fa-tachometer-alt me-2"></i>Kullanıcı Paneli</h2>
-            <p class="text-muted">Hoş geldiniz, {{ session.username }}. Tahlil sonuçlarınızı buradan yönetebilirsiniz.</p>
-        </div>
-    </div>
-    
-    <!-- Dashboard Stats -->
-    <div class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="card border-0 bg-primary text-white shadow-sm h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-0">Toplam Analizler</h6>
-                            <h2 class="mt-2 mb-0">{{ analyses|length }}</h2>
-                        </div>
-                        <i class="fas fa-file-medical fa-3x opacity-50"></i>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="hero-content">
+                    <div class="user-avatar mx-auto">
+                        <i class="fas fa-user"></i>
                     </div>
-                </div>
-                <div class="card-footer bg-primary border-0 py-3">
-                    <a href="{{ url_for('analyze') }}" class="text-white text-decoration-none small">
-                        <i class="fas fa-plus-circle me-1"></i>Yeni Analiz
-                    </a>
+                    <h1 class="mb-3">
+                        Hoş Geldiniz, {{ session.username }}!
+                    </h1>
+                    <p class="lead">
+                        Kan tahlili analiz panelinizdeyiz. Tüm sonuçlarınız ve geçmişiniz burada.
+                    </p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 bg-success text-white shadow-sm h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-0">Son Analiz</h6>
-                            <h5 class="mt-2 mb-0">
-                                {% if analyses %}
-                                    {% set latest = analyses[0] %}
-                                    {{ latest.file_name }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </h5>
-                        </div>
-                        <i class="fas fa-calendar-check fa-3x opacity-50"></i>
-                    </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card card-primary fade-in">
+                <div class="stats-icon icon-primary">
+                    <i class="fas fa-file-medical"></i>
                 </div>
-                <div class="card-footer bg-success border-0 py-3">
-                    {% if analyses %}
-                        <a href="{{ url_for('analysis_result', analysis_id=analyses[0].id) }}" class="text-white text-decoration-none small">
-                            <i class="fas fa-eye me-1"></i>Görüntüle
-                        </a>
+                <div class="stats-number counter">{{ analyses|length }}</div>
+                <div class="stats-label">Toplam Analizler</div>
+                <a href="{{ url_for('analyze') }}" class="stats-link">
+                    <i class="fas fa-plus-circle me-1"></i>Yeni Analiz Ekle
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card card-success fade-in delay-1">
+                <div class="stats-icon icon-success">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stats-number counter" style="font-size: 1.5rem;">
+                    {% if analyses and analyses[0].created_at %}
+                        {% set date_parts = analyses[0].created_at[:10].split('-') %}
+                        {{ date_parts[2] }}.{{ date_parts[1] }}.{{ date_parts[0] }}
                     {% else %}
-                        <span class="text-white-50 small">Henüz bir analiz bulunmuyor</span>
+                        -
                     {% endif %}
                 </div>
+                <div class="stats-label">Son Analiz Tarihi</div>
+                {% if analyses %}
+                    <a href="{{ url_for('analysis_result', analysis_id=analyses[0].id) }}" class="stats-link">
+                        <i class="fas fa-eye me-1"></i>Son Analizi Görüntüle
+                    </a>
+                {% else %}
+                    <span class="stats-link" style="opacity: 0.5; cursor: not-allowed;">
+                        <i class="fas fa-times me-1"></i>Henüz analiz yok
+                    </span>
+                {% endif %}
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 bg-info text-white shadow-sm h-100">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-0">Hesap Bilgisi</h6>
-                            <h5 class="mt-2 mb-0">{{ session.username }}</h5>
-                        </div>
-                        <i class="fas fa-user-circle fa-3x opacity-50"></i>
-                    </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card card-info fade-in delay-2">
+                <div class="stats-icon icon-info">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-                <div class="card-footer bg-info border-0 py-3">
-                    <a href="#" class="text-white text-decoration-none small">
-                        <i class="fas fa-cog me-1"></i>Hesap Ayarları
-                    </a>
+                <div class="stats-number counter">
+                    {% if analyses %}
+                        {{ analyses|length }}
+                    {% else %}
+                        0
+                    {% endif %}
                 </div>
+                <div class="stats-label">Aktif Raporlar</div>
+                <a href="#history" class="stats-link">
+                    <i class="fas fa-list me-1"></i>Tümünü Görüntüle
+                </a>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card card-warning fade-in delay-3">
+                <div class="stats-icon icon-warning">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="stats-number" style="font-size: 1.5rem;">{{ session.username }}</div>
+                <div class="stats-label">Hesap Durumu</div>
+                <a href="{{ url_for('subscription_plans') }}" class="stats-link">
+                    <i class="fas fa-cog me-1"></i>Hesap Ayarları
+                </a>
             </div>
         </div>
     </div>
     
-    <!-- Analyses History -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Analiz Geçmişi</h5>
+    <!-- Analysis History -->
+    <div class="history-card fade-in delay-4" id="history">
+        <div class="history-header">
+            <h5><i class="fas fa-history me-2"></i>Analiz Geçmişi</h5>
         </div>
         <div class="card-body p-0">
             {% if analyses %}
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                <table class="modern-table table">
+                    <thead>
                         <tr>
-                            <th>Dosya Adı</th>
-                            <th>Tarih</th>
+                            <th>Dosya Bilgileri</th>
+                            <th>Analiz Tarihi</th>
+                            <th>Durum</th>
                             <th>İşlemler</th>
                         </tr>
                     </thead>
@@ -100,12 +602,42 @@
                         {% for analysis in analyses %}
                         <tr>
                             <td>
-                                <i class="fas fa-file-pdf text-danger me-2"></i>
-                                {{ analysis.file_name }}
+                                <div class="file-info-cell">
+                                    <div class="file-icon">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="file-details">
+                                        <h6>{{ analysis.file_name }}</h6>
+                                        <small>Tahlil Raporu</small>
+                                    </div>
+                                </div>
                             </td>
-                            <td>{{ analysis.created_at }}</td>
                             <td>
-                                <a href="{{ url_for('analysis_result', analysis_id=analysis.id) }}" class="btn btn-sm btn-primary">
+                                <div>
+                                    <strong>
+                                        {% if analysis.created_at %}
+                                            {% set date_parts = analysis.created_at[:10].split('-') %}
+                                            {{ date_parts[2] }}.{{ date_parts[1] }}.{{ date_parts[0] }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </strong><br>
+                                    <small class="text-muted">
+                                        {% if analysis.created_at and analysis.created_at|length > 10 %}
+                                            {{ analysis.created_at[11:16] }}
+                                        {% else %}
+                                            --:--
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge" style="background: linear-gradient(135deg, #22c55e 0%, #15803d 100%); color: white; padding: 0.5rem 1rem; border-radius: 50px;">
+                                    <i class="fas fa-check-circle me-1"></i>Tamamlandı
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('analysis_result', analysis_id=analysis.id) }}" class="action-btn">
                                     <i class="fas fa-eye me-1"></i>Görüntüle
                                 </a>
                             </td>
@@ -115,16 +647,61 @@
                 </table>
             </div>
             {% else %}
-            <div class="text-center py-5">
-                <i class="fas fa-file-medical text-muted mb-3" style="font-size: 3rem;"></i>
-                <h5>Henüz bir analiz bulunmuyor</h5>
-                <p class="text-muted">Tahlil sonuçlarınızı analiz etmeye başlamak için hemen bir PDF yükleyin.</p>
-                <a href="{{ url_for('analyze') }}" class="btn btn-primary mt-2">
-                    <i class="fas fa-plus-circle me-1"></i>Tahlil Yükle
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <h5>Henüz Bir Analiz Bulunmuyor</h5>
+                <p>Kan tahlili sonuçlarınızı analiz etmeye başlamak için hemen bir PDF yükleyin ve yapay zeka destekli yorumları keşfedin.</p>
+                <a href="{{ url_for('analyze') }}" class="cta-btn">
+                    <i class="fas fa-plus-circle"></i>İlk Tahlilimi Yükle
                 </a>
             </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+// Sayfa yüklendiğinde animasyonları başlat
+document.addEventListener('DOMContentLoaded', function() {
+    // Fade-in animasyonları
+    const elements = document.querySelectorAll('.fade-in');
+    elements.forEach(element => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+    });
+    
+    setTimeout(() => {
+        elements.forEach(element => {
+            element.style.transition = 'all 0.6s ease';
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        });
+    }, 100);
+    
+    // Counter animasyonu
+    animateCounters();
+});
+
+function animateCounters() {
+    const counters = document.querySelectorAll('.counter');
+    counters.forEach(counter => {
+        const target = parseInt(counter.textContent) || 0;
+        if (target > 0 && target < 100) {
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    counter.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    counter.textContent = Math.floor(current);
+                }
+            }, 30);
+        }
+    });
+}
+</script>
 {% endblock %}

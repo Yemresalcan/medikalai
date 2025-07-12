@@ -1,271 +1,784 @@
 {% extends "layout.html" %}
 
-{% block title %}Tahlil Analizi - MediTahlil{% endblock %}
+{% block title %}Tahlil Analizi - MEDIKAL-AI{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Karanlık tema için özel stillendirmeler */
-    [data-bs-theme="dark"] .card-body h5,
-    [data-bs-theme="dark"] .card-body h6,
-    [data-bs-theme="dark"] .card-body p,
-    [data-bs-theme="dark"] .card-header h4,
-    [data-bs-theme="dark"] .card-header h5 {
-        color: #ffffff;
+    /* Modern Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, #0f1419 0%, #1a2332 30%, #33baf7 60%, #1e3a8a 90%, #0f1419 100%);
+        color: white;
+        padding: 4rem 0;
+        position: relative;
+        overflow: hidden;
     }
     
-    [data-bs-theme="dark"] .text-muted {
-        color: #e0e0e0 !important;
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 40%, rgba(51, 186, 247, 0.15) 0%, transparent 50%);
     }
     
-    [data-bs-theme="dark"] .form-text {
-        color: #cccccc;
+    .hero-content {
+        position: relative;
+        z-index: 2;
     }
     
-    [data-bs-theme="dark"] .list-group-item {
-        background-color: #2b3035;
-        color: #ffffff;
-        border-color: #495057;
+    .hero-section h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        letter-spacing: -0.5px;
     }
     
-    [data-bs-theme="dark"] a {
-        color: #90caf9;
+    .hero-section p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
     }
     
-    [data-bs-theme="dark"] a:hover {
-        color: #bbdefb;
+    /* Modern Card Designs */
+    .modern-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .modern-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+    
+    [data-bs-theme="dark"] .modern-card {
+        background: rgba(43, 48, 53, 0.95);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .card-header-modern {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .card-header-modern h4 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.3rem;
+        letter-spacing: -0.3px;
+    }
+    
+    /* Status Cards */
+    .status-card {
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.1) 0%, rgba(30, 58, 138, 0.05) 100%);
+        border: 1px solid rgba(51, 186, 247, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .status-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(51, 186, 247, 0.15);
+    }
+    
+    [data-bs-theme="dark"] .status-card {
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.15) 0%, rgba(30, 58, 138, 0.1) 100%);
+        border-color: rgba(51, 186, 247, 0.3);
+    }
+    
+    .status-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    /* Upload Section */
+    .upload-section {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 249, 250, 0.9) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 2px dashed rgba(51, 186, 247, 0.3);
+        transition: all 0.3s ease;
+        position: relative;
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .upload-section:hover {
+        border-color: rgba(51, 186, 247, 0.6);
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.05) 0%, rgba(30, 58, 138, 0.02) 100%);
+    }
+    
+    .upload-section.drag-over {
+        border-color: #33baf7;
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.15) 0%, rgba(30, 58, 138, 0.08) 100%);
+        transform: scale(1.02);
+    }
+    
+    [data-bs-theme="dark"] .upload-section {
+        background: linear-gradient(135deg, rgba(43, 48, 53, 0.9) 0%, rgba(26, 29, 33, 0.9) 100%);
+        border-color: rgba(51, 186, 247, 0.4);
+    }
+    
+    [data-bs-theme="dark"] .upload-section:hover {
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.1) 0%, rgba(30, 58, 138, 0.05) 100%);
+    }
+    
+    [data-bs-theme="dark"] .upload-section.drag-over {
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.2) 0%, rgba(30, 58, 138, 0.15) 100%);
+    }
+    
+    /* Drag & Drop Zone */
+    .drag-drop-zone {
+        text-align: center;
+        width: 100%;
+        padding: 2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .drag-drop-icon {
+        font-size: 4rem;
+        color: #33baf7;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    .upload-section.drag-over .drag-drop-icon {
+        transform: scale(1.2);
+        color: #1e3a8a;
+    }
+    
+    .drag-drop-text {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1e3a8a;
+        margin-bottom: 0.5rem;
+    }
+    
+    .drag-drop-subtext {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    [data-bs-theme="dark"] .drag-drop-text {
+        color: #60a5fa;
+    }
+    
+    [data-bs-theme="dark"] .drag-drop-subtext {
+        color: #9ca3af;
+    }
+    
+    /* File Input Hidden */
+    .file-input-hidden {
+        opacity: 0;
+        position: absolute;
+        z-index: -1;
+        visibility: hidden;
+    }
+    
+    /* Upload Button */
+    .upload-btn-modern {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 0.8rem 2rem;
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+    
+    .upload-btn-modern:hover {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0f1419 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(51, 186, 247, 0.3);
+        color: white;
+    }
+    
+    /* File Selected State */
+    .file-selected {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.05) 100%);
+        border-color: #22c55e;
+    }
+    
+    .file-selected .drag-drop-icon {
+        color: #22c55e;
+    }
+    
+    .file-selected .drag-drop-text {
+        color: #15803d;
+    }
+    
+    /* File Info Display */
+    .file-info {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        border: 1px solid rgba(51, 186, 247, 0.2);
+        display: none;
+    }
+    
+    [data-bs-theme="dark"] .file-info {
+        background: rgba(43, 48, 53, 0.8);
+        border-color: rgba(51, 186, 247, 0.3);
+    }
+    
+    .file-info.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+    
+    .file-info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .file-info-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .file-info-label {
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .file-info-value {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    
+    [data-bs-theme="dark"] .file-info-label {
+        color: #e5e7eb;
+    }
+    
+    [data-bs-theme="dark"] .file-info-value {
+        color: #9ca3af;
+    }
+    
+    /* Animations */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .uploading-animation {
+        animation: pulse 1s ease-in-out infinite;
+    }
+    
+    /* Form Elements */
+    .form-control-modern {
+        border-radius: 12px;
+        border: 2px solid rgba(51, 186, 247, 0.2);
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-modern:focus {
+        border-color: #33baf7;
+        box-shadow: 0 0 0 3px rgba(51, 186, 247, 0.1);
+    }
+    
+    .btn-modern {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border: none;
+        border-radius: 50px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        color: white;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .btn-modern:hover {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0f1419 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(51, 186, 247, 0.4);
+        color: white;
+    }
+    
+    /* Progress Bar */
+    .progress-modern {
+        height: 8px;
+        border-radius: 50px;
+        background: rgba(51, 186, 247, 0.1);
+        overflow: hidden;
+    }
+    
+    .progress-bar-modern {
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border-radius: 50px;
+    }
+    
+    /* Tips Section */
+    .tips-section {
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.05) 0%, rgba(30, 58, 138, 0.02) 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid rgba(51, 186, 247, 0.1);
+    }
+    
+    [data-bs-theme="dark"] .tips-section {
+        background: linear-gradient(135deg, rgba(43, 48, 53, 0.8) 0%, rgba(26, 29, 33, 0.8) 100%);
+        border-color: rgba(51, 186, 247, 0.2);
+    }
+    
+    .tip-item {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(51, 186, 247, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .tip-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(51, 186, 247, 0.1);
+    }
+    
+    [data-bs-theme="dark"] .tip-item {
+        background: rgba(43, 48, 53, 0.8);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .tip-number {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    /* Alert Styles */
+    .alert-modern {
+        border-radius: 16px;
+        border: none;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .alert-info-modern {
+        background: linear-gradient(135deg, rgba(51, 186, 247, 0.1) 0%, rgba(30, 58, 138, 0.05) 100%);
+        color: #1e3a8a;
+        border-left: 4px solid #33baf7;
+    }
+    
+    .alert-success-modern {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(21, 128, 61, 0.05) 100%);
+        color: #15803d;
+        border-left: 4px solid #22c55e;
+    }
+    
+    .alert-warning-modern {
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%);
+        color: #d97706;
+        border-left: 4px solid #fbbf24;
+    }
+    
+    [data-bs-theme="dark"] .alert-info-modern {
+        color: #60a5fa;
+    }
+    
+    [data-bs-theme="dark"] .alert-success-modern {
+        color: #4ade80;
+    }
+    
+    [data-bs-theme="dark"] .alert-warning-modern {
+        color: #fbbf24;
+    }
+    
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 3rem 0;
+        }
+        
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+        
+        .modern-card {
+            border-radius: 16px;
+        }
+        
+        .card-header-modern {
+            border-radius: 16px 16px 0 0;
+            padding: 1.2rem;
+        }
+        
+        .status-card,
+        .upload-section,
+        .tips-section {
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        
+        .tip-item {
+            border-radius: 10px;
+            padding: 1.2rem;
+        }
+        
+        .btn-modern {
+            padding: 0.8rem 1.5rem;
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* Animation for page load */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease forwards;
+    }
+    
+    .fade-in.delay-1 { animation-delay: 0.1s; }
+    .fade-in.delay-2 { animation-delay: 0.2s; }
+    .fade-in.delay-3 { animation-delay: 0.3s; }
+    .fade-in.delay-4 { animation-delay: 0.4s; }
+    
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="hero-content">
+                    <h1 class="mb-3">
+                        <i class="fas fa-file-upload me-3"></i>
+                        Tahlil Analizi
+                    </h1>
+                    <p class="lead">
+                        Yapay zeka destekli kan tahlili yorumlama sistemi ile sağlığınızı anlayın
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <!-- İpucu kartı -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 me-3">
-                            <i class="fas fa-lightbulb text-warning fa-2x"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-1">İpucu</h5>
-                            <p class="mb-0 text-muted">PDF formatındaki kan tahlili sonuçlarınızı yükleyin. Yapay zeka, değerleri analiz ederek yorumlayacak ve önerilerde bulunacaktır.</p>
-                        </div>
+        <div class="col-lg-10">
+            
+            <!-- İpucu Kartı -->
+            <div class="alert alert-info-modern alert-modern mb-4 fade-in">
+                <div class="d-flex align-items-center">
+                    <div class="status-icon me-3">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-2 fw-bold">💡 Akıllı Tahlil Analizi</h5>
+                        <p class="mb-0">PDF formatındaki kan tahlili sonuçlarınızı yükleyin. Gelişmiş yapay zeka teknolojimiz, değerleri analiz ederek kapsamlı yorumlar ve kişiselleştirilmiş önerilerde bulunacaktır.</p>
                     </div>
                 </div>
             </div>
             
-            <!-- Üyelik Durumu ve Kalan Hak Bilgisi -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 me-3">
-                            {% if remaining_analyses > 0 or current_plan == 'premium' or current_plan == 'family' %}
-                            <i class="fas fa-check-circle text-success fa-2x"></i>
-                            {% else %}
-                            <i class="fas fa-exclamation-circle text-danger fa-2x"></i>
-                            {% endif %}
-                        </div>
-                        <div>
-                            <h5 class="mb-1">Üyelik Durumunuz: <span class="fw-bold">{{ plan_name }}</span></h5>
-                            {% if current_plan == 'premium' or current_plan == 'family' %}
-                                <p class="mb-0">Sınırsız tahlil hakkınız bulunmaktadır.</p>
-                            {% else %}
+            <!-- Üyelik Durumu Kartı -->
+            <div class="status-card mb-4 fade-in delay-1">
+                <div class="d-flex align-items-center">
+                    <div class="status-icon">
+                        {% if remaining_analyses > 0 or current_plan == 'premium' or current_plan == 'family' %}
+                        <i class="fas fa-check-circle"></i>
+                        {% else %}
+                        <i class="fas fa-exclamation-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-2 fw-bold">
+                            <span class="text-primary">{{ plan_name }}</span> Üyeliğiniz
+                        </h5>
+                        {% if current_plan == 'premium' or current_plan == 'family' %}
+                            <p class="mb-0 text-success fw-medium">
+                                <i class="fas fa-infinity me-1"></i>
+                                Sınırsız tahlil analizi hakkınız bulunmaktadır
+                            </p>
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-between">
                                 <p class="mb-0">
-                                    Bu ay kalan tahlil hakkınız: 
+                                    Bu ay kalan hak: 
                                     <span class="fw-bold {% if remaining_analyses > 0 %}text-success{% else %}text-danger{% endif %}">
                                         {{ remaining_analyses }} / {{ analysis_limit }}
                                     </span>
                                 </p>
                                 {% if remaining_analyses <= 0 %}
-                                <div class="mt-2">
-                                    <a href="{{ url_for('subscription_plans') }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-arrow-up me-1"></i>Üyeliğimi Yükselt
-                                    </a>
-                                </div>
+                                <a href="{{ url_for('subscription_plans') }}" class="btn btn-sm btn-modern">
+                                    <i class="fas fa-arrow-up me-1"></i>Yükselt
+                                </a>
                                 {% endif %}
-                            {% endif %}
-                        </div>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
             
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h4 class="mb-0"><i class="fas fa-file-upload me-2"></i>Kan Tahlili Yükle</h4>
+            <!-- Ana Yükleme Kartı -->
+            <div class="modern-card mb-5 fade-in delay-2">
+                <div class="card-header-modern">
+                    <h4><i class="fas fa-cloud-upload-alt me-2"></i>Kan Tahlili Yükle</h4>
                 </div>
-                <div class="card-body p-4">
-                    <p class="text-muted mb-4">Laboratuvardan aldığınız kan tahlili sonuç PDF dosyasını yükleyin. Sistemimiz yapay zeka kullanarak sonuçlarınızı anında yorumlayacaktır.</p>
-                    
-                    <!-- Hata Mesajı Alanı -->
-                    <div id="error-container" class="alert alert-danger d-none mb-4" role="alert">
-                        <div class="d-flex">
-                            <div class="me-3">
-                                <i class="fas fa-exclamation-circle fa-2x"></i>
-                            </div>
-                            <div>
-                                <h5 class="alert-heading">Hata</h5>
-                                <p class="mb-0 alert-text">Form gönderilirken bir hata oluştu.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <form id="uploadForm" method="POST" enctype="multipart/form-data" class="mt-4">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="mb-3">
-                            <label for="pdf_file" class="form-label">PDF Dosyası Seçin</label>
-                            <div class="input-group">
-                                <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf" required>
-                                <label class="input-group-text" for="pdf_file"><i class="fas fa-file-pdf"></i></label>
-                            </div>
-                            <div class="form-text">Sadece PDF formatında dosyalar kabul edilmektedir. Maksimum dosya boyutu 10MB.</div>
-                        </div>
-                        
-                        <!-- İlerleme Çubuğu -->
-                        <div id="progress-container" class="mb-4 d-none">
-                            <label class="form-label d-flex justify-content-between">
-                                <span>Yükleniyor...</span>
-                                <span id="progress-text">0%</span>
-                            </label>
-                            <div class="progress">
-                                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
-                                     role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Analiz Mesajı -->
-                        <div id="analyzing-message" class="alert alert-primary d-none mb-4" role="alert">
+                <div class="card-body p-0">
+                    <div class="upload-section" id="uploadSection">
+                        <!-- Hata Mesajı -->
+                        <div id="error-container" class="alert alert-danger d-none mb-4" role="alert">
                             <div class="d-flex">
                                 <div class="me-3">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Yükleniyor...</span>
-                                    </div>
+                                    <i class="fas fa-exclamation-triangle fa-2x"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-1">Tahlil Analiz Ediliyor</h6>
-                                    <p class="mb-0 small">Bu işlem birkaç saniye sürebilir, lütfen bekleyin...</p>
+                                    <h5 class="alert-heading">Hata Oluştu</h5>
+                                    <p class="mb-0 alert-text">Form gönderilirken bir hata meydana geldi.</p>
                                 </div>
                             </div>
                         </div>
                         
-                        <button type="submit" id="submitBtn" class="btn btn-primary">
-                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="loadingSpinner"></span>
-                            <span id="submitText">Analiz Et</span>
-                            </button>
-                    </form>
+                        <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            
+                            <!-- Drag & Drop Zone -->
+                            <div class="drag-drop-zone" id="dragDropZone">
+                                <div class="drag-drop-icon">
+                                    <i class="fas fa-cloud-upload-alt" id="uploadIcon"></i>
+                                </div>
+                                <div class="drag-drop-text" id="uploadText">
+                                    Dosyayı buraya sürükleyin veya tıklayın
+                                </div>
+                                <div class="drag-drop-subtext" id="uploadSubtext">
+                                    PDF formatında kan tahlili sonuçlarınızı yükleyin<br>
+                                    <small>Maksimum dosya boyutu: 10MB</small>
+                                </div>
+                                <button type="button" class="upload-btn-modern" id="browseBtn">
+                                    <i class="fas fa-folder-open me-2"></i>Dosya Seç
+                                </button>
+                            </div>
+                            
+                            <!-- Hidden File Input -->
+                            <input type="file" class="file-input-hidden" id="pdf_file" name="pdf_file" accept=".pdf" required>
+                            
+                            <!-- File Info Display -->
+                            <div class="file-info" id="fileInfo">
+                                <div class="file-info-item">
+                                    <span class="file-info-label">
+                                        <i class="fas fa-file-pdf me-2 text-danger"></i>Dosya Adı:
+                                    </span>
+                                    <span class="file-info-value" id="fileName">-</span>
+                                </div>
+                                <div class="file-info-item">
+                                    <span class="file-info-label">
+                                        <i class="fas fa-weight me-2 text-info"></i>Dosya Boyutu:
+                                    </span>
+                                    <span class="file-info-value" id="fileSize">-</span>
+                                </div>
+                                <div class="file-info-item">
+                                    <span class="file-info-label">
+                                        <i class="fas fa-calendar me-2 text-success"></i>Son Değiştirme:
+                                    </span>
+                                    <span class="file-info-value" id="fileDate">-</span>
+                                </div>
+                            </div>
+                            
+                            <!-- İlerleme Çubuğu -->
+                            <div id="progress-container" class="mb-4 d-none">
+                                <label class="form-label d-flex justify-content-between fw-semibold">
+                                    <span><i class="fas fa-upload me-1"></i>Dosya Yükleniyor...</span>
+                                    <span id="progress-text">0%</span>
+                                </label>
+                                <div class="progress progress-modern">
+                                    <div id="progress-bar" class="progress-bar progress-bar-modern progress-bar-striped progress-bar-animated" 
+                                         role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Analiz Mesajı -->
+                            <div id="analyzing-message" class="alert alert-info-modern alert-modern d-none mb-4" role="alert">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Analiz ediliyor...</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">
+                                            <i class="fas fa-brain me-1"></i>
+                                            AI Tahlil Analizi Devam Ediyor
+                                        </h6>
+                                        <p class="mb-0 small">Yapay zeka sistemi tahlil sonuçlarınızı analiz ediyor. Bu işlem 30-60 saniye sürebilir...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" id="submitBtn" class="btn btn-modern btn-lg">
+                                    <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true" id="loadingSpinner"></span>
+                                    <i class="fas fa-brain me-2"></i>
+                                    <span id="submitText">AI Analizi Başlat</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
             
-            <!-- Yükleme İpuçları -->
-            <div class="card border-0 shadow-sm mt-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Tahlil Yükleme İpuçları</h5>
-                </div>
-                <div class="card-body p-4">
-                    <!-- E-Nabız'dan Tahlil Yükleme İpuçları -->
-                    <div class="mb-4">
-                        <h6 class="mb-3 fw-bold"><i class="fas fa-hospital-user me-2"></i>E-Nabız'dan Tahlil Yükleme</h6>
-                        <p class="mb-3">E-Nabız sisteminizden kolayca tahlillerinizi yükleyebilirsiniz:</p>
-                        <ol class="mb-4">
-                            <li class="mb-2">E-Nabız hesabınıza giriş yapın</li>
-                            <li class="mb-2"><strong>"Tahlillerim"</strong> bölümüne gidin</li>
-                            <li class="mb-2">İlgili tahlil raporunun yanındaki <strong>"PDF Türkçe"</strong> butonuna tıklayın</li>
-                            <li class="mb-2">İndirdiğiniz tahlil raporunu MediTahlil'e yükleyin</li>
-                        </ol>
-                        <div class="text-center mb-4">
-                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#enabizModal">
-                                <i class="fas fa-image me-1"></i>Örnek Görsel
-                            </button>
+            <div class="row g-4">
+                <!-- E-Nabız Rehberi -->
+                <div class="col-lg-6">
+                    <div class="modern-card h-100 fade-in delay-3">
+                        <div class="card-header-modern">
+                            <h5><i class="fas fa-hospital-user me-2"></i>E-Nabız Rehberi</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="mb-3">E-Nabız sisteminizden kolayca tahlillerinizi yükleyebilirsiniz:</p>
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="tip-number me-3">1</div>
+                                <div>
+                                    <strong>E-Nabız hesabınıza giriş yapın</strong>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="tip-number me-3">2</div>
+                                <div>
+                                    <strong>"Tahlillerim"</strong> bölümüne gidin
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="tip-number me-3">3</div>
+                                <div>
+                                    <strong>"PDF Türkçe"</strong> butonuna tıklayın
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start mb-4">
+                                <div class="tip-number me-3">4</div>
+                                <div>
+                                    İndirdiğiniz tahlili <strong>MEDIKAL-AI</strong>'ye yükleyin
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#enabizModal">
+                                    <i class="fas fa-eye me-1"></i>Örnek Görsel
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    
-                    <h6 class="mb-3 fw-bold"><i class="fas fa-list-check me-2"></i>Daha İyi Sonuçlar İçin</h6>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item border-0 ps-0">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="badge bg-primary rounded-circle p-2">1</div>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Tahlil Sonuçlarınızın PDF Formatında Olduğundan Emin Olun</h6>
-                                    <p class="text-muted mb-0 small">Sistem şu anda sadece PDF formatındaki tahlil sonuçlarını analiz edebilmektedir.</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="list-group-item border-0 ps-0">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="badge bg-primary rounded-circle p-2">2</div>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Sonuçların Okunaklı Olmasına Dikkat Edin</h6>
-                                    <p class="text-muted mb-0 small">Yüksek kaliteli ve net taranmış PDF'ler, daha doğru analizler sağlar.</p>
+                </div>
+                
+                <!-- Kalite İpuçları -->
+                <div class="col-lg-6">
+                    <div class="modern-card h-100 fade-in delay-4">
+                        <div class="card-header-modern">
+                            <h5><i class="fas fa-star me-2"></i>Kaliteli Analiz İpuçları</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="tip-item">
+                                <div class="d-flex align-items-start">
+                                    <div class="tip-number me-3">📄</div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">PDF Formatında Yükleyin</h6>
+                                        <p class="mb-0 small text-muted">Sistem şu anda sadece PDF formatını destekliyor</p>
+                                    </div>
                                 </div>
                             </div>
-                        </li>
-                        <li class="list-group-item border-0 ps-0">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="badge bg-primary rounded-circle p-2">3</div>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Gizliliğinize Önem Veriyoruz</h6>
-                                    <p class="text-muted mb-0 small">Tahlil sonuçlarınız güvenli şekilde işlenir ve korunur.</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="list-group-item border-0 ps-0">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="badge bg-primary rounded-circle p-2">4</div>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Tüm Sayfaları İçeren PDF Yükleyin</h6>
-                                    <p class="text-muted mb-0 small">Tahlilinizdeki bütün parametrelerin dahil edildiğinden emin olun. Eksik sayfalar yorumların yetersiz olmasına neden olabilir.</p>
+                            
+                            <div class="tip-item">
+                                <div class="d-flex align-items-start">
+                                    <div class="tip-number me-3">🔍</div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Net ve Okunaklı Olmasına Dikkat Edin</h6>
+                                        <p class="mb-0 small text-muted">Yüksek kaliteli PDF'ler daha doğru analiz sağlar</p>
+                                    </div>
                                 </div>
                             </div>
-                        </li>
-                        <li class="list-group-item border-0 ps-0">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="badge bg-primary rounded-circle p-2">5</div>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Tahlil Tarihinin Güncel Olduğunu Kontrol Edin</h6>
-                                    <p class="text-muted mb-0 small">Yakın tarihli tahlil sonuçları daha güncel sağlık durumunuzu yansıtacaktır.</p>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="list-group-item border-0 ps-0">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="badge bg-primary rounded-circle p-2">6</div>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Referans Aralıkları Olan Tahliller Tercih Edin</h6>
-                                    <p class="text-muted mb-0 small">Referans değerleri içeren tahlil sonuçları daha doğru yorumlanabilir.</p>
+                            
+                            <div class="tip-item">
+                                <div class="d-flex align-items-start">
+                                    <div class="tip-number me-3">📊</div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Referans Değerleri İçeren Tahliller</h6>
+                                        <p class="mb-0 small text-muted">Normal aralıkları olan tahliller daha iyi yorumlanır</p>
+                                    </div>
                                 </div>
                             </div>
-                        </li>
-                        <li class="list-group-item border-0 ps-0">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="badge bg-primary rounded-circle p-2">7</div>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Tarama Yaparken Kaliteye Dikkat Edin</h6>
-                                    <p class="text-muted mb-0 small">Tahlil sonucunuzu tarama veya fotoğraflama yapıyorsanız, iyi aydınlatılmış ortamda ve bulanık olmayan görüntüler elde edin.</p>
+                            
+                            <div class="tip-item mb-0">
+                                <div class="d-flex align-items-start">
+                                    <div class="tip-number me-3">🔒</div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">Gizliliğiniz Güvende</h6>
+                                        <p class="mb-0 small text-muted">Verileriniz güvenli şekilde işlenir ve korunur</p>
+                                    </div>
                                 </div>
                             </div>
-                        </li>
-                    </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="text-center mt-4">
-                <a href="{{ url_for('dashboard') }}" class="text-decoration-none">
-                    <i class="fas fa-arrow-left me-1"></i>Kullanıcı Paneline Dön
+            <!-- Geri Dönüş Linki -->
+            <div class="text-center mt-5">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Panelime Dön
                 </a>
             </div>
         </div>
@@ -274,21 +787,203 @@
 
 <!-- E-Nabız Görsel Modalı -->
 <div class="modal fade" id="enabizModal" tabindex="-1" aria-labelledby="enabizModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="enabizModalLabel">E-Nabız Tahlil İndirme Örneği</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-      </div>
-      <div class="modal-body text-center">
-        <img src="{{ url_for('static', filename='assets/e-nabiz.png') }}" class="img-fluid rounded" alt="E-Nabız Tahlil İndirme Örneği">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-      </div>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-0" style="background: linear-gradient(135deg, #33baf7 0%, #1e3a8a 100%); border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title text-white fw-bold" id="enabizModalLabel">
+                    <i class="fas fa-hospital-user me-2"></i>E-Nabız Tahlil İndirme Rehberi
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <img src="{{ url_for('static', filename='assets/e-nabiz.png') }}" class="img-fluid rounded-3 shadow-sm" alt="E-Nabız Tahlil İndirme Örneği">
+            </div>
+            <div class="modal-footer border-0 p-4">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Kapat
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
+<script>
+// Sayfa yüklendiğinde animasyonları başlat
+document.addEventListener('DOMContentLoaded', function() {
+    const elements = document.querySelectorAll('.fade-in');
+    elements.forEach(element => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+    });
+    
+    setTimeout(() => {
+        elements.forEach(element => {
+            element.style.transition = 'all 0.6s ease';
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        });
+    }, 100);
+    
+    // Drag & Drop İşlevselliği
+    initializeDragAndDrop();
+});
+
+// Drag & Drop İşlevleri
+function initializeDragAndDrop() {
+    const uploadSection = document.getElementById('uploadSection');
+    const dragDropZone = document.getElementById('dragDropZone');
+    const fileInput = document.getElementById('pdf_file');
+    const browseBtn = document.getElementById('browseBtn');
+    const fileInfo = document.getElementById('fileInfo');
+    const uploadIcon = document.getElementById('uploadIcon');
+    const uploadText = document.getElementById('uploadText');
+    const uploadSubtext = document.getElementById('uploadSubtext');
+    
+    // Dosya seç butonuna tıklama
+    browseBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Diğer click event'leri engelle
+        fileInput.click();
+    });
+    
+    // Drag & drop zone'a tıklama (browse button hariç)
+    dragDropZone.addEventListener('click', (e) => {
+        // Browse button'a tıklanmışsa işlem yapma
+        if (e.target === browseBtn || e.target.closest('#browseBtn')) {
+            return;
+        }
+        
+        // Sadece zone'un kendisine tıklanmışsa dosya seçiciyi aç
+        if (e.target === dragDropZone || e.target.closest('.drag-drop-zone') && !e.target.closest('#browseBtn')) {
+            fileInput.click();
+        }
+    });
+    
+    // Drag olayları
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadSection.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    // Highlight drop area
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadSection.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadSection.addEventListener(eventName, unhighlight, false);
+    });
+    
+    // Handle dropped files
+    uploadSection.addEventListener('drop', handleDrop, false);
+    
+    // Handle file input change
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFiles(e.target.files);
+        }
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    function highlight() {
+        uploadSection.classList.add('drag-over');
+        uploadIcon.className = 'fas fa-file-import';
+        uploadText.textContent = 'Dosyayı bırakın!';
+        uploadSubtext.innerHTML = '<small>PDF dosyasını buraya bırakarak yükleyebilirsiniz</small>';
+    }
+    
+    function unhighlight() {
+        uploadSection.classList.remove('drag-over');
+        if (!fileInput.files.length) {
+            uploadIcon.className = 'fas fa-cloud-upload-alt';
+            uploadText.textContent = 'Dosyayı buraya sürükleyin veya tıklayın';
+            uploadSubtext.innerHTML = 'PDF formatında kan tahlili sonuçlarınızı yükleyin<br><small>Maksimum dosya boyutu: 10MB</small>';
+        }
+    }
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFiles(files);
+        }
+    }
+    
+    function handleFiles(files) {
+        const file = files[0];
+        
+        // Dosya türü kontrolü
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            showError('Lütfen sadece PDF dosyası yükleyin!');
+            resetUploadArea();
+            return;
+        }
+        
+        // Dosya boyutu kontrolü (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            showError('Dosya boyutu 10MB\'dan büyük olamaz!');
+            resetUploadArea();
+            return;
+        }
+        
+        // Başarılı dosya seçimi
+        showFileSelected(file);
+        displayFileInfo(file);
+    }
+    
+    function showFileSelected(file) {
+        uploadSection.classList.add('file-selected');
+        uploadIcon.className = 'fas fa-check-circle';
+        uploadText.textContent = 'Dosya seçildi!';
+        uploadSubtext.innerHTML = `<strong>${file.name}</strong><br><small>Analiz için hazır - "AI Analizi Başlat" butonuna tıklayın</small>`;
+        browseBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i>Farklı Dosya Seç';
+        browseBtn.style.background = 'linear-gradient(135deg, #22c55e 0%, #15803d 100%)';
+    }
+    
+    function displayFileInfo(file) {
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        document.getElementById('fileDate').textContent = new Date(file.lastModified).toLocaleDateString('tr-TR');
+        fileInfo.classList.add('show');
+    }
+    
+    function resetUploadArea() {
+        uploadSection.classList.remove('file-selected', 'drag-over');
+        uploadIcon.className = 'fas fa-cloud-upload-alt';
+        uploadText.textContent = 'Dosyayı buraya sürükleyin veya tıklayın';
+        uploadSubtext.innerHTML = 'PDF formatında kan tahlili sonuçlarınızı yükleyin<br><small>Maksimum dosya boyutu: 10MB</small>';
+        browseBtn.innerHTML = '<i class="fas fa-folder-open me-2"></i>Dosya Seç';
+        browseBtn.style.background = '';
+        fileInfo.classList.remove('show');
+        fileInput.value = '';
+    }
+    
+    function showError(message) {
+        const errorContainer = document.getElementById('error-container');
+        const errorText = errorContainer.querySelector('.alert-text');
+        errorText.textContent = message;
+        errorContainer.classList.remove('d-none');
+        
+        // 5 saniye sonra hatayı gizle
+        setTimeout(() => {
+            errorContainer.classList.add('d-none');
+        }, 5000);
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+}
+</script>
 {% endblock %}
 
 {% block scripts %}
@@ -309,12 +1004,18 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     
     // Form doğrulama
     if (!fileInput.files[0]) {
-        alert('Lütfen bir PDF dosyası seçin.');
+        const errorContainer = document.getElementById('error-container');
+        const errorText = errorContainer.querySelector('.alert-text');
+        errorText.textContent = 'Lütfen bir PDF dosyası seçin.';
+        errorContainer.classList.remove('d-none');
         return;
     }
     
     if (!fileInput.files[0].name.toLowerCase().endsWith('.pdf')) {
-        alert('Lütfen sadece PDF dosyası yükleyin.');
+        const errorContainer = document.getElementById('error-container');
+        const errorText = errorContainer.querySelector('.alert-text');
+        errorText.textContent = 'Lütfen sadece PDF dosyası yükleyin.';
+        errorContainer.classList.remove('d-none');
         return;
     }
     
@@ -322,6 +1023,17 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     submitBtn.disabled = true;
     loadingSpinner.classList.remove('d-none');
     submitText.textContent = 'Yükleniyor...';
+    
+    // Upload area'yı uploading state'e geçir
+    const uploadSection = document.getElementById('uploadSection');
+    const uploadIcon = document.getElementById('uploadIcon');
+    const uploadText = document.getElementById('uploadText');
+    const uploadSubtext = document.getElementById('uploadSubtext');
+    
+    uploadSection.classList.add('uploading-animation');
+    uploadIcon.className = 'fas fa-sync-alt fa-spin';
+    uploadText.textContent = 'Dosya Yükleniyor...';
+    uploadSubtext.innerHTML = '<small>Lütfen bekleyin, dosyanız sunucuya yükleniyor</small>';
     
     // Progress bar'ı göster
     progressContainer.classList.remove('d-none');
@@ -338,13 +1050,18 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
             const percentComplete = (e.loaded / e.total) * 100;
             progressBar.style.width = percentComplete + '%';
             progressBar.setAttribute('aria-valuenow', percentComplete);
-            progressBar.textContent = Math.round(percentComplete) + '%';
             progressText.textContent = Math.round(percentComplete) + '%';
             
             if (percentComplete === 100) {
                 // Yükleme tamamlandığında analiz mesajını göster
                 progressContainer.classList.add('d-none');
                 analyzingMessage.classList.remove('d-none');
+                
+                // Upload area'yı AI analiz moduna geçir
+                uploadSection.classList.remove('uploading-animation');
+                uploadIcon.className = 'fas fa-brain fa-pulse';
+                uploadText.textContent = 'AI Analizi Yapılıyor...';
+                uploadSubtext.innerHTML = '<small>Yapay zeka sistemi tahlil sonuçlarınızı analiz ediyor</small>';
             }
         }
     };
@@ -368,9 +1085,17 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
             // Hata durumunda UI'ı sıfırla
             submitBtn.disabled = false;
             loadingSpinner.classList.add('d-none');
-            submitText.textContent = 'Analiz Et';
+            submitText.textContent = 'AI Analizi Başlat';
             progressContainer.classList.add('d-none');
             analyzingMessage.classList.add('d-none');
+            
+            // Upload area'yı sıfırla
+            uploadSection.classList.remove('uploading-animation');
+            if (fileInput.files[0]) {
+                uploadIcon.className = 'fas fa-check-circle';
+                uploadText.textContent = 'Dosya seçildi!';
+                uploadSubtext.innerHTML = `<strong>${fileInput.files[0].name}</strong><br><small>Analiz için hazır - "AI Analizi Başlat" butonuna tıklayın</small>`;
+            }
         }
     };
     
@@ -379,9 +1104,17 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
         // Hata durumunda UI'ı sıfırla
         submitBtn.disabled = false;
         loadingSpinner.classList.add('d-none');
-        submitText.textContent = 'Analiz Et';
+        submitText.textContent = 'AI Analizi Başlat';
         progressContainer.classList.add('d-none');
         analyzingMessage.classList.add('d-none');
+        
+        // Upload area'yı sıfırla
+        uploadSection.classList.remove('uploading-animation');
+        if (fileInput.files[0]) {
+            uploadIcon.className = 'fas fa-check-circle';
+            uploadText.textContent = 'Dosya seçildi!';
+            uploadSubtext.innerHTML = `<strong>${fileInput.files[0].name}</strong><br><small>Analiz için hazır - "AI Analizi Başlat" butonuna tıklayın</small>`;
+        }
     };
     
     xhr.send(formData);
