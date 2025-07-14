@@ -7,7 +7,7 @@ PROPRIETARY SOFTWARE - UNAUTHORIZED USE PROHIBITED
 This software is protected by copyright law and international treaties.
 Any unauthorized copying, distribution, or use is strictly prohibited.
 
-For licensing inquiries: [your-email@domain.com]
+For licensing inquiries: [yunusemresalcan@gmail.com]
 """
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
