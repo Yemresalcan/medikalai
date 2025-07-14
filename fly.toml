@@ -7,7 +7,7 @@ kill_timeout = "5s"
   auto_rollback = true
 
 [build]
-  dockerfile = "Dockerfile.simple"
+  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 8080
@@ -15,12 +15,14 @@ kill_timeout = "5s"
   auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 0
-  processes = ["app"]
 
 [env]
   HOST = "0.0.0.0"
   PORT = "8080"
   FLASK_DEBUG = "0"
+  FLASK_ENV = "production"
+  SECRET_KEY = "production-secret-key-change-this"
+  JWT_SECRET_KEY = "production-jwt-secret-change-this"
 
 [[mounts]]
   source = "medikalai_data"
