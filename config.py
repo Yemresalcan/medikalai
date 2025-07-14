@@ -50,6 +50,10 @@ class Config:
     
     # Debug modu
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    
+    # Fly.io API konfigürasyonu
+    FLY_API_TOKEN = os.environ.get('FLY_API_TOKEN')
+    FLY_APP_NAME = os.environ.get('FLY_APP_NAME') or 'medikalai'
 
 # Abonelik planları
 SUBSCRIPTION_PLANS = {

@@ -60,6 +60,20 @@
                             <div class="fw-bold text-muted small">Toplam Analiz</div>
                             <div>{{ analyses|length }}</div>
                         </div>
+                        <div class="list-group-item bg-light">
+                            <div class="fw-bold text-muted small">Analiz Hakkı</div>
+                            <div>
+                                {% if user.analysis_limit %}
+                                    {{ analyses|length }}/{{ user.analysis_limit if user.analysis_limit != 999999 else '∞' }}
+                                    <span class="badge bg-warning ms-2">Özel Limit</span>
+                                {% else %}
+                                    {% set plan_limits = {'free': 3, 'basic': 10, 'premium': 999999, 'family': 999999} %}
+                                    {% set current_limit = plan_limits.get(user.subscription_plan, 3) %}
+                                    {{ analyses|length }}/{{ current_limit if current_limit != 999999 else '∞' }}
+                                    <span class="badge bg-info ms-2">Plan Limiti</span>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="d-grid gap-2 mt-4">

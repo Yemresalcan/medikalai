@@ -1,29 +1,90 @@
-{% extends "layout.html" %}
+{% extends "admin/layout.html" %}
 
 {% block title %}Kullanıcı Yönetimi - MediTahlil Admin{% endblock %}
 
+{% block page_title %}Kullanıcı Yönetimi{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+        <li class="breadcrumb-item active">Kullanıcılar</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h2 class="mb-3"><i class="fas fa-users me-2 text-primary"></i>Kullanıcı Yönetimi</h2>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Kullanıcılar</li>
-                </ol>
-            </nav>
+    
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="stats-card animate-slide-up">
+            <div class="stats-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stats-value">{{ users|length }}</div>
+            <div class="stats-label">Toplam Kullanıcı</div>
+            <div class="stats-change positive">
+                <i class="fas fa-arrow-up me-1"></i>+5% bu ay
+            </div>
         </div>
     </div>
     
-    <!-- Kullanıcı Listesi -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Tüm Kullanıcılar</h5>
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-arrow-left me-1"></i>Dashboarda Dön
-            </a>
+    <div class="col-lg-3 col-md-6">
+        <div class="stats-card animate-slide-up" style="animation-delay: 0.1s;">
+            <div class="stats-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <div class="stats-value">{{ users|selectattr('is_active')|list|length }}</div>
+            <div class="stats-label">Aktif Kullanıcı</div>
+            <div class="stats-change positive">
+                <i class="fas fa-arrow-up me-1"></i>+8% bu ay
+            </div>
         </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="stats-card animate-slide-up" style="animation-delay: 0.2s;">
+            <div class="stats-icon">
+                <i class="fas fa-user-times"></i>
+            </div>
+            <div class="stats-value">{{ users|rejectattr('is_active')|list|length }}</div>
+            <div class="stats-label">Pasif Kullanıcı</div>
+            <div class="stats-change negative">
+                <i class="fas fa-arrow-down me-1"></i>-2% bu ay
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="stats-card animate-slide-up" style="animation-delay: 0.3s;">
+            <div class="stats-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stats-value">{{ (users|sum(attribute='analysis_count') / users|length)|round(1) if users|length > 0 else 0 }}</div>
+            <div class="stats-label">Ort. Analiz/Kullanıcı</div>
+            <div class="stats-change positive">
+                <i class="fas fa-arrow-up me-1"></i>+12% bu ay
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kullanıcı Listesi -->
+<div class="modern-card animate-slide-up">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-users me-2"></i>Tüm Kullanıcılar</h5>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-light btn-sm" onclick="exportUsers()">
+                    <i class="fas fa-download me-1"></i>Dışa Aktar
+                </button>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
         <div class="card-body p-0">
             {% if users %}
             <div class="table-responsive">
@@ -36,6 +97,7 @@
                             <th>Rol</th>
                             <th>Kayıt Tarihi</th>
                             <th>Analiz Sayısı</th>
+                            <th>Analiz Hakkı</th>
                             <th>Durum</th>
                             <th>İşlemler</th>
                         </tr>
@@ -57,6 +119,19 @@
                             <td>{{ user.created_at }}</td>
                             <td>
                                 <span class="badge bg-primary rounded-pill">{{ user.analysis_count }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-info me-2">
+                                        {{ user.analysis_count }}/{{ user.effective_limit if user.effective_limit != 999999 else '∞' }}
+                                    </span>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#limitModal{{ user.id }}" 
+                                            title="Analiz hakkını düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
                             </td>
                             <td>
                                 {% if user.is_active %}
@@ -81,6 +156,64 @@
                                     <button type="button" class="btn btn-outline-danger" title="Sil" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    
+                                    <!-- Analiz Limit Modal -->
+                                    <div class="modal fade" id="limitModal{{ user.id }}" tabindex="-1" aria-labelledby="limitModalLabel{{ user.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="limitModalLabel{{ user.id }}">
+                                                        <i class="fas fa-edit me-2"></i>Analiz Hakkını Düzenle: {{ user.username }}
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ url_for('admin_update_user_limit', user_id=user.id) }}" method="post">
+                                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label for="analysis_limit{{ user.id }}" class="form-label">
+                                                                <strong>Mevcut Durum:</strong> {{ user.analysis_count }}/{{ user.effective_limit if user.effective_limit != 999999 else '∞' }} analiz
+                                                            </label>
+                                                        </div>
+                                                        
+                                                        <div class="mb-3">
+                                                            <label for="analysis_limit{{ user.id }}" class="form-label">
+                                                                Yeni Analiz Limiti
+                                                            </label>
+                                                            <input type="number" 
+                                                                   class="form-control" 
+                                                                   id="analysis_limit{{ user.id }}" 
+                                                                   name="analysis_limit" 
+                                                                   value="{{ user.analysis_limit if user.analysis_limit else '' }}"
+                                                                   min="0" 
+                                                                   placeholder="Boş bırakın: Varsayılan plan limiti">
+                                                            <div class="form-text">
+                                                                • <strong>Boş bırakın:</strong> Abonelik planına göre otomatik limit<br>
+                                                                • <strong>Özel sayı:</strong> Manuel limit belirleme<br>
+                                                                • <strong>999999:</strong> Sınırsız analiz hakkı
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="alert alert-info">
+                                                            <small>
+                                                                <strong>Plan Limitleri:</strong><br>
+                                                                • Ücretsiz: 3 analiz/ay<br>
+                                                                • Temel: 10 analiz/ay<br>
+                                                                • Premium: Sınırsız<br>
+                                                                • Aile: Sınırsız
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                                                        <button type="submit" class="btn btn-primary">
+                                                            <i class="fas fa-save me-1"></i>Güncelle
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                     
                                     <!-- Silme Modal -->
                                     <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ user.id }}" aria-hidden="true">
@@ -120,5 +253,87 @@
             {% endif %}
         </div>
     </div>
-</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Export Users Function
+    function exportUsers() {
+        // Create CSV content
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "ID,Kullanıcı Adı,E-posta,Rol,Kayıt Tarihi,Analiz Sayısı,Analiz Hakkı,Durum\n";
+        
+        // Get data from table
+        const table = document.querySelector('.table tbody');
+        const rows = table.getElementsByTagName('tr');
+        
+        for (let i = 0; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            if (cells.length > 0) {
+                const id = cells[0].textContent.trim();
+                const username = cells[1].querySelector('a').textContent.trim();
+                const email = cells[2].textContent.trim();
+                const role = cells[3].textContent.trim();
+                const created_at = cells[4].textContent.trim();
+                const analysis_count = cells[5].textContent.trim();
+                const analysis_limit = cells[6].textContent.trim();
+                const status = cells[7].textContent.trim();
+                
+                csvContent += `"${id}","${username}","${email}","${role}","${created_at}","${analysis_count}","${analysis_limit}","${status}"\n`;
+            }
+        }
+        
+        // Create download link
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "kullanicilar_" + new Date().toISOString().split('T')[0] + ".csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-success position-fixed';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = '<i class="fas fa-check-circle me-2"></i>Kullanıcılar başarıyla dışa aktarıldı!';
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    // Search and Filter Functions
+    function searchUsers() {
+        const input = document.getElementById('userSearch');
+        const filter = input.value.toUpperCase();
+        const table = document.querySelector('.table tbody');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            let found = false;
+            
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j]) {
+                    const txtValue = cells[j].textContent || cells[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            
+            rows[i].style.display = found ? '' : 'none';
+        }
+    }
+
+    // Auto-refresh data every 30 seconds
+    setInterval(() => {
+        // In a real application, you would fetch updated data via AJAX
+        console.log('Data would be refreshed here');
+    }, 30000);
+</script>
 {% endblock %}

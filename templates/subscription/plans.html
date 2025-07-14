@@ -115,6 +115,58 @@
     .payment-methods img:hover {
         filter: grayscale(0);
     }
+    
+    /* WhatsApp Buton Stilleri */
+    .whatsapp-btn {
+        background: linear-gradient(135deg, #25D366, #128C7E);
+        border: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+    }
+    
+    .whatsapp-btn:hover {
+        background: linear-gradient(135deg, #128C7E, #25D366);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+    }
+    
+    .whatsapp-card {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .whatsapp-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(37, 211, 102, 0.1), transparent);
+        transform: rotate(45deg);
+        transition: all 0.6s;
+        opacity: 0;
+    }
+    
+    .whatsapp-card:hover::before {
+        animation: whatsappShine 1.5s ease-in-out;
+    }
+    
+    @keyframes whatsappShine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); opacity: 0; }
+    }
+    
+    .pulse-icon {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
 </style>
 {% endblock %}
 
@@ -249,6 +301,59 @@
                             Modern ve güvenli ödeme deneyimi<br>
                             <strong>Yakında: Visa • Mastercard • PayPal • Apple Pay • Google Pay</strong>
                         </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- WhatsApp Ödeme Seçeneği -->
+            <div class="col-md-6">
+                <div class="card h-100 border-success whatsapp-card shadow">
+                    <div class="card-body text-center position-relative">
+                        <h6 class="text-success fw-bold mb-3">
+                            <i class="fab fa-whatsapp me-2 pulse-icon"></i>20 Tahlil Paketi
+                        </h6>
+                        <div class="mb-3">
+                            <a href="https://wa.me/905393949035?text=🩺 Merhaba MediTahlil! 20 tahlil analizi paketi için bilgi almak istiyorum. Premium plan özelliklerini öğrenebilir ve güvenli ödeme seçeneklerini görüşebilir miyiz?" 
+                               class="btn btn-lg whatsapp-btn text-white fw-bold" 
+                               target="_blank" 
+                               style="border-radius: 25px; padding: 12px 25px;">
+                                <i class="fab fa-whatsapp fa-2x me-2"></i>
+                                <span>WhatsApp İletişim</span>
+                            </a>
+                        </div>
+                        <div class="badge bg-success-subtle text-success mb-2 px-3 py-2">
+                            <i class="fas fa-bolt me-1"></i>Anında Yanıt
+                        </div>
+                        <small class="text-muted d-block">
+                            Anında iletişim ve güvenli ödeme<br>
+                            <strong class="text-success">📞 Direkt destek ve özel fiyat teklifi</strong>
+                        </small>
+                        
+                        <!-- Özellikler -->
+                        <div class="mt-3 pt-3 border-top">
+                            <div class="row text-start">
+                                <div class="col-6">
+                                    <small class="text-success">
+                                        <i class="fas fa-check me-1"></i>7/24 Destek
+                                    </small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-success">
+                                        <i class="fas fa-check me-1"></i>Hızlı Çözüm
+                                    </small>
+                                </div>
+                                <div class="col-6 mt-1">
+                                    <small class="text-success">
+                                        <i class="fas fa-check me-1"></i>Güvenli Ödeme
+                                    </small>
+                                </div>
+                                <div class="col-6 mt-1">
+                                    <small class="text-success">
+                                        <i class="fas fa-check me-1"></i>Özel Fiyat
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,158 +1,684 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Admin Paneli{% endblock %}</title>
+    <title>{% block title %}Admin Paneli - MediTahlil{% endblock %}</title>
+    
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
+        :root {
+            --admin-primary: #667eea;
+            --admin-secondary: #764ba2;
+            --admin-accent: #f093fb;
+            --admin-dark: #2c3e50;
+            --admin-light: #ecf0f1;
+            --admin-sidebar-width: 280px;
+            --admin-topbar-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        .admin-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--admin-sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            box-shadow: 4px 0 20px rgba(102, 126, 234, 0.15);
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .admin-sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-brand h3 {
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-brand .brand-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            padding: 0.75rem 1.5rem !important;
+            text-decoration: none !important;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--admin-accent), #fff);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            transform: translateX(5px);
+        }
+
+        .nav-link:hover::before,
+        .nav-link.active::before {
+            transform: scaleY(1);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: white !important;
+            font-weight: 600;
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .nav-link .nav-text {
+            font-size: 0.95rem;
+        }
+
+        .nav-link .badge {
+            margin-left: auto;
+            background: var(--admin-accent) !important;
+            color: var(--admin-dark) !important;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .admin-content {
+            margin-left: var(--admin-sidebar-width);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background-color: #f8f9fa;
         }
-        .content {
+
+        /* Top Bar */
+        .admin-topbar {
+            background: white;
+            height: var(--admin-topbar-height);
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            padding: 0 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
             flex: 1;
         }
-        .admin-header {
-            background-color: #343a40;
-            color: white;
-            padding: 1rem 0;
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        .admin-footer {
-            margin-top: auto;
-            background-color: #343a40;
-            color: white;
-            padding: 1rem 0;
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--admin-dark);
+            margin: 0;
+        }
+
+        .breadcrumb {
+            background: none;
+            padding: 0;
+            margin: 0;
             font-size: 0.9rem;
         }
-        .admin-sidebar {
-            background-color: #343a40;
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            color: #6c757d;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: none;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--admin-primary);
+            background: var(--admin-primary);
             color: white;
-            min-height: calc(100vh - 56px - 56px);
         }
-        .admin-sidebar .nav-link {
-            color: rgba(255,255,255,.75);
-            padding: 0.75rem 1rem;
+
+        /* User Dropdown */
+        .user-dropdown .dropdown-toggle {
+            background: none;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
         }
-        .admin-sidebar .nav-link:hover {
-            color: rgba(255,255,255,1);
-            background-color: rgba(255,255,255,.1);
-        }
-        .admin-sidebar .nav-link.active {
+
+        .user-dropdown .dropdown-toggle:hover {
+            border-color: var(--admin-primary);
+            background: var(--admin-primary);
             color: white;
-            background-color: #007bff;
         }
-        .admin-sidebar .nav-link i {
-            margin-right: 0.5rem;
-            width: 1.25rem;
-            text-align: center;
+
+        .user-dropdown .dropdown-toggle::after {
+            margin-left: 0.5rem;
+        }
+
+        /* Main Content Area */
+        .admin-main {
+            flex: 1;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        /* Cards */
+        .modern-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: none;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .modern-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+            color: white;
+            border: none;
+            padding: 1.5rem;
+            font-weight: 600;
+        }
+
+        .modern-card .card-body {
+            padding: 2rem;
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+            opacity: 0.1;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .stats-card .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            background: linear-gradient(135deg, var(--admin-primary), var(--admin-secondary));
+            margin-bottom: 1rem;
+        }
+
+        .stats-card .stats-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--admin-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-card .stats-label {
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .stats-card .stats-change {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .stats-change.positive {
+            color: #28a745;
+        }
+
+        .stats-change.negative {
+            color: #dc3545;
+        }
+
+        /* Flash Messages */
+        .alert {
+            border-radius: 15px;
+            border: none;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            color: #856404;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1, #b8daff);
+            color: #0c5460;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+
+            .admin-content {
+                margin-left: 0;
+            }
+
+            .admin-main {
+                padding: 1rem;
+            }
+
+            .topbar-left .page-title {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Dark Theme */
+        [data-bs-theme="dark"] {
+            --admin-primary: #4c6ef5;
+            --admin-secondary: #6741d9;
+            --admin-dark: #ffffff;
+            --admin-light: #2c2c2c;
+        }
+
+        [data-bs-theme="dark"] body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+            color: white;
+        }
+
+        [data-bs-theme="dark"] .admin-topbar {
+            background: #2d3748;
+            border-color: #4a5568;
+            color: white;
+        }
+
+        [data-bs-theme="dark"] .modern-card {
+            background: #2d3748;
+            color: white;
+        }
+
+        [data-bs-theme="dark"] .stats-card {
+            background: #2d3748;
+            color: white;
+        }
+
+        [data-bs-theme="dark"] .stats-card .stats-value {
+            color: white;
+        }
+
+        [data-bs-theme="dark"] .admin-main {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+        }
+
+        /* Custom Animations */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-up {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out;
         }
     </style>
+
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
-    <!-- Admin Header -->
-    <header class="admin-header">
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h4 mb-0">
-                        <i class="fas fa-flask me-2"></i>MediTahlil Admin
-                    </h1>
-                </div>
-                <div>
-                    {% if session.user_id %}
-                    <div class="dropdown">
-                        <button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-1"></i>{{ session.username }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('index') }}">Ana Sayfaya Git</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Çıkış Yap</a></li>
-                        </ul>
-                    </div>
-                    {% endif %}
-                </div>
+    <!-- Sidebar -->
+    <nav class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-brand">
+            <h3><i class="fas fa-flask me-2"></i>MediTahlil</h3>
+            <div class="brand-subtitle">Admin Panel</div>
+        </div>
+
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Ana Menu</div>
+                <a href="{{ url_for('admin_dashboard') }}" class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="{{ url_for('index') }}" class="nav-link" target="_blank">
+                    <i class="fas fa-home"></i>
+                    <span class="nav-text">Ana Sayfa</span>
+                    <span class="badge">Yeni Sekme</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Yönetim</div>
+                <a href="{{ url_for('admin_users') }}" class="nav-link {% if request.endpoint in ['admin_users', 'admin_user_detail'] %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span class="nav-text">Kullanıcılar</span>
+                </a>
+                <a href="{{ url_for('admin_analyses') }}" class="nav-link {% if request.endpoint in ['admin_analyses', 'admin_analysis_detail'] %}active{% endif %}">
+                    <i class="fas fa-file-medical-alt"></i>
+                    <span class="nav-text">Analizler</span>
+                </a>
+                <a href="{{ url_for('admin_newsletter') }}" class="nav-link {% if request.endpoint == 'admin_newsletter' %}active{% endif %}">
+                    <i class="fas fa-envelope"></i>
+                    <span class="nav-text">Newsletter</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Sistem</div>
+                <a href="#" class="nav-link" onclick="showMaintenanceModal()">
+                    <i class="fas fa-tools"></i>
+                    <span class="nav-text">Bakım</span>
+                </a>
+                <a href="#" class="nav-link" onclick="showSettingsModal()">
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-text">Ayarlar</span>
+                </a>
             </div>
         </div>
-    </header>
-
-    <!-- Flash Messages -->
-    <div class="container-fluid mt-2">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+    </nav>
 
     <!-- Main Content -->
-    <div class="content py-3">
-        <div class="container-fluid">
-            <div class="row">
-                <!-- Sidebar -->
-                <div class="col-md-2">
-                    <div class="admin-sidebar p-3 rounded">
-                        <div class="mb-3 border-bottom pb-2">
-                            <div class="text-uppercase small text-muted">Yönetim Menüsü</div>
-                        </div>
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}" 
-                                   href="{{ url_for('admin_dashboard') }}">
-                                   <i class="fas fa-tachometer-alt"></i> Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}" 
-                                   href="{{ url_for('admin_users') }}">
-                                   <i class="fas fa-users"></i> Kullanıcılar
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.endpoint == 'admin_analyses' %}active{% endif %}" 
-                                   href="{{ url_for('admin_analyses') }}">
-                                   <i class="fas fa-file-medical-alt"></i> Analizler
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if request.endpoint == 'admin_newsletter' %}active{% endif %}" 
-                                   href="{{ url_for('admin_newsletter') }}">
-                                   <i class="fas fa-envelope"></i> Newsletter
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- Main Content Area -->
-                <div class="col-md-10">
-                    {% block content %}{% endblock %}
+    <div class="admin-content">
+        <!-- Top Bar -->
+        <header class="admin-topbar">
+            <div class="topbar-left">
+                <button class="btn d-lg-none me-3" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div>
+                    <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+                    {% block breadcrumb %}
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Admin</a></li>
+                            <li class="breadcrumb-item active">Dashboard</li>
+                        </ol>
+                    </nav>
+                    {% endblock %}
                 </div>
             </div>
+
+            <div class="topbar-right">
+                <!-- Theme Toggle -->
+                <button class="theme-toggle" onclick="toggleTheme()" title="Tema Değiştir">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+
+                <!-- User Dropdown -->
+                <div class="dropdown user-dropdown">
+                    <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ session.username }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('index') }}" target="_blank">
+                            <i class="fas fa-home me-2"></i>Ana Sayfaya Git
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        <div class="container-fluid mt-3">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show animate-slide-up">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' or category == 'error' %}exclamation-triangle{% elif category == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
         </div>
+
+        <!-- Main Content Area -->
+        <main class="admin-main">
+            {% block content %}{% endblock %}
+        </main>
     </div>
 
-    <!-- Admin Footer -->
-    <footer class="admin-footer py-2">
-        <div class="container-fluid text-center">
-            <p class="mb-0">&copy; 2025 MediTahlil Admin Paneli. Tüm hakları saklıdır.</p>
-        </div>
-    </footer>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Bootstrap & JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const currentTheme = html.getAttribute('data-bs-theme');
+            
+            if (currentTheme === 'dark') {
+                html.setAttribute('data-bs-theme', 'light');
+                themeIcon.className = 'fas fa-moon';
+                localStorage.setItem('admin-theme', 'light');
+            } else {
+                html.setAttribute('data-bs-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                localStorage.setItem('admin-theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('admin-theme');
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+            }
+        });
+
+        // Sidebar Toggle for Mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('adminSidebar');
+            sidebar.classList.toggle('show');
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('adminSidebar');
+            const toggleButton = e.target.closest('[onclick="toggleSidebar()"]');
+            
+            if (!sidebar.contains(e.target) && !toggleButton && window.innerWidth <= 992) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+        // Maintenance Modal
+        function showMaintenanceModal() {
+            alert('Bakım modülü yakında eklenecek!');
+        }
+
+        // Settings Modal
+        function showSettingsModal() {
+            alert('Ayarlar modülü yakında eklenecek!');
+        }
+
+        // Auto-hide alerts
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (alert.querySelector('.btn-close')) {
+                    alert.classList.remove('show');
+                    setTimeout(() => alert.remove(), 150);
+                }
+            });
+        }, 5000);
+
+        // Add loading states to buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>İşleniyor...';
+                        submitBtn.disabled = true;
+                    }
+                });
+            });
+        });
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>
