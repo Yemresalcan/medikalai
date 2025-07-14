@@ -10,11 +10,11 @@ COPY templates/ /app/templates/
 COPY static/ /app/static/
 
 # Gerekli dosyaları kopyala
-COPY app.py requirements.txt ./
+COPY app.py config.py requirements.txt ./
 
 # Bağımlılıkları doğrudan yükle - pip hatası olasılığını azaltmak için
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir flask requests PyPDF2 openai bcrypt Flask-WTF flask-jwt-extended gunicorn stripe
+    pip install --no-cache-dir flask requests PyPDF2 openai bcrypt Flask-WTF flask-jwt-extended gunicorn stripe python-dotenv
 
 # Volume dizini
 RUN mkdir -p /data
