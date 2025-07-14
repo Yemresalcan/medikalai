@@ -25,11 +25,10 @@ instance/
 .webassets-cache
 
 # Veritabanları
-# SQLite dosyalarını çıkardık böylece Git'e dahil edilecekler
-# *.db
-# *.db-journal
-# *.sqlite
-# *.sqlite3
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
 
 # Virtualenv
 venv/
@@ -53,4 +52,18 @@ logs/
 .env.local
 .env.development.local
 .env.test.local
-.env.production.local 
+.env.production.local
+
+# PROPRIETARY SOFTWARE PROTECTION
+# Never ignore these files - they protect our copyright
+!LICENSE
+!SECURITY.md
+!REPOSITORY_PROTECTION.md
+!README.md
+
+# Unauthorized copies or modifications
+*.unauthorized
+*.copy
+*.backup
+unauthorized_*
+*_backup 

@@ -1,11 +1,19 @@
+# Core Framework
 Flask==2.3.3
-requests==2.31.0
-PyPDF2==3.0.1
-openai==0.28.0
-bcrypt==4.0.1
-Flask-WTF==1.1.1
-flask-jwt-extended==4.5.2
+Werkzeug==2.3.7
 gunicorn==21.2.0
 
-Werkzeug==2.3.7
+# Web & API
+requests==2.31.0
+Flask-WTF==1.1.1
+flask-jwt-extended==4.5.2
+
+# Security & Authentication
+bcrypt==4.0.1
+
+# AI & Processing
+openai==0.28.0
+PyPDF2==3.0.1
+
+# Utilities
 python-dotenv==1.0.0

@@ -1,3 +1,15 @@
+#!/usr/bin/env python3
+"""
+MedikalAI - Intelligent Blood Test Analysis Platform
+Copyright (c) 2024 MedikalAI - All Rights Reserved
+
+PROPRIETARY SOFTWARE - UNAUTHORIZED USE PROHIBITED
+This software is protected by copyright law and international treaties.
+Any unauthorized copying, distribution, or use is strictly prohibited.
+
+For licensing inquiries: [your-email@domain.com]
+"""
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 import requests
 import json
@@ -16,6 +28,8 @@ from functools import wraps
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import time
+from config import GEMINI_API_URL, GEMINI_API_KEY, Config, EMAIL_SETTINGS, SUBSCRIPTION_PLANS, DB_PATH
 from email.mime.base import MIMEBase
 from email import encoders
 import threading
@@ -28,9 +42,11 @@ except ImportError:
     print("python-dotenv kütüphanesi bulunamadı. pip install python-dotenv ile yükleyebilirsiniz.")
     print("Şimdilik environment variable'lar sistem ortamından okunacak.")
 
+# Konfigürasyon zaten yukarıda import edildi
+
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB limit
-app.secret_key = secrets.token_hex(16)  # Güvenli rastgele anahtar
+app.config.from_object(Config)
+app.secret_key = Config.SECRET_KEY
 
 
 
@@ -38,13 +54,11 @@ app.secret_key = secrets.token_hex(16)  # Güvenli rastgele anahtar
 csrf = CSRFProtect(app)
 
 # JWT konfigurasyonu
-app.config['JWT_SECRET_KEY'] = secrets.token_hex(32)  # JWT için farklı bir güvenli anahtar
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)  # Token geçerlilik süresi
+app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = Config.JWT_ACCESS_TOKEN_EXPIRES
 jwt = JWTManager(app)
 
-# Gemini API anahtarı ve endpoint
-GEMINI_API_KEY = "AIzaSyBQLZ2W8mHu3IOoTl1pxdeetUC_bzu-j58"  # Gerçek API anahtarınızla değiştirin
-GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+# API konfigürasyonu config.py'dan geldi
 
 # Kan tahlili parametreleri ve normal aralıkları
 BLOOD_TEST_PARAMETERS = {
@@ -884,112 +898,7 @@ def calculate_disease_risks(extracted_params):
     
     return disease_risks
 
-# LemonSqueezy API Helper Fonksiyonları
-def lemonsqueezy_api_request(endpoint, method='GET', data=None):
-    """LemonSqueezy API isteği gönderir"""
-    import requests
-    
-    url = f"https://api.lemonsqueezy.com/v1/{endpoint}"
-    headers = {
-        'Authorization': f'Bearer {LEMONSQUEEZY_API_KEY}',
-        'Content-Type': 'application/vnd.api+json',
-        'Accept': 'application/vnd.api+json'
-    }
-    
-    try:
-        if method == 'POST':
-            response = requests.post(url, json=data, headers=headers, timeout=30)
-        elif method == 'GET':
-            response = requests.get(url, headers=headers, timeout=30)
-        
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        app.logger.error(f"LemonSqueezy API hatası: {str(e)}")
-        return None
-
-def create_lemonsqueezy_checkout(plan_id, user_email, user_id):
-    """LemonSqueezy checkout URL'i oluşturur"""
-    if plan_id not in SUBSCRIPTION_PLANS:
-        return None
-    
-    plan = SUBSCRIPTION_PLANS[plan_id]
-    variant_id = plan['lemonsqueezy_variant_id']
-    
-    if not variant_id:
-        return None
-    
-    checkout_data = {
-        "data": {
-            "type": "checkouts",
-            "attributes": {
-                "checkout_options": {
-                    "embed": False,
-                    "media": False,
-                    "logo": True
-                },
-                "checkout_data": {
-                    "email": user_email,
-                    "name": "",
-                    "billing_address": {
-                        "country": "TR"
-                    },
-                    "tax_number": "",
-                    "discount_code": "",
-                    "custom": {
-                        "user_id": str(user_id),
-                        "plan_id": plan_id
-                    }
-                },
-                "product_options": {
-                    "enabled_variants": [int(variant_id)],
-                    "redirect_url": f"{request.url_root}subscription/lemonsqueezy/success/{plan_id}",
-                    "receipt_button_text": "Analize Başla",
-                    "receipt_thank_you_note": "MedikalAI'ye hoş geldiniz! Artık gelişmiş tahlil analizlerine erişebilirsiniz."
-                },
-                "preview": {
-                    "enabled": False
-                }
-            },
-            "relationships": {
-                "store": {
-                    "data": {
-                        "type": "stores",
-                        "id": LEMONSQUEEZY_STORE_ID
-                    }
-                },
-                "variant": {
-                    "data": {
-                        "type": "variants",
-                        "id": variant_id
-                    }
-                }
-            }
-        }
-    }
-    
-    response = lemonsqueezy_api_request('checkouts', 'POST', checkout_data)
-    
-    if response and 'data' in response:
-        return response['data']['attributes']['url']
-    
-    return None
-
-def verify_lemonsqueezy_webhook(payload, signature):
-    """LemonSqueezy webhook imzasını doğrular"""
-    import hmac
-    import hashlib
-    
-    if not LEMONSQUEEZY_WEBHOOK_SECRET:
-        return False
-    
-    computed_signature = hmac.new(
-        LEMONSQUEEZY_WEBHOOK_SECRET.encode('utf-8'),
-        payload.encode('utf-8'),
-        hashlib.sha256
-    ).hexdigest()
-    
-    return hmac.compare_digest(f"sha256={computed_signature}", signature)
+# Ödeme API Helper Fonksiyonları (Yeni ödeme sistemi buraya eklenecek)
 
 def generate_detailed_analysis_report(categorized_params, disease_risks, extracted_params):
     """Detaylı analiz raporu oluşturur"""
@@ -1116,46 +1025,9 @@ def generate_detailed_analysis_report(categorized_params, disease_risks, extract
 # Veritabanı ayarları
 DB_PATH = os.environ.get('DB_PATH', 'kan_tahlil_app.db')
 
-# LemonSqueezy API Konfigürasyonu
-LEMONSQUEEZY_API_KEY = os.environ.get('LEMONSQUEEZY_API_KEY', '')
-LEMONSQUEEZY_STORE_ID = os.environ.get('LEMONSQUEEZY_STORE_ID', '')
-LEMONSQUEEZY_WEBHOOK_SECRET = os.environ.get('LEMONSQUEEZY_WEBHOOK_SECRET', '')
+# Ödeme Sistemi Konfigürasyonu (Yeni ödeme sistemi buraya eklenecek)
 
-# Abonelik planları
-SUBSCRIPTION_PLANS = {
-    'free': {
-        'name': 'Ücretsiz',
-        'price': 0,
-        'description': 'Aylık 3 tahlil analizi',
-        'analysis_limit': 3,
-        'lemonsqueezy_variant_id': None,
-        'features': ['Temel analiz', 'Sınırlı tahlil sayısı', 'Tahlil geçmişi']
-    },
-    'basic': {
-        'name': 'Temel',
-        'price': 49.90,
-        'description': 'Aylık 10 tahlil analizi',
-        'analysis_limit': 10,
-        'lemonsqueezy_variant_id': 'BASIC_VARIANT_ID',  # Temel plan variant ID'nizi buraya koyun
-        'features': ['Detaylı analiz', '10 tahlil/ay', 'Tahlil geçmişi', 'PDF rapor indirme']
-    },
-    'premium': {
-        'name': 'Premium',
-        'price': 89.90,
-        'description': 'Sınırsız tahlil analizi',
-        'analysis_limit': float('inf'),
-        'lemonsqueezy_variant_id': 'PREMIUM_VARIANT_ID',  # Premium plan variant ID'nizi buraya koyun
-        'features': ['Kapsamlı analiz', 'Sınırsız tahlil', 'Tahlil geçmişi', 'PDF rapor indirme', 'E-posta bildirim', 'Öncelikli destek']
-    },
-    'family': {
-        'name': 'Aile',
-        'price': 129.90,
-        'description': '5 aile üyesi için sınırsız tahlil analizi',
-        'analysis_limit': float('inf'),
-        'lemonsqueezy_variant_id': 'FAMILY_VARIANT_ID',  # Aile plan variant ID'nizi buraya koyun
-        'features': ['Kapsamlı analiz', 'Sınırsız tahlil', '5 aile üyesi', 'Tahlil geçmişi', 'PDF rapor indirme', 'E-posta bildirim', 'Öncelikli destek']
-    }
-}
+
 
 def init_db():
     """Veritabanını ve tabloları oluşturur"""
@@ -1400,14 +1272,7 @@ def check_password(hashed_password, user_password):
         # Salt hatası durumunda False döndür - güvenlik için
         return False
 
-# Email gönderme sistemi
-EMAIL_SETTINGS = {
-    'SMTP_SERVER': 'smtp.gmail.com',
-    'SMTP_PORT': 587,
-    'EMAIL_ADDRESS': 'medikalai.info@gmail.com',  # Gmail adresi
-    'EMAIL_PASSWORD': os.environ.get('EMAIL_PASSWORD'),  # .env dosyasından App password
-    'FROM_NAME': 'MedikalAI Sağlık Rehberi'
-}
+# Email konfigürasyonu config.py'dan geldi
 
 def send_email_async(to_email, subject, html_content, plain_content=None):
     """Asenkron email gönderme"""
@@ -2457,12 +2322,19 @@ def analyze_test_results_with_ai(abnormal_values):
     }
     
     try:
+        # API key kontrolü
+        if not GEMINI_API_URL or not GEMINI_API_KEY:
+            print("[AI Analiz] HATA: Gemini API yapılandırması eksik!")
+            print("Lütfen .env dosyasında GEMINI_API_KEY'inizi tanımlayın.")
+            return []
+        
         # API'ye istek gönder
         print("[AI Analiz] Gemini API'ye istek gönderiliyor...")
         response = requests.post(
             GEMINI_API_URL,
             json=request_data,
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
+            timeout=30
         )
         
         # Yanıtı işle
@@ -2505,6 +2377,15 @@ def analyze_test_results_with_ai(abnormal_values):
         else:
             print(f"[AI Analiz] API hatası: HTTP {response.status_code}")
             print(f"[AI Analiz] Hata detayı: {response.text}")
+            
+            # 503 hatası için özel mesaj
+            if response.status_code == 503:
+                print("[AI Analiz] Google Gemini API şu anda meşgul, lütfen birkaç dakika sonra tekrar deneyin.")
+            elif response.status_code == 429:
+                print("[AI Analiz] API rate limit aşıldı, lütfen bir süre bekleyin.")
+            elif response.status_code == 401:
+                print("[AI Analiz] API anahtarı geçersiz, lütfen yapılandırmanızı kontrol edin.")
+            
             # Varsayılan hastalık tahminleri istenmiyor, boş liste döndür
             return []
     except Exception as e:
@@ -2911,214 +2792,16 @@ def subscription_cancel():
     flash('Aboneliğiniz iptal edildi. Bu dönem sonuna kadar özelliklerden yararlanmaya devam edebilirsiniz.', 'success')
     return redirect(url_for('subscription_plans'))
 
-# LemonSqueezy Ödeme Route'ları
-@app.route('/subscription/lemonsqueezy/checkout/<plan_id>')
-def lemonsqueezy_checkout(plan_id):
-    """LemonSqueezy ile ödeme başlat"""
-    if 'user_id' not in session:
-        flash('Abonelik satın almak için giriş yapmalısınız!', 'warning')
-        return redirect(url_for('login'))
-    
-    if plan_id not in SUBSCRIPTION_PLANS:
-        flash('Geçersiz abonelik planı!', 'danger')
-        return redirect(url_for('subscription_plans'))
-    
-    if plan_id == 'free':
-        return redirect(url_for('subscription_plans'))
-    
-    # Kullanıcı bilgilerini getir
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT email FROM users WHERE id = ?", (session['user_id'],))
-    user = c.fetchone()
-    conn.close()
-    
-    if not user:
-        flash('Kullanıcı bilgileri bulunamadı!', 'danger')
-        return redirect(url_for('login'))
-    
-    # LemonSqueezy checkout URL'i oluştur
-    checkout_url = create_lemonsqueezy_checkout(plan_id, user['email'], session['user_id'])
-    
-    if not checkout_url:
-        flash('Ödeme sayfası oluşturulamadı. Lütfen daha sonra tekrar deneyin.', 'danger')
-        return redirect(url_for('subscription_plans'))
-    
-    # Kullanıcıyı LemonSqueezy checkout sayfasına yönlendir
-    return redirect(checkout_url)
+# Yeni Ödeme Sistemi Route'ları (Yeni ödeme sistemi buraya eklenecek)
 
-@app.route('/subscription/lemonsqueezy/success/<plan_id>')
-def lemonsqueezy_success(plan_id):
-    """LemonSqueezy ödeme başarılı sayfası"""
-    if 'user_id' not in session:
-        flash('Oturum süresi doldu, lütfen tekrar giriş yapın.', 'warning')
-        return redirect(url_for('login'))
-    
-    if plan_id not in SUBSCRIPTION_PLANS:
-        flash('Geçersiz abonelik planı!', 'danger')
-        return redirect(url_for('subscription_plans'))
-    
-    plan = SUBSCRIPTION_PLANS[plan_id]
-    
-    # Not: Gerçek abonelik aktivasyonu webhook'ta yapılacak
-    # Bu sayfa sadece "ödeme alındı, işlem devam ediyor" mesajı verir
-    
-    return render_template('subscription/lemonsqueezy_success.html', plan=plan)
 
-@app.route('/webhook/lemonsqueezy', methods=['POST'])
-@csrf.exempt
-def lemonsqueezy_webhook():
-    """LemonSqueezy webhook handler"""
-    try:
-        # Webhook verilerini al
-        payload = request.get_data(as_text=True)
-        signature = request.headers.get('X-Signature', '')
-        
-        # İmzayı doğrula
-        if not verify_lemonsqueezy_webhook(payload, signature):
-            app.logger.warning("LemonSqueezy webhook: Geçersiz imza")
-            return jsonify({'error': 'Geçersiz imza'}), 401
-        
-        # JSON verisini parse et
-        event_data = request.get_json()
-        
-        if not event_data:
-            return jsonify({'error': 'Geçersiz JSON'}), 400
-        
-        event_name = event_data.get('meta', {}).get('event_name', '')
-        
-        app.logger.info(f"LemonSqueezy webhook alındı: {event_name}")
-        
-        # Order completed eventi (ödeme başarılı)
-        if event_name == 'order_created':
-            handle_lemonsqueezy_order_created(event_data)
-        
-        # Subscription created eventi  
-        elif event_name == 'subscription_created':
-            handle_lemonsqueezy_subscription_created(event_data)
-        
-        # Subscription updated eventi
-        elif event_name == 'subscription_updated':
-            handle_lemonsqueezy_subscription_updated(event_data)
-        
-        # Subscription cancelled eventi
-        elif event_name == 'subscription_cancelled':
-            handle_lemonsqueezy_subscription_cancelled(event_data)
-        
-        return jsonify({'status': 'success'}), 200
-        
-    except Exception as e:
-        app.logger.error(f"LemonSqueezy webhook hatası: {str(e)}")
-        return jsonify({'error': 'Webhook işlenemedi'}), 500
 
-def handle_lemonsqueezy_order_created(event_data):
-    """LemonSqueezy order created webhook'unu işler"""
-    try:
-        attributes = event_data.get('data', {}).get('attributes', {})
-        custom_data = attributes.get('custom', {})
-        
-        user_id = custom_data.get('user_id')
-        plan_id = custom_data.get('plan_id')
-        
-        if not user_id or not plan_id:
-            app.logger.warning("LemonSqueezy webhook: user_id veya plan_id bulunamadı")
-            return
-        
-        # Order bilgileri
-        order_id = event_data.get('data', {}).get('id')
-        total = attributes.get('total')
-        status = attributes.get('status')
-        
-        app.logger.info(f"LemonSqueezy order oluşturuldu: User {user_id}, Plan {plan_id}, Order {order_id}")
-        
-        # Eğer ödeme tamamlanmışsa aboneliği aktifleştir
-        if status == 'paid':
-            activate_subscription(user_id, plan_id, 'lemonsqueezy', order_id, total)
-        
-    except Exception as e:
-        app.logger.error(f"LemonSqueezy order webhook işleme hatası: {str(e)}")
 
-def handle_lemonsqueezy_subscription_created(event_data):
-    """LemonSqueezy subscription created webhook'unu işler"""
-    try:
-        attributes = event_data.get('data', {}).get('attributes', {})
-        custom_data = attributes.get('custom', {})
-        
-        user_id = custom_data.get('user_id')
-        plan_id = custom_data.get('plan_id')
-        
-        if user_id and plan_id:
-            subscription_id = event_data.get('data', {}).get('id')
-            app.logger.info(f"LemonSqueezy abonelik oluşturuldu: User {user_id}, Plan {plan_id}, Sub {subscription_id}")
-            
-            # Abonelik bilgilerini veritabanına kaydet
-            conn = sqlite3.connect(DB_PATH)
-            c = conn.cursor()
-            
-            # LemonSqueezy subscription ID'sini kaydet
-            c.execute("""
-                UPDATE users 
-                SET lemonsqueezy_subscription_id = ? 
-                WHERE id = ?
-            """, (subscription_id, user_id))
-            
-            conn.commit()
-            conn.close()
-        
-    except Exception as e:
-        app.logger.error(f"LemonSqueezy subscription webhook işleme hatası: {str(e)}")
 
-def handle_lemonsqueezy_subscription_updated(event_data):
-    """LemonSqueezy subscription updated webhook'unu işler"""
-    try:
-        attributes = event_data.get('data', {}).get('attributes', {})
-        subscription_id = event_data.get('data', {}).get('id')
-        status = attributes.get('status')
-        
-        app.logger.info(f"LemonSqueezy abonelik güncellendi: Sub {subscription_id}, Status {status}")
-        
-        # Abonelik durumunu güncelle
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        
-        c.execute("""
-            UPDATE users 
-            SET subscription_status = ? 
-            WHERE lemonsqueezy_subscription_id = ?
-        """, (status, subscription_id))
-        
-        conn.commit()
-        conn.close()
-        
-    except Exception as e:
-        app.logger.error(f"LemonSqueezy subscription update webhook işleme hatası: {str(e)}")
 
-def handle_lemonsqueezy_subscription_cancelled(event_data):
-    """LemonSqueezy subscription cancelled webhook'unu işler"""
-    try:
-        subscription_id = event_data.get('data', {}).get('id')
-        
-        app.logger.info(f"LemonSqueezy abonelik iptal edildi: Sub {subscription_id}")
-        
-        # Aboneliği iptal et
-        conn = sqlite3.connect(DB_PATH)
-        c = conn.cursor()
-        
-        c.execute("""
-            UPDATE users 
-            SET subscription_plan = 'free', subscription_status = 'cancelled' 
-            WHERE lemonsqueezy_subscription_id = ?
-        """, (subscription_id,))
-        
-        conn.commit()
-        conn.close()
-        
-    except Exception as e:
-        app.logger.error(f"LemonSqueezy subscription cancel webhook işleme hatası: {str(e)}")
 
 def activate_subscription(user_id, plan_id, payment_provider, transaction_id, amount):
-    """Aboneliği aktifleştirir (hem Stripe hem LemonSqueezy için ortak)"""
+    """Aboneliği aktifleştirir (Stripe ve diğer ödeme sistemleri için ortak)"""
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
@@ -3130,26 +2813,18 @@ def activate_subscription(user_id, plan_id, payment_provider, transaction_id, am
         c.execute("""
             UPDATE users 
             SET subscription_plan = ?, 
-                subscription_status = 'active', 
-                subscription_end_date = ?
+                subscription_end_date = ?, 
+                last_payment_date = CURRENT_TIMESTAMP,
+                payment_provider = ?,
+                transaction_id = ?
             WHERE id = ?
-        """, (plan_id, end_date, user_id))
+        """, (plan_id, end_date.isoformat(), payment_provider, transaction_id, user_id))
         
-        # Abonelik kaydı oluştur
+        # Ödeme geçmişine ekle
         c.execute("""
-            INSERT INTO subscriptions 
-            (user_id, plan_type, status, current_period_start, current_period_end) 
-            VALUES (?, ?, 'active', ?, ?)
-        """, (user_id, plan_id, datetime.now(), end_date))
-        
-        subscription_id = c.lastrowid
-        
-        # Fatura kaydı oluştur
-        c.execute("""
-            INSERT INTO invoices 
-            (user_id, subscription_id, amount, currency, status, invoice_date) 
-            VALUES (?, ?, ?, 'TRY', 'paid', ?)
-        """, (user_id, subscription_id, amount, datetime.now()))
+            INSERT INTO payment_history (user_id, plan_id, amount, payment_provider, transaction_id, status)
+            VALUES (?, ?, ?, ?, ?, 'completed')
+        """, (user_id, plan_id, amount, payment_provider, transaction_id))
         
         conn.commit()
         conn.close()
@@ -3157,8 +2832,7 @@ def activate_subscription(user_id, plan_id, payment_provider, transaction_id, am
         app.logger.info(f"Abonelik aktifleştirildi: User {user_id}, Plan {plan_id}, Provider {payment_provider}")
         
     except Exception as e:
-        app.logger.error(f"Abonelik aktifleştirme hatası: {str(e)}")
-        raise
+        app.logger.error(f"Abonelik aktivasyon hatası: {str(e)}")
 
 @app.route('/about')
 def about():

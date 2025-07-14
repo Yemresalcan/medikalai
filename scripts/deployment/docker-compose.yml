@@ -14,10 +14,10 @@ services:
     environment:
       - PORT=8080
       - HOST=0.0.0.0
-      # Stripe ve Gemini API anahtarlarınızı buraya ekleyin
-      - STRIPE_API_KEY=${STRIPE_API_KEY:-sk_test_51XXXXXXXXXXXXXXXXXXXXXX}
-      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY:-pk_test_51XXXXXXXXXXXXXXXXXXXXXX}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-AIzaSyCE8YbG-RnskAL51MmzAKthVme7l-ZEaRs}
+      # API anahtarları environment variable'larından alınacak
+      - STRIPE_API_KEY=${STRIPE_API_KEY}
+      - STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/ || exit 0"]
       interval: 30s

@@ -1,168 +1,294 @@
-# MedikalAI - Kan Tahlili Yorumlama Uygulaması
+# 🏥 MedikalAI - Intelligent Blood Test Analysis
 
-Bu proje, Flask tabanlı bir web uygulaması ile kullanıcılardan kan tahlili dosyalarını alır ve yapay zeka kullanarak tıbbi yorumlama sağlar.
+<div align="center">
 
-## ✨ Özellikler
+![Python](https://img.shields.io/badge/python-v3.9+-blue.svg)
+![Flask](https://img.shields.io/badge/flask-v2.3.3-green.svg)
+![AI](https://img.shields.io/badge/AI-Gemini%202.0-orange.svg)
+![License](https://img.shields.io/badge/license-Proprietary-red.svg)
+![Status](https://img.shields.io/badge/status-active-success.svg)
 
-- PDF kan tahlili dosyalarını yükleme ve analiz etme
-- Gemini AI API ile tıbbi yorumlama
-- Kullanıcı yönetimi ve güvenli oturum sistemi
-- Stripe entegrasyonu ile abonelik sistemi
-- Admin paneli ve kullanıcı yönetimi
-- Responsive tasarım ve koyu tema desteği
+**AI-powered blood test analysis platform that provides intelligent health insights**
 
-## 📁 Proje Yapısı
+[Demo](#demo) • [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Contributing](#-contributing)
 
-```
-medikalai/
-├── app.py                    # Ana Flask uygulaması
-├── requirements.txt          # Python bağımlılıkları
-├── README.md                 # Bu dosya
-├── kan_tahlil_app.db        # SQLite veritabanı
-├── templates/               # HTML şablonları
-├── static/                  # CSS, JS ve görsel dosyalar
-└── scripts/
-    ├── deployment/          # Deployment dosyaları
-    │   ├── Dockerfile       # Docker container yapılandırması
-    │   ├── docker-compose.yml
-    │   ├── fly.toml         # Fly.io yapılandırması
-    │   ├── Makefile         # Yardımcı komutlar
-    │   ├── Procfile         # Heroku deployment
-    │   └── fly-*.sh         # Fly.io deployment scriptleri
-    └── docs/                # Dokümantasyon
-        └── deployment_guide.md
-```
+</div>
 
-## 🚀 Yerel Kurulum
+---
 
-### Gereksinimler
+## ⚠️ **IMPORTANT LEGAL NOTICE**
+
+<div align="center">
+
+### 🚫 **PROPRIETARY SOFTWARE - ALL RIGHTS RESERVED** 🚫
+
+**THIS IS NOT OPEN SOURCE SOFTWARE**
+
+</div>
+
+| ❌ **PROHIBITED** | ✅ **ALLOWED** |
+|:---|:---|
+| Commercial use | Code viewing for education |
+| Copying/Cloning for use | Portfolio demonstration |
+| Modification | Academic research |
+| Distribution | Learning purposes only |
+| Deployment | Local testing (personal use) |
+| Creating derivatives | - |
+
+> 🚨 **WARNING**: Unauthorized use of this software will result in immediate legal action including DMCA takedowns, copyright infringement claims, and monetary damages.
+
+---
+
+## 📖 About
+
+MedikalAI is a sophisticated web application that leverages artificial intelligence to analyze blood test results and provide comprehensive health insights. Built with Flask and powered by Google's Gemini AI, it offers medical professionals and individuals an intuitive platform for understanding blood test parameters and potential health risks.
+
+> ⚠️ **Medical Disclaimer**: This application is for informational purposes only and should not replace professional medical advice. Always consult with healthcare professionals for accurate diagnosis and treatment.
+
+## 🎯 Features
+
+### 🔬 Core Functionality
+- **AI-Powered Analysis**: Intelligent blood test interpretation using Gemini 2.0 Flash
+- **PDF Processing**: Extract data from blood test PDFs automatically  
+- **Comprehensive Reports**: Detailed analysis with risk assessments and recommendations
+- **Multi-Parameter Support**: 50+ blood test parameters across 8 categories
+
+### 💊 Medical Coverage
+- **🧬 Cancer Markers**: CEA, CA 15-3, CA 19-9, CA 125, PSA
+- **🩸 Complete Blood Count**: Hemoglobin, WBC, Platelets, etc.
+- **🫀 Lipid Profile**: Cholesterol, HDL, LDL, Triglycerides
+- **🍬 Metabolism**: Glucose, HbA1c, Insulin levels
+- **🧪 Hormones**: TSH, T3, T4, Vitamin D, B12
+- **🍃 Liver Function**: ALT, AST, Bilirubin, Albumin
+- **🔥 Inflammation**: CRP, ESR, Procalcitonin
+
+### 🛡️ Platform Features
+- **User Management**: Secure authentication with BCrypt
+- **Admin Dashboard**: User and analysis management
+- **Subscription System**: Tiered access levels
+- **Dark/Light Theme**: Modern responsive UI
+- **Multi-language**: Turkish interface
+- **Email Integration**: Automated notifications
+
+## 🛠️ Tech Stack
+
+**Backend:**
 - Python 3.9+
-- pip
+- Flask 2.3.3
+- SQLite Database
+- BCrypt Authentication
+- JWT Tokens
 
-### Adımlar
+**AI & Processing:**
+- Google Gemini 2.0 Flash API
+- PyPDF2 for PDF processing
+- Custom medical algorithms
 
-1. **Gerekli paketleri yükleyin:**
+**Frontend:**
+- Bootstrap 5
+- JavaScript (ES6+)
+- Responsive Design
+- Progressive Web App features
+
+**DevOps:**
+- Docker & Docker Compose
+- Fly.io deployment
+- GitHub Actions (optional)
+
+## 🚀 Installation
+
+### Prerequisites
+- Python 3.9 or higher
+- pip package manager
+- Git
+
+### Local Development
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Yemresalcan/medikalai.git
+   cd medikalai
+   ```
+
+2. **Create virtual environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/Mac
+   # or
+   venv\Scripts\activate     # Windows
+   ```
+
+3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **API anahtarlarınızı ayarlayın:**
-   
-   Windows:
-   ```cmd
-   set GEMINI_API_KEY=your_gemini_api_key
-   set STRIPE_API_KEY=your_stripe_api_key
-   set STRIPE_PUBLIC_KEY=your_stripe_public_key
-   ```
-   
-   Linux/Mac:
+4. **Environment setup**
    ```bash
-   export GEMINI_API_KEY=your_gemini_api_key
-   export STRIPE_API_KEY=your_stripe_api_key
-   export STRIPE_PUBLIC_KEY=your_stripe_public_key
+   cp .env-example .env
+   # Edit .env with your API keys
    ```
 
-3. **Uygulamayı başlatın:**
+5. **Initialize database**
+   ```bash
+   python -c "from app import init_db; init_db()"
+   ```
+
+6. **Run the application**
    ```bash
    python app.py
    ```
 
-4. **Tarayıcınızda `http://localhost:8080` adresine gidin**
+   Visit `http://localhost:8080` in your browser.
 
-### Varsayılan Admin Hesabı
-- Kullanıcı Adı: `admin`
-- Şifre: `admin123`
-
-## 🐳 Docker ile Çalıştırma
+### Docker Development
 
 ```bash
 cd scripts/deployment
 docker-compose up -d
 ```
 
-## ☁️ Deployment
+## 🔧 Configuration
 
-### Fly.io ile Deployment
+### Environment Variables
 
-1. **Fly.io hesabı oluşturun ve flyctl'yi yükleyin:**
-   ```bash
-   curl -L https://fly.io/install.sh | sh
-   ```
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `GEMINI_API_KEY` | Google Gemini API key | ✅ | - |
+| `SECRET_KEY` | Flask secret key | ❌ | auto-generated |
+| `JWT_SECRET_KEY` | JWT signing key | ❌ | auto-generated |
+| `EMAIL_PASSWORD` | Gmail app password | ❌ | - |
+| `FLASK_DEBUG` | Debug mode | ❌ | False |
+| `DB_PATH` | Database path | ❌ | `kan_tahlil_app.db` |
 
-2. **Otomatik kurulum scripti çalıştırın:**
-   ```bash
-   cd scripts/deployment
-   chmod +x fly-setup.sh
-   ./fly-setup.sh
-   ```
+### Getting API Keys
 
-3. **Güncelleme için:**
-   ```bash
-   chmod +x fly-deploy.sh
-   ./fly-deploy.sh
-   ```
+1. **Gemini API Key**:
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a new API key
+   - Add to your `.env` file
 
-### Makefile Komutları
+## 💡 Usage
+
+### Basic Analysis
+
+1. **Register/Login** to your account
+2. **Upload PDF** blood test report
+3. **Review Analysis** with AI-generated insights
+4. **Download Report** in PDF format
+
+### Admin Features
+
+- Access admin panel at `/admin/dashboard`
+- Default credentials: `admin` / `admin123` (change immediately)
+- Manage users, analyses, and newsletter subscribers
+
+### API Endpoints
 
 ```bash
-cd scripts/deployment
+# Authentication
+POST /api/login          # User login
+GET  /api/analyses       # Get user analyses (JWT required)
 
-# Docker işlemleri
-make build          # Docker image'ı oluştur
-make up             # Konteyneri başlat
-make down           # Konteyneri durdur
-make logs           # Logları görüntüle
-
-# Fly.io işlemleri  
-make fly-deploy     # Fly.io'ya deploy et
-make fly-open       # Uygulamayı tarayıcıda aç
-make fly-restart    # Uygulamayı yeniden başlat
+# Web Interface
+GET  /                   # Landing page
+GET  /analyze            # Analysis page
+GET  /dashboard          # User dashboard
+GET  /admin/*            # Admin routes
 ```
 
-## 🔧 Yapılandırma
+## 📊 Demo
 
-### Ortam Değişkenleri
+### Screenshots
 
-| Değişken | Açıklama | Gerekli |
-|----------|----------|---------|
-| `GEMINI_API_KEY` | Google Gemini API anahtarı | ✅ |
-| `STRIPE_API_KEY` | Stripe API anahtarı | ✅ |
-| `STRIPE_PUBLIC_KEY` | Stripe Public API anahtarı | ✅ |
-| `DB_PATH` | Veritabanı dosya yolu | ❌ |
+*Blood Test Upload Interface*
+- Modern drag-and-drop file upload
+- Real-time processing indicators
+- Mobile-responsive design
 
-### Abonelik Planları
+*AI Analysis Results*
+- Comprehensive parameter breakdown
+- Risk assessment visualization  
+- Actionable health recommendations
 
-- **Ücretsiz**: Aylık 3 tahlil analizi
-- **Temel**: Aylık 10 tahlil analizi (₺49.90)
-- **Premium**: Sınırsız tahlil analizi (₺89.90)
-- **Aile**: 5 aile üyesi için sınırsız (₺129.90)
+*Admin Dashboard*
+- User management interface
+- Analytics and statistics
+- System health monitoring
 
-## 📖 API Dokümantasyonu
+## 🗂️ Project Structure
 
-API endpoint'leri JWT token ile korunmaktadır:
+```
+medikalai/
+├── 📄 app.py                     # Main Flask application
+├── ⚙️ config.py                  # Configuration settings
+├── 📋 requirements.txt           # Python dependencies
+├── 🗃️ kan_tahlil_app.db         # SQLite database
+├── 📁 templates/                 # Jinja2 templates
+│   ├── 📁 admin/                # Admin interface
+│   ├── 📁 subscription/         # Subscription pages
+│   └── 📄 *.html               # Web pages
+├── 📁 static/                   # Static assets
+│   ├── 📁 assets/              # Images and media
+│   ├── 📁 js/                  # JavaScript files
+│   └── 📁 favicon/             # Favicon files
+└── 📁 scripts/                  # Deployment scripts
+    ├── 📁 deployment/          # Docker & deployment
+    └── 📁 docs/                # Documentation
+```
 
-- `POST /api/login` - Giriş yapma
-- `GET /api/analyses` - Tahlil listesi
+## 🚫 Contributing
 
-## ⚠️ Önemli Notlar
+**CONTRIBUTIONS ARE NOT ACCEPTED**
 
-- Bu uygulama **sadece bilgilendirme amaçlıdır**
-- Tıbbi tavsiye yerine geçmez
-- Kesin tanı için mutlaka doktorunuza danışın
-- API anahtarlarınızı güvenli şekilde saklayın
+This is proprietary software. We do **NOT** accept:
+- Pull requests
+- Issues
+- Feature requests  
+- Code contributions
+- Documentation updates
 
-## 🤝 Katkıda Bulunma
+For business inquiries or licensing discussions only, contact the author directly.
 
-1. Projeyi fork edin
-2. Feature branch oluşturun (`git checkout -b feature/AmazingFeature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add some AmazingFeature'`)
-4. Branch'inizi push edin (`git push origin feature/AmazingFeature`)
-5. Pull Request oluşturun
+## 📝 License
 
-## 📄 Lisans
+**⚠️ PROPRIETARY SOFTWARE - ALL RIGHTS RESERVED**
 
-Bu proje MIT lisansı altında lisanslanmıştır.
+This project is **NOT** open source. Usage, modification, distribution, and commercial use are **STRICTLY PROHIBITED** without explicit written permission.
 
-## 📞 İletişim
+See the [LICENSE](LICENSE) file for complete terms and restrictions.
 
-Sorular veya öneriler için issue açabilirsiniz.
+**🚫 Unauthorized use will result in legal action**
+
+## 👨‍💻 Author
+
+**Yemresalcan**
+- GitHub: [@Yemresalcan](https://github.com/Yemresalcan)
+- WebSite: [Web-Site](https://yapaykume.vercel.app/)
+- Email: yunusemresalcan@gmail.com
+
+## 🙏 Acknowledgments
+
+- Google Gemini AI for intelligent analysis
+- Flask community for the robust framework
+- Bootstrap team for the UI components
+- Medical professionals for domain expertise
+
+## 📈 Roadmap
+
+- [ ] **Multi-language Support**: English, German, French
+- [ ] **Mobile App**: Native iOS/Android applications  
+- [ ] **API Integration**: Hospital system integrations
+- [ ] **Advanced Analytics**: ML-powered trend analysis
+- [ ] **Telemedicine**: Video consultation features
+- [ ] **Wearable Integration**: Apple Health, Google Fit
+
+---
+
+<div align="center">
+
+**⭐ Star this repository if you find it helpful!**
+
+[Report Bug](https://github.com/Yemresalcan/medikalai/issues) • [Request Feature](https://github.com/Yemresalcan/medikalai/issues) • [Documentation](https://github.com/Yemresalcan/medikalai/wiki)
+
+</div>

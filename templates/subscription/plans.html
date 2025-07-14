@@ -198,20 +198,19 @@
                                 {% endif %}
                             </div>
                         {% else %}
-                            <!-- LemonSqueezy Payment Button -->
+                            <!-- Yeni Ödeme Sistemi Butonu (Yakında) -->
                             <div class="d-grid">
-                                <a href="{{ url_for('lemonsqueezy_checkout', plan_id=plan_id) }}" 
-                                   class="btn {% if plan_id == 'premium' %}btn-warning{% else %}btn-primary{% endif %} pricing-btn">
-                                    <i class="fas fa-lemon me-2"></i>
+                                <button class="btn {% if plan_id == 'premium' %}btn-warning{% else %}btn-primary{% endif %} pricing-btn" disabled>
+                                    <i class="fas fa-credit-card me-2"></i>
                                     {% if user_plan == 'free' %}
                                         Hemen Başla
                                     {% else %}
                                         Planı Değiştir
                                     {% endif %}
                                     <small class="d-block mt-1" style="font-size: 0.75rem; opacity: 0.8;">
-                                        🍋 LemonSqueezy ile güvenli ödeme
+                                        🔄 Yeni ödeme sistemi entegre ediliyor...
                                     </small>
-                                </a>
+                                </button>
                             </div>
                             
                             <!-- Payment Info -->
@@ -236,19 +235,19 @@
         <!-- Payment Provider -->
         <div class="row justify-content-center mb-4">
             <div class="col-md-6">
-                <div class="card h-100 border-warning">
+                <div class="card h-100 border-primary">
                     <div class="card-body text-center">
-                        <h6 class="text-warning fw-bold mb-3">
-                            <i class="fas fa-lemon me-2"></i>LemonSqueezy
+                        <h6 class="text-primary fw-bold mb-3">
+                            <i class="fas fa-credit-card me-2"></i>Güvenli Ödeme
                         </h6>
                         <div class="payment-methods mb-3">
-                            <span class="badge bg-warning text-dark px-3 py-2" style="font-size: 1.1rem;">
-                                🍋 LemonSqueezy
+                            <span class="badge bg-primary px-3 py-2" style="font-size: 1.1rem;">
+                                💳 Yeni Ödeme Sistemi
                             </span>
                         </div>
                         <small class="text-muted">
-                            Modern ve kullanıcı dostu ödeme deneyimi<br>
-                            <strong>Visa • Mastercard • PayPal • Apple Pay • Google Pay</strong>
+                            Modern ve güvenli ödeme deneyimi<br>
+                            <strong>Yakında: Visa • Mastercard • PayPal • Apple Pay • Google Pay</strong>
                         </small>
                     </div>
                 </div>
