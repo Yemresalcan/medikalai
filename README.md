@@ -201,6 +201,8 @@ GET  /admin/*            # Admin routes
 ## 📊 Demo
 
 ### Screenshots
+<img width="1888" height="910" alt="image" src="https://github.com/user-attachments/assets/af81c2f7-3658-4051-96be-25fe158ba48d" />
+
 
 *Blood Test Upload Interface*
 - Modern drag-and-drop file upload
@@ -208,11 +210,17 @@ GET  /admin/*            # Admin routes
 - Mobile-responsive design
 
 *AI Analysis Results*
+<img width="1380" height="790" alt="image" src="https://github.com/user-attachments/assets/b7fd7268-f956-47c0-89e4-069911df68cd" />
+
 - Comprehensive parameter breakdown
 - Risk assessment visualization  
 - Actionable health recommendations
 
 *Admin Dashboard*
+
+
+<img width="1879" height="914" alt="image" src="https://github.com/user-attachments/assets/9ad98d98-3a84-42f2-a05e-a6b62ddd9d08" />
+
 - User management interface
 - Analytics and statistics
 - System health monitoring
