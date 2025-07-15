@@ -10,9 +10,10 @@
 
 **AI-powered blood test analysis platform that provides intelligent health insights**
 
-[Demo](#demo) • [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Contributing](#-contributing)
+[Demo](#demo) • [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Contributing](#-contributing) • [Türkçe README](README_tr.md)
 
 </div>
+
 
 ---
 
